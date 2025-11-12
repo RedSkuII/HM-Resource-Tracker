@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Remove deprecated appDir option
+  experimental: {
+    serverComponentsExternalPackages: ['@libsql/client']
+  }
 }
  
 module.exports = nextConfig 
