@@ -114,7 +114,8 @@ export async function PUT(request: NextRequest) {
       discordId,
       hasResourceUpdates: !!resourceUpdates,
       hasResourceMetadata: !!resourceMetadata,
-      sessionUser: session.user
+      userName: session.user.name,
+      userEmail: session.user.email
     })
 
     // Handle resource metadata update (admin only)
