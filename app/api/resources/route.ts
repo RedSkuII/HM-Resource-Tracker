@@ -225,7 +225,7 @@ export async function PUT(request: NextRequest) {
         // Calculate status based on the NEW quantity (after update)
         const newStatus = calculateResourceStatus(update.quantity, resource.targetQuantity)
 
-        console.log('[RESOURCE API] About to award points:', {
+        console.log('[AWARD POINTS] About to award points:', {
           discordId,
           resourceId: update.id,
           resourceName: resource.name,
@@ -236,6 +236,7 @@ export async function PUT(request: NextRequest) {
           multiplier: resource.multiplier
         })
 
+        console.log('POINTS DEBUG - Discord ID:', discordId)
         pointsCalculation = await awardPoints(
           discordId,  // Use Discord ID for consistent tracking across website and Discord bot
           update.id,
