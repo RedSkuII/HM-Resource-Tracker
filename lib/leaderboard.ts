@@ -105,6 +105,14 @@ export async function awardPoints(
     multiplier: number
   }
 ): Promise<PointsCalculation> {
+  console.log('[AWARD POINTS] Called with:', {
+    userId,
+    resourceId,
+    actionType,
+    quantityChanged,
+    resourceData
+  })
+
   const calculation = calculatePoints(
     actionType,
     quantityChanged,
@@ -113,8 +121,11 @@ export async function awardPoints(
     resourceData.category
   )
 
+  console.log('[AWARD POINTS] Calculation result:', calculation)
+
   // Only create leaderboard entry if points were earned
   if (calculation.finalPoints > 0) {
+    console.log('[AWARD POINTS] Inserting into leaderboard...')
     await db.insert(leaderboard).values({
       id: nanoid(),
       userId,
@@ -130,6 +141,9 @@ export async function awardPoints(
       resourceStatus: resourceData.status,
       createdAt: new Date(),
     })
+    console.log('[AWARD POINTS] Successfully inserted!')
+  } else {
+    console.log('[AWARD POINTS] No points earned, skipping insert')
   }
 
   return calculation
