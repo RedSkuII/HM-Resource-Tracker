@@ -62,6 +62,50 @@ export const authOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV === 'development',
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // Create or update user in database on sign in
+      if (account?.provider === 'discord' && user.id) {
+        try {
+          const { db, users } = await import('./db')
+          const { eq } = await import('drizzle-orm')
+          const { nanoid } = await import('nanoid')
+          
+          // Check if user exists
+          const existingUser = await db.select().from(users).where(eq(users.discordId, user.id)).limit(1)
+          
+          if (existingUser.length > 0) {
+            // Update existing user
+            await db.update(users)
+              .set({
+                username: user.name || 'Unknown',
+                avatar: user.image || null,
+                lastLogin: new Date(),
+              })
+              .where(eq(users.discordId, user.id))
+            
+            console.log(`Updated existing user: ${user.name} (Discord ID: ${user.id})`)
+          } else {
+            // Create new user
+            await db.insert(users).values({
+              id: nanoid(),
+              discordId: user.id,
+              username: user.name || 'Unknown',
+              avatar: user.image || null,
+              customNickname: null,
+              createdAt: new Date(),
+              lastLogin: new Date(),
+            })
+            
+            console.log(`Created new user: ${user.name} (Discord ID: ${user.id})`)
+          }
+        } catch (error) {
+          console.error('Error creating/updating user:', error)
+          // Don't block sign in if user creation fails
+        }
+      }
+      
+      return true
+    },
     async jwt({ token, account, trigger }) {
       // Store access token from initial login
       if (account) {
@@ -89,6 +133,22 @@ export const authOptions: NextAuthOptions = {
             token.isInGuild = true
             // Prioritize nickname over username
             token.discordNickname = member.nick || null
+            
+            // Update user's custom nickname in database if they have a guild nickname
+            if (member.nick && token.sub) {
+              try {
+                const { db, users } = await import('./db')
+                const { eq } = await import('drizzle-orm')
+                
+                await db.update(users)
+                  .set({ customNickname: member.nick })
+                  .where(eq(users.discordId, token.sub))
+                
+                console.log(`Updated nickname for user ${token.sub}: ${member.nick}`)
+              } catch (error) {
+                console.error('Error updating user nickname:', error)
+              }
+            }
             
             // Log member data in development only
             if (process.env.NODE_ENV === 'development') {
