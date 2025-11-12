@@ -201,7 +201,7 @@ export async function getLeaderboard(
       .from(leaderboard)
       .leftJoin(users, eq(leaderboard.userId, users.discordId))
       .where(timeCondition)
-      .groupBy(leaderboard.userId, users.customNickname, users.username)
+      .groupBy(leaderboard.userId)
       .orderBy(desc(sql`SUM(${leaderboard.finalPoints})`))
       .limit(limit)
       .offset(offset)
