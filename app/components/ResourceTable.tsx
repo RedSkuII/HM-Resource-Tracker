@@ -905,13 +905,25 @@ export function ResourceTable({ userId }: ResourceTableProps) {
       }
     }
     
-    // Default sort by name
+    // Default sort by name within categories
     return a.name.localeCompare(b.name)
   })
 
-  // Group resources by category for grid view
+  // Group resources by priority categories first, then by normal categories
   const groupedResources = filteredResources.reduce((acc, resource) => {
-    const category = resource.category || 'Uncategorized'
+    const status = calculateResourceStatus(resource.quantity, resource.targetQuantity ?? null)
+    let category: string
+    
+    // Resources with critical or below_target status get priority categories
+    if (status === 'critical') {
+      category = '🚨 Critical (Needs Immediate Attention)'
+    } else if (status === 'below_target') {
+      category = '⚠️ Below Target (Needs Restocking)'
+    } else {
+      // At target or above target resources stay in their normal category
+      category = resource.category || 'Uncategorized'
+    }
+    
     if (!acc[category]) {
       acc[category] = []
     }
@@ -1509,19 +1521,35 @@ export function ResourceTable({ userId }: ResourceTableProps) {
         <div className="space-y-8">
           {Object.entries(groupedResources)
             .sort(([categoryA], [categoryB]) => {
-              // Define the desired order: Raw → Refined → Components → Other categories
-              const order = ['Raw', 'Refined', 'Components']
-              const indexA = order.indexOf(categoryA)
-              const indexB = order.indexOf(categoryB)
+              // Priority categories always come first
+              const priorityOrder = [
+                '🚨 Critical (Needs Immediate Attention)',
+                '⚠️ Below Target (Needs Restocking)'
+              ]
               
-              // If both categories are in the defined order, sort by their position
-              if (indexA !== -1 && indexB !== -1) {
-                return indexA - indexB
+              const aPriorityIndex = priorityOrder.indexOf(categoryA)
+              const bPriorityIndex = priorityOrder.indexOf(categoryB)
+              
+              // If both are priority categories, sort by priority order
+              if (aPriorityIndex !== -1 && bPriorityIndex !== -1) {
+                return aPriorityIndex - bPriorityIndex
               }
-              // If only one is in the defined order, prioritize it
-              if (indexA !== -1) return -1
-              if (indexB !== -1) return 1
-              // If neither is in the defined order, sort alphabetically
+              // Priority categories always come before normal categories
+              if (aPriorityIndex !== -1) return -1
+              if (bPriorityIndex !== -1) return 1
+              
+              // For normal categories, define the desired order: Raw → Refined → Components → Other
+              const normalOrder = ['Raw', 'Refined', 'Components']
+              const aIndex = normalOrder.indexOf(categoryA)
+              const bIndex = normalOrder.indexOf(categoryB)
+              
+              if (aIndex !== -1 && bIndex !== -1) {
+                return aIndex - bIndex
+              }
+              if (aIndex !== -1) return -1
+              if (bIndex !== -1) return 1
+              
+              // Other categories sort alphabetically
               return categoryA.localeCompare(categoryB)
             })
             .map(([category, categoryResources]) => (
