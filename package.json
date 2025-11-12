@@ -21,6 +21,7 @@
     "@types/react-dom": "18.2.18",
     "autoprefixer": "^10.4.16",
     "better-sqlite3": "^12.4.1",
+    "date-fns": "^4.1.0",
     "dotenv": "^17.2.1",
     "drizzle-kit": "^0.20.6",
     "drizzle-orm": "^0.29.1",

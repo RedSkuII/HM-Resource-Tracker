@@ -1,0 +1,5 @@
+{
+  "terminal.integrated.env.windows": {},
+  "python.terminal.activateEnvironment": true,
+  "terminal.integrated.inheritEnv": true
+}

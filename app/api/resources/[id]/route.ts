@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions, getUserIdentifier } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { resources, resourceHistory, leaderboard } from '@/lib/db'
+import { resources, resourceHistory, leaderboard, websiteChanges } from '@/lib/db'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { hasResourceAccess, hasResourceAdminAccess } from '@/lib/discord-roles'
@@ -67,6 +67,19 @@ export async function PUT(
       updatedBy: userId,
       reason: reason,
       createdAt: new Date(),
+    })
+
+    // Log website change for Discord bot to detect
+    await db.insert(websiteChanges).values({
+      id: nanoid(),
+      changeType: 'resource_update',
+      resourceId: params.id,
+      orderId: null,
+      previousValue: String(previousQuantity),
+      newValue: String(quantity),
+      changedBy: userId,
+      createdAt: new Date(),
+      processedByBot: false,
     })
 
     // Award points if quantity changed

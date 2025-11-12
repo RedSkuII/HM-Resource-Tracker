@@ -71,4 +71,61 @@ export const leaderboard = sqliteTable('leaderboard', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 })
 
-export const db = drizzle(client, { schema: { users, userSessions, resources, resourceHistory, leaderboard } }) 
+// Discord integration tables
+export const discordOrders = sqliteTable('discord_orders', {
+  id: text('id').primaryKey(),
+  guildId: text('guild_id').notNull(),
+  channelId: text('channel_id').notNull(),
+  userId: text('user_id').notNull(), // Discord user ID
+  username: text('username').notNull(),
+  resourceId: text('resource_id').notNull().references(() => resources.id),
+  resourceName: text('resource_name').notNull(),
+  quantity: integer('quantity').notNull(),
+  status: text('status').notNull().default('pending'), // 'pending', 'fulfilled', 'cancelled'
+  fulfilledBy: text('fulfilled_by'),
+  fulfilledAt: integer('fulfilled_at', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  notes: text('notes'),
+})
+
+export const resourceDiscordMapping = sqliteTable('resource_discord_mapping', {
+  id: text('id').primaryKey(),
+  discordItemName: text('discord_item_name').notNull(),
+  resourceId: text('resource_id').notNull().references(() => resources.id),
+  guildId: text('guild_id').notNull(),
+})
+
+export const discordEmbeds = sqliteTable('discord_embeds', {
+  id: text('id').primaryKey(),
+  guildId: text('guild_id').notNull(),
+  channelId: text('channel_id').notNull(),
+  messageId: text('message_id').notNull(),
+  embedType: text('embed_type').notNull(), // 'stock', 'leaderboard', 'orders'
+  lastUpdated: integer('last_updated', { mode: 'timestamp' }).notNull(),
+})
+
+export const websiteChanges = sqliteTable('website_changes', {
+  id: text('id').primaryKey(),
+  changeType: text('change_type').notNull(), // 'resource_update', 'order_fulfilled', 'order_cancelled'
+  resourceId: text('resource_id'),
+  orderId: text('order_id'),
+  previousValue: text('previous_value'),
+  newValue: text('new_value'),
+  changedBy: text('changed_by').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  processedByBot: integer('processed_by_bot', { mode: 'boolean' }).notNull().default(false),
+})
+
+export const db = drizzle(client, { 
+  schema: { 
+    users, 
+    userSessions, 
+    resources, 
+    resourceHistory, 
+    leaderboard,
+    discordOrders,
+    resourceDiscordMapping,
+    discordEmbeds,
+    websiteChanges
+  } 
+}) 
