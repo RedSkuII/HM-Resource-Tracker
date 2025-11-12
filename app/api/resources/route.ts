@@ -213,6 +213,9 @@ export async function PUT(request: NextRequest) {
           actionType = 'REMOVE'
         }
 
+        // Calculate status based on the NEW quantity (after update)
+        const newStatus = calculateResourceStatus(update.quantity, resource.targetQuantity)
+
         pointsCalculation = await awardPoints(
           discordId,  // Use Discord ID for consistent tracking across website and Discord bot
           update.id,
@@ -221,7 +224,7 @@ export async function PUT(request: NextRequest) {
           {
             name: resource.name,
             category: resource.category || 'Other',
-            status: calculateResourceStatus(resource.quantity, resource.targetQuantity),
+            status: newStatus,
             multiplier: resource.multiplier || 1.0
           }
         )
