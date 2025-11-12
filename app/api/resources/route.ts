@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions, getUserIdentifier } from '@/lib/auth'
-import { db, resources, resourceHistory } from '@/lib/db'
+import { db, resources, resourceHistory, websiteChanges } from '@/lib/db'
 import { eq } from 'drizzle-orm'
 import { hasResourceAccess, hasResourceAdminAccess } from '@/lib/discord-roles'
 import { nanoid } from 'nanoid'
@@ -183,6 +183,21 @@ export async function PUT(request: NextRequest) {
         reason: update.reason,
         createdAt: new Date(),
       })
+
+      // Log change for Discord bot polling (only for additions to sync with orders)
+      if (changeAmount > 0) {
+        await db.insert(websiteChanges).values({
+          id: nanoid(),
+          changeType: 'resource_update',
+          resourceId: update.id,
+          orderId: null,
+          previousValue: previousQuantity.toString(),
+          newValue: update.quantity.toString(),
+          changedBy: userId,
+          createdAt: new Date(),
+          processedByBot: false,
+        })
+      }
 
       // Calculate and award points for eligible actions
       let pointsCalculation = null
