@@ -15,7 +15,7 @@
     "add-resources-with-images": "tsx scripts/add-resources-with-images.ts"
   },
   "dependencies": {
-    "@libsql/client": "^0.14.0",
+    "@libsql/client": "^0.4.3",
     "@types/node": "20.10.4",
     "@types/react": "18.2.45",
     "@types/react-dom": "18.2.18",
