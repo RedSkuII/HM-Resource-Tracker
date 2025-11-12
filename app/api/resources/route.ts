@@ -107,6 +107,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json()
     const { resourceUpdates, resourceMetadata } = body
     const userId = getUserIdentifier(session)
+    const discordId = session.user.id  // Use Discord ID for leaderboard tracking
 
     // Handle resource metadata update (admin only)
     if (resourceMetadata) {
@@ -213,7 +214,7 @@ export async function PUT(request: NextRequest) {
         }
 
         pointsCalculation = await awardPoints(
-          userId,
+          discordId,  // Use Discord ID for consistent tracking across website and Discord bot
           update.id,
           actionType,
           Math.abs(changeAmount),

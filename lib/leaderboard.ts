@@ -1,4 +1,4 @@
-import { db, leaderboard, resources } from './db'
+import { db, leaderboard, resources, users } from './db'
 import { eq, desc, sql, and, gte } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
@@ -180,12 +180,14 @@ export async function getLeaderboard(
     const rankings = await db
       .select({
         userId: leaderboard.userId,
+        userName: sql<string>`COALESCE(${users.customNickname}, ${users.username}, ${leaderboard.userId})`.as('userName'),
         totalPoints: sql<number>`SUM(${leaderboard.finalPoints})`.as('totalPoints'),
         totalActions: sql<number>`COUNT(*)`.as('totalActions'),
       })
       .from(leaderboard)
+      .leftJoin(users, eq(leaderboard.userId, users.discordId))
       .where(timeCondition)
-      .groupBy(leaderboard.userId)
+      .groupBy(leaderboard.userId, users.customNickname, users.username)
       .orderBy(desc(sql`SUM(${leaderboard.finalPoints})`))
       .limit(limit)
       .offset(offset)
