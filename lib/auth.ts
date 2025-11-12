@@ -193,6 +193,7 @@ export const authOptions: NextAuthOptions = {
       // Simply use the cached data from JWT token
       session.user = {
         ...session.user,
+        id: token.sub as string, // Discord ID from JWT token
         roles: (token.userRoles || []) as string[],
         isInGuild: Boolean(token.isInGuild),
         discordNickname: token.discordNickname as string | null,
