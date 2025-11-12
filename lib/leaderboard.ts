@@ -206,7 +206,12 @@ export async function getLeaderboard(
       .limit(limit)
       .offset(offset)
 
-    console.log(`Leaderboard query returned ${rankings.length} entries, total: ${total}`)
+    console.log(`[LEADERBOARD DEBUG] Query returned ${rankings.length} entries`)
+    console.log(`[LEADERBOARD DEBUG] First entry:`, rankings[0])
+    
+    // Debug: Check what's in users table for Discord ID 397171121918836736
+    const debugUser = await db.select().from(users).where(eq(users.discordId, '397171121918836736'))
+    console.log(`[LEADERBOARD DEBUG] User lookup for 397171121918836736:`, debugUser)
     return { rankings, total }
   } catch (error) {
     console.error('Error in getLeaderboard:', error)
