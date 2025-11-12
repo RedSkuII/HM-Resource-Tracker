@@ -109,14 +109,6 @@ export async function PUT(request: NextRequest) {
     const userId = getUserIdentifier(session)
     const discordId = session.user.id  // Use Discord ID for leaderboard tracking
 
-    console.log('[WEBSITE POINTS DEBUG] Session info:', {
-      'getUserIdentifier': userId,
-      'session.user.id': discordId,
-      'session.user.name': session.user.name,
-      'session.user.email': session.user.email,
-      'Full session.user': JSON.stringify(session.user)
-    })
-
     // Handle resource metadata update (admin only)
     if (resourceMetadata) {
       if (!hasResourceAdminAccess(session.user.roles)) {
