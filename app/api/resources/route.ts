@@ -225,18 +225,27 @@ export async function PUT(request: NextRequest) {
         // Calculate status based on the NEW quantity (after update)
         const newStatus = calculateResourceStatus(update.quantity, resource.targetQuantity)
 
-        // Temporarily disable points for deployment fix
-        pointsCalculation = null
-        console.log('[AWARD POINTS] Points temporarily disabled due to libsql webpack issues')
-
-        console.log('[RESOURCE API] Points awarded:', pointsCalculation)
+        pointsCalculation = await awardPoints(
+          discordId,  // Use Discord ID for consistent tracking across website and Discord bot
+          update.id,
+          actionType,
+          Math.abs(changeAmount),
+          {
+            name: resource.name,
+            category: resource.category || 'Other',
+            status: newStatus,
+            multiplier: resource.multiplier || 1.0
+          }
+        )
       }
 
       return pointsCalculation
     })
 
     const pointsResults = await Promise.all(updatePromises)
-    const totalPointsEarned = 0 // Temporarily disabled
+    const totalPointsEarned = pointsResults
+      .filter(result => result !== null)
+      .reduce((total, result) => total + (result?.finalPoints || 0), 0)
 
     const updatedResources = await db.select().from(resources)
     

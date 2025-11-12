@@ -1,16 +1,23 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    serverComponentsExternalPackages: ['@libsql/client']
+    serverComponentsExternalPackages: ['@libsql/client', 'libsql']
   },
-  webpack: (config, { isServer, webpack }) => {
-    // Fix libsql webpack issues - ignore problematic files completely
-    config.plugins.push(
-      new webpack.IgnorePlugin({
-        resourceRegExp: /\.(md|txt|LICENSE)$/,
-        contextRegExp: /@libsql/
-      })
-    )
+  // Completely disable webpack processing of @libsql packages
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Server-side: treat as external
+      config.externals = [...(config.externals || []), '@libsql/client', 'libsql']
+    } else {
+      // Client-side: provide fallbacks
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: false,
+      }
+    }
     
     return config
   }
