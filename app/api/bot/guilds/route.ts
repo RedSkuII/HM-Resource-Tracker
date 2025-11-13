@@ -2,13 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasBotAdminAccess } from '@/lib/discord-roles'
-import { db, botConfigurations } from '@/lib/db'
+import { db, botConfigurations, discordOrders } from '@/lib/db'
+import { sql } from 'drizzle-orm'
 
 export const dynamic = 'force-dynamic'
 
-// GET - Fetch configured guilds from database
-// Note: For full Discord integration, channels/roles would need bot token
-// For now, returns guilds that have bot configurations
+// GET - Fetch guilds from database (both configured and active via orders)
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -22,27 +21,44 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
-    // Fetch all configured guilds from database
+    // Fetch all configured guilds
     const configs = await db
       .select({
         guildId: botConfigurations.guildId,
         guildName: botConfigurations.guildName,
-        botChannelId: botConfigurations.botChannelId,
-        orderChannelId: botConfigurations.orderChannelId,
         updatedAt: botConfigurations.updatedAt
       })
       .from(botConfigurations)
-      .orderBy(botConfigurations.updatedAt)
 
-    // Return configured guilds
-    // In production, you might want to verify user has access to these guilds
-    return NextResponse.json({
-      guilds: configs.map(config => ({
+    // Also fetch guilds from discord_orders that don't have configurations yet
+    const activeGuilds = await db
+      .select({
+        guildId: discordOrders.guildId,
+      })
+      .from(discordOrders)
+      .groupBy(discordOrders.guildId)
+
+    // Merge and deduplicate
+    const configGuildIds = new Set(configs.map(c => c.guildId))
+    const allGuilds = [
+      ...configs.map(config => ({
         id: config.guildId,
         name: config.guildName || `Guild ${config.guildId}`,
         hasConfiguration: true,
         lastUpdated: config.updatedAt
-      }))
+      })),
+      ...activeGuilds
+        .filter(g => !configGuildIds.has(g.guildId))
+        .map(guild => ({
+          id: guild.guildId,
+          name: `Guild ${guild.guildId}`,
+          hasConfiguration: false,
+          lastUpdated: undefined
+        }))
+    ]
+
+    return NextResponse.json({
+      guilds: allGuilds
     }, {
       headers: {
         'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
