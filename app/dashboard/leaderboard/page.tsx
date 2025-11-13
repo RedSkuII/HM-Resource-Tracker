@@ -7,6 +7,7 @@ import { Pagination } from '@/app/components/Pagination'
 
 interface LeaderboardEntry {
   userId: string
+  userName: string
   totalPoints: number
   totalActions: number
 }
@@ -201,7 +202,7 @@ export default function LeaderboardPage() {
                           </div>
                           <div>
                             <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                              {entry.userId}
+                              {entry.userName}
                             </h3>
                             <div className="flex items-center gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
                               <span>{entry.totalActions} actions</span>

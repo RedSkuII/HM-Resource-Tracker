@@ -206,8 +206,6 @@ export async function getLeaderboard(
       .limit(limit)
       .offset(offset)
 
-    console.log('[LEADERBOARD] Query results:', JSON.stringify(rankings, null, 2))
-    
     return { rankings, total }
   } catch (error) {
     console.error('Error in getLeaderboard:', error)
