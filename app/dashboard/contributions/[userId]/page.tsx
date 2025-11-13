@@ -302,7 +302,13 @@ export default function UserContributionsPage() {
                           +{contribution.finalPoints.toFixed(1)} pts
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {contribution.resourceMultiplier}x multiplier
+                          {contribution.resourceCategory === 'Refined' ? (
+                            <span>Fixed {contribution.finalPoints} pts</span>
+                          ) : contribution.actionType === 'SET' ? (
+                            <span>Fixed 1 pt</span>
+                          ) : (
+                            <span>{contribution.resourceMultiplier}x multiplier{contribution.statusBonus > 0 ? ` +${(contribution.statusBonus * 100).toFixed(0)}%` : ''}</span>
+                          )}
                         </div>
                       </div>
                     </div>

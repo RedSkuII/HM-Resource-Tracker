@@ -47,11 +47,11 @@ export function calculatePoints(
     }
   }
 
-  // Special handling for Refined category - always 100 points flat
+  // Special handling for Refined category - always 2 points flat
   if (resourceCategory === 'Refined') {
     return {
       basePoints: REFINED_ACTION_POINTS,
-      resourceMultiplier: 0, // Show as 0x for refined
+      resourceMultiplier: 1.0, // Display as 1x (multiplier not actually used)
       statusBonus: 0,
       finalPoints: REFINED_ACTION_POINTS
     }
