@@ -8,6 +8,35 @@ import { nanoid } from 'nanoid'
 
 export const dynamic = 'force-dynamic'
 
+// Helper function to fetch guild name from Discord API
+async function fetchGuildNameFromDiscord(guildId: string): Promise<string | null> {
+  try {
+    const botToken = process.env.DISCORD_BOT_TOKEN
+    if (!botToken) {
+      console.warn('[BOT-CONFIG] No DISCORD_BOT_TOKEN found')
+      return null
+    }
+
+    const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}`, {
+      headers: {
+        'Authorization': `Bot ${botToken}`,
+      },
+    })
+
+    if (response.ok) {
+      const guildData = await response.json()
+      console.log(`[BOT-CONFIG] Fetched guild name: ${guildData.name}`)
+      return guildData.name
+    } else {
+      console.warn(`[BOT-CONFIG] Failed to fetch guild name: ${response.status}`)
+      return null
+    }
+  } catch (error) {
+    console.error('[BOT-CONFIG] Error fetching guild name:', error)
+    return null
+  }
+}
+
 // GET - Fetch bot configuration for a guild
 export async function GET(
   request: NextRequest,
@@ -35,10 +64,13 @@ export async function GET(
       .limit(1)
 
     if (configs.length === 0) {
+      // Fetch guild name from Discord API for new configurations
+      const fetchedGuildName = await fetchGuildNameFromDiscord(guildId)
+      
       // Return default configuration if none exists
       return NextResponse.json({
         guildId,
-        guildName: null,
+        guildName: fetchedGuildName,
         botChannelId: null,
         orderChannelId: null,
         adminRoleId: null,
@@ -56,11 +88,26 @@ export async function GET(
     }
 
     const config = configs[0]
+    
+    // If guild name is missing, fetch it and update the database
+    let guildName = config.guildName
+    if (!guildName) {
+      const fetchedGuildName = await fetchGuildNameFromDiscord(guildId)
+      if (fetchedGuildName) {
+        guildName = fetchedGuildName
+        // Update the database with the fetched guild name
+        await db
+          .update(botConfigurations)
+          .set({ guildName: fetchedGuildName, updatedAt: new Date() })
+          .where(eq(botConfigurations.guildId, guildId))
+        console.log(`[BOT-CONFIG] Updated guild name to: ${fetchedGuildName}`)
+      }
+    }
 
     return NextResponse.json({
       id: config.id,
       guildId: config.guildId,
-      guildName: config.guildName,
+      guildName: guildName,
       botChannelId: config.botChannelId,
       orderChannelId: config.orderChannelId,
       adminRoleId: config.adminRoleId,
