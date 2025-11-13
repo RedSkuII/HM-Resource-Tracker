@@ -116,6 +116,37 @@ export const websiteChanges = sqliteTable('website_changes', {
   processedByBot: integer('processed_by_bot', { mode: 'boolean' }).notNull().default(false),
 })
 
+// Bot dashboard configuration
+export const botConfigurations = sqliteTable('bot_configurations', {
+  id: text('id').primaryKey(),
+  guildId: text('guild_id').notNull().unique(),
+  guildName: text('guild_name'),
+  botChannelId: text('bot_channel_id'), // Channel where bot posts notifications
+  orderChannelId: text('order_channel_id'), // Channel where orders are created
+  adminRoleId: text('admin_role_id'), // Role that can access bot dashboard
+  autoUpdateEmbeds: integer('auto_update_embeds', { mode: 'boolean' }).notNull().default(true),
+  notifyOnWebsiteChanges: integer('notify_on_website_changes', { mode: 'boolean' }).notNull().default(true),
+  orderFulfillmentBonus: integer('order_fulfillment_bonus').notNull().default(50), // Bonus % for filling orders (50% = 1.5x)
+  allowPublicOrders: integer('allow_public_orders', { mode: 'boolean' }).notNull().default(true),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+})
+
+// Bot activity logging for dashboard
+export const botActivityLogs = sqliteTable('bot_activity_logs', {
+  id: text('id').primaryKey(),
+  guildId: text('guild_id').notNull(),
+  eventType: text('event_type').notNull(), // 'order_created', 'order_filled', 'order_cancelled', 'stock_updated', 'embed_updated', 'config_changed'
+  userId: text('user_id'), // Discord user ID who triggered the action
+  username: text('username'),
+  resourceId: text('resource_id'),
+  resourceName: text('resource_name'),
+  quantity: integer('quantity'),
+  pointsAwarded: real('points_awarded'),
+  details: text('details'), // JSON string for additional context
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+})
+
 export const db = drizzle(client, { 
   schema: { 
     users, 
@@ -126,6 +157,8 @@ export const db = drizzle(client, {
     discordOrders,
     resourceDiscordMapping,
     discordEmbeds,
-    websiteChanges
+    websiteChanges,
+    botConfigurations,
+    botActivityLogs
   } 
 }) 

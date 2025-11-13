@@ -50,6 +50,13 @@
       "when": 1762944377809,
       "tag": "0006_oval_bastion",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1763013318579,
+      "tag": "0007_worthless_sphinx",
+      "breakpoints": true
     }
   ]
 }

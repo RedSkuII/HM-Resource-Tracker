@@ -6,6 +6,7 @@ type RoleConfig = {
   isAdmin?: boolean;
   canEditTargets?: boolean;
   canAccessResources?: boolean;
+  canManageBotSettings?: boolean; // Access to bot dashboard configuration
   // 🆕 Add new permissions here:
   canViewReports?: boolean;     // Example: View analytics/reports
   canManageUsers?: boolean;     // Example: Manage user accounts
@@ -155,4 +156,16 @@ export function hasUserManagementAccess(userRoles: string[]): boolean {
 export function hasDataExportAccess(userRoles: string[]): boolean {
   const dataExportRoles = ROLE_HIERARCHY.filter(role => role.canExportData).map(role => role.id)
   return userRoles.some(role => dataExportRoles.includes(role))
+}
+
+// Helper function to check if user can access bot dashboard
+export function hasBotAdminAccess(userRoles: string[]): boolean {
+  const botAdminRoles = ROLE_HIERARCHY.filter(role => role.canManageBotSettings).map(role => role.id)
+  
+  if (botAdminRoles.length === 0) {
+    // If no specific bot admin roles configured, fall back to resource admin access
+    return hasResourceAdminAccess(userRoles)
+  }
+  
+  return userRoles.some(role => botAdminRoles.includes(role))
 }
