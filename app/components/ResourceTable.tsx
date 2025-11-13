@@ -2218,7 +2218,7 @@ export function ResourceTable({ userId }: ResourceTableProps) {
          resourceName={congratulationsState.resourceName}
          actionType={congratulationsState.actionType}
          quantityChanged={congratulationsState.quantityChanged}
-         userId={session ? getUserIdentifier(session) : userId}
+         userId={session?.user?.id || userId}
          onClose={() => setCongratulationsState({ ...congratulationsState, isVisible: false })}
        />
 
