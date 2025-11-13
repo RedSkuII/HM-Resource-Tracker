@@ -31,6 +31,7 @@ export async function GET(
 
     return NextResponse.json({
       userId: params.userId,
+      userName: contributions.userName,
       timeFilter,
       rank,
       contributions: contributions.contributions,

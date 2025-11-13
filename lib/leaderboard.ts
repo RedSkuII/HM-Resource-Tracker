@@ -221,7 +221,7 @@ export async function getUserContributions(
   timeFilter?: '24h' | '7d' | '30d' | 'all',
   limit = 100,
   offset = 0
-): Promise<{ contributions: any[], summary: any, total: number }> {
+): Promise<{ contributions: any[], summary: any, total: number, userName?: string }> {
   let timeCondition = sql`1 = 1`
 
   if (timeFilter && timeFilter !== 'all') {
@@ -269,10 +269,20 @@ export async function getUserContributions(
     .from(leaderboard)
     .where(and(eq(leaderboard.userId, userId), timeCondition))
 
+  // Get username from users table
+  const userResult = await db
+    .select({
+      userName: sql<string>`COALESCE(${users.customNickname}, ${users.username})`.as('userName'),
+    })
+    .from(users)
+    .where(eq(users.discordId, userId))
+    .limit(1)
+
   return {
     contributions,
     summary: summaryResult[0] || { totalPoints: 0, totalActions: 0 },
-    total
+    total,
+    userName: userResult[0]?.userName || userId
   }
 }
 

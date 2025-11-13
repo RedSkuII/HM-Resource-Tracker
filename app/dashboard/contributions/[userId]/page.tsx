@@ -22,6 +22,7 @@ interface Contribution {
 
 interface ContributionsData {
   userId: string
+  userName?: string
   timeFilter: string
   rank: number | null
   contributions: Contribution[]
@@ -187,7 +188,7 @@ export default function UserContributionsPage() {
                 Contribution History
               </h1>
               <p className="text-gray-600 dark:text-gray-300 mt-1">
-                User: {userId}
+                User: {data.userName || userId}
               </p>
             </div>
             <button
