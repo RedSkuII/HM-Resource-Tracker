@@ -26,12 +26,31 @@ interface BotConfig {
   exists: boolean
 }
 
+interface DiscordChannel {
+  id: string
+  name: string
+  position: number
+}
+
+interface DiscordRole {
+  id: string
+  name: string
+  position: number
+  color: number
+}
+
+interface DiscordGuildData {
+  channels: DiscordChannel[]
+  roles: DiscordRole[]
+}
+
 export default function BotDashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [guilds, setGuilds] = useState<Guild[]>([])
   const [selectedGuildId, setSelectedGuildId] = useState<string | null>(null)
   const [config, setConfig] = useState<BotConfig | null>(null)
+  const [discordData, setDiscordData] = useState<DiscordGuildData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -94,6 +113,27 @@ export default function BotDashboardPage() {
 
     if (selectedGuildId) {
       fetchConfig()
+    }
+  }, [selectedGuildId])
+
+  // Fetch Discord channels and roles when guild is selected
+  useEffect(() => {
+    const fetchDiscordData = async () => {
+      if (!selectedGuildId) return
+
+      try {
+        const response = await fetch(`/api/discord/guild/${selectedGuildId}`)
+        if (!response.ok) throw new Error('Failed to fetch Discord data')
+        const data = await response.json()
+        setDiscordData(data)
+      } catch (err) {
+        console.error('[BOT-DASHBOARD] Failed to fetch Discord data:', err)
+        // Don't set error state, just log it - not critical
+      }
+    }
+
+    if (selectedGuildId) {
+      fetchDiscordData()
     }
   }, [selectedGuildId])
 
@@ -236,46 +276,79 @@ export default function BotDashboardPage() {
               {/* Bot Channel ID */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Bot Channel ID
+                  Bot Channel
                   <span className="text-gray-500 text-xs ml-2">(Where bot posts notifications)</span>
                 </label>
-                <input
-                  type="text"
-                  value={config.botChannelId || ''}
-                  onChange={(e) => setConfig({ ...config, botChannelId: e.target.value })}
-                  placeholder="e.g., 1234567890"
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
+                {discordData && discordData.channels.length > 0 ? (
+                  <select
+                    value={config.botChannelId || ''}
+                    onChange={(e) => setConfig({ ...config, botChannelId: e.target.value || null })}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select a channel...</option>
+                    {discordData.channels.map((channel) => (
+                      <option key={channel.id} value={channel.id}>
+                        #{channel.name} {config.botChannelId === channel.id && '✓ (current)'}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="text-sm text-gray-500 dark:text-gray-400 italic">
+                    Loading channels...
+                  </div>
+                )}
               </div>
 
               {/* Order Channel ID */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Order Channel ID
+                  Order Channel
                   <span className="text-gray-500 text-xs ml-2">(Where orders are created)</span>
                 </label>
-                <input
-                  type="text"
-                  value={config.orderChannelId || ''}
-                  onChange={(e) => setConfig({ ...config, orderChannelId: e.target.value })}
-                  placeholder="e.g., 1234567890"
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
+                {discordData && discordData.channels.length > 0 ? (
+                  <select
+                    value={config.orderChannelId || ''}
+                    onChange={(e) => setConfig({ ...config, orderChannelId: e.target.value || null })}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select a channel...</option>
+                    {discordData.channels.map((channel) => (
+                      <option key={channel.id} value={channel.id}>
+                        #{channel.name} {config.orderChannelId === channel.id && '✓ (current)'}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="text-sm text-gray-500 dark:text-gray-400 italic">
+                    Loading channels...
+                  </div>
+                )}
               </div>
 
               {/* Admin Role ID */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Admin Role ID
+                  Admin Role
                   <span className="text-gray-500 text-xs ml-2">(Role that can access this dashboard)</span>
                 </label>
-                <input
-                  type="text"
-                  value={config.adminRoleId || ''}
-                  onChange={(e) => setConfig({ ...config, adminRoleId: e.target.value })}
-                  placeholder="e.g., 1234567890"
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
+                {discordData && discordData.roles.length > 0 ? (
+                  <select
+                    value={config.adminRoleId || ''}
+                    onChange={(e) => setConfig({ ...config, adminRoleId: e.target.value || null })}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select a role...</option>
+                    {discordData.roles.map((role) => (
+                      <option key={role.id} value={role.id}>
+                        {role.name} {config.adminRoleId === role.id && '✓ (current)'}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="text-sm text-gray-500 dark:text-gray-400 italic">
+                    Loading roles...
+                  </div>
+                )}
               </div>
 
               {/* Discord Order Fulfillment Bonus */}
