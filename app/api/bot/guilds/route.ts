@@ -12,14 +12,28 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    console.log('[BOT-GUILDS] Session:', session ? 'exists' : 'null')
+    console.log('[BOT-GUILDS] User:', session?.user)
+    console.log('[BOT-GUILDS] User roles:', session?.user?.roles)
+    
+    if (!session || !session.user) {
+      console.error('[BOT-GUILDS] No session or user found')
+      return NextResponse.json({ error: 'Unauthorized - Please sign in' }, { status: 401 })
     }
 
     // Check if user has bot admin access
-    if (!hasBotAdminAccess(session.user.roles)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+    const roles = Array.isArray(session.user.roles) ? session.user.roles : []
+    console.log('[BOT-GUILDS] Checking permissions with roles:', roles)
+    
+    const hasAccess = hasBotAdminAccess(roles)
+    console.log('[BOT-GUILDS] Has bot admin access:', hasAccess)
+    
+    if (!hasAccess) {
+      console.error('[BOT-GUILDS] Insufficient permissions for user')
+      return NextResponse.json({ error: 'Insufficient permissions - Admin access required' }, { status: 403 })
     }
+
+    console.log('[BOT-GUILDS] Fetching guilds from database...')
 
     // Fetch all configured guilds
     const configs = await db
@@ -30,6 +44,8 @@ export async function GET(request: NextRequest) {
       })
       .from(botConfigurations)
 
+    console.log('[BOT-GUILDS] Found', configs.length, 'configured guilds')
+
     // Also fetch guilds from discord_orders that don't have configurations yet
     const activeGuilds = await db
       .select({
@@ -37,6 +53,8 @@ export async function GET(request: NextRequest) {
       })
       .from(discordOrders)
       .groupBy(discordOrders.guildId)
+
+    console.log('[BOT-GUILDS] Found', activeGuilds.length, 'active guilds from orders')
 
     // Merge and deduplicate
     const configGuildIds = new Set(configs.map(c => c.guildId))
@@ -57,6 +75,8 @@ export async function GET(request: NextRequest) {
         }))
     ]
 
+    console.log('[BOT-GUILDS] Returning', allGuilds.length, 'total guilds')
+
     return NextResponse.json({
       guilds: allGuilds
     }, {
@@ -66,9 +86,10 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Error fetching guilds:', error)
+    console.error('[BOT-GUILDS] Error fetching guilds:', error)
+    console.error('[BOT-GUILDS] Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     return NextResponse.json(
-      { error: 'Failed to fetch guilds' },
+      { error: 'Failed to fetch guilds: ' + (error instanceof Error ? error.message : 'Unknown error') },
       { status: 500 }
     )
   }

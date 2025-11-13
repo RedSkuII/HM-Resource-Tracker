@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { BotStatsCards } from '@/app/components/BotStatsCards'
 
 interface Guild {
   id: string
@@ -20,6 +21,7 @@ interface BotConfig {
   autoUpdateEmbeds: boolean
   notifyOnWebsiteChanges: boolean
   orderFulfillmentBonus: number
+  websiteBonusPercentage: number
   allowPublicOrders: boolean
   exists: boolean
 }
@@ -46,14 +48,24 @@ export default function BotDashboardPage() {
   useEffect(() => {
     const fetchGuilds = async () => {
       try {
+        console.log('[BOT-DASHBOARD] Fetching guilds...')
         const response = await fetch('/api/bot/guilds')
-        if (!response.ok) throw new Error('Failed to fetch guilds')
+        console.log('[BOT-DASHBOARD] Response status:', response.status)
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+          console.error('[BOT-DASHBOARD] Error response:', errorData)
+          throw new Error(errorData.error || 'Failed to fetch guilds')
+        }
+        
         const data = await response.json()
+        console.log('[BOT-DASHBOARD] Guilds data:', data)
         setGuilds(data.guilds)
         if (data.guilds.length > 0) {
           setSelectedGuildId(data.guilds[0].id)
         }
       } catch (err) {
+        console.error('[BOT-DASHBOARD] Fetch error:', err)
         setError(err instanceof Error ? err.message : 'Failed to load guilds')
       } finally {
         setLoading(false)
@@ -113,7 +125,37 @@ export default function BotDashboardPage() {
     }
   }
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading authentication...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 max-w-md">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Authentication Required</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Please sign in with Discord to access the bot dashboard.
+          </p>
+          <button
+            onClick={() => router.push('/')}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+          >
+            Go to Home
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
@@ -236,11 +278,11 @@ export default function BotDashboardPage() {
                 />
               </div>
 
-              {/* Order Fulfillment Bonus */}
+              {/* Discord Order Fulfillment Bonus */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Order Fulfillment Bonus: {config.orderFulfillmentBonus}%
-                  <span className="text-gray-500 text-xs ml-2">(Bonus points for filling orders)</span>
+                  Discord Order Fulfillment Bonus: {config.orderFulfillmentBonus}%
+                  <span className="text-gray-500 text-xs ml-2">(Bonus points for filling orders via Discord)</span>
                 </label>
                 <input
                   type="range"
@@ -253,6 +295,29 @@ export default function BotDashboardPage() {
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
                   <span>0% (1.0x)</span>
+                  <span>50% (1.5x)</span>
+                  <span>100% (2.0x)</span>
+                  <span>200% (3.0x)</span>
+                </div>
+              </div>
+
+              {/* Website Bonus */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Website Addition Bonus: {config.websiteBonusPercentage}%
+                  <span className="text-gray-500 text-xs ml-2">(Bonus points for adding resources via website)</span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="200"
+                  step="10"
+                  value={config.websiteBonusPercentage}
+                  onChange={(e) => setConfig({ ...config, websiteBonusPercentage: parseInt(e.target.value) })}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>0% (no bonus)</span>
                   <span>50% (1.5x)</span>
                   <span>100% (2.0x)</span>
                   <span>200% (3.0x)</span>
@@ -310,6 +375,11 @@ export default function BotDashboardPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Statistics Cards */}
+        {selectedGuildId && (
+          <BotStatsCards guildId={selectedGuildId} />
         )}
 
         {/* Placeholder for Activity Logs */}

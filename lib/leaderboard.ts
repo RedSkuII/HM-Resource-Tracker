@@ -92,6 +92,8 @@ export function calculatePoints(
 
 /**
  * Award points to a user for a resource action
+ * 
+ * @param source - Where the action came from: 'website' or 'discord'
  */
 export async function awardPoints(
   userId: string,
@@ -103,14 +105,16 @@ export async function awardPoints(
     category: string
     status: string
     multiplier: number
-  }
+  },
+  source: 'website' | 'discord' = 'website'
 ): Promise<PointsCalculation> {
   console.log('[AWARD POINTS] Called with:', {
     userId,
     resourceId,
     actionType,
     quantityChanged,
-    resourceData
+    resourceData,
+    source
   })
 
   const calculation = calculatePoints(
@@ -123,8 +127,37 @@ export async function awardPoints(
 
   console.log('[AWARD POINTS] Calculation result:', calculation)
 
+  // Apply website bonus if action is from website and points were earned
+  let finalPoints = calculation.finalPoints
+  if (source === 'website' && finalPoints > 0 && actionType === 'ADD') {
+    try {
+      // Fetch website bonus from bot_configurations for the main guild
+      const guildId = process.env.DISCORD_GUILD_ID
+      if (guildId) {
+        const { botConfigurations } = await import('./db')
+        const { eq } = await import('drizzle-orm')
+        
+        const configs = await db
+          .select()
+          .from(botConfigurations)
+          .where(eq(botConfigurations.guildId, guildId))
+          .limit(1)
+        
+        if (configs.length > 0 && configs[0].websiteBonusPercentage > 0) {
+          const websiteBonus = configs[0].websiteBonusPercentage
+          const bonusMultiplier = 1.0 + (websiteBonus / 100)
+          finalPoints = calculation.finalPoints * bonusMultiplier
+          console.log(`[AWARD POINTS] Applied website bonus: ${websiteBonus}% (${bonusMultiplier}x) = ${finalPoints} points`)
+        }
+      }
+    } catch (error) {
+      console.error('[AWARD POINTS] Error fetching website bonus:', error)
+      // Continue with original points if bonus fetch fails
+    }
+  }
+
   // Only create leaderboard entry if points were earned
-  if (calculation.finalPoints > 0) {
+  if (finalPoints > 0) {
     console.log('[AWARD POINTS] Inserting into leaderboard...')
     await db.insert(leaderboard).values({
       id: nanoid(),
@@ -135,7 +168,7 @@ export async function awardPoints(
       basePoints: calculation.basePoints,
       resourceMultiplier: calculation.resourceMultiplier,
       statusBonus: calculation.statusBonus,
-      finalPoints: calculation.finalPoints,
+      finalPoints: Math.round(finalPoints * 100) / 100, // Round to 2 decimal places
       resourceName: resourceData.name,
       resourceCategory: resourceData.category,
       resourceStatus: resourceData.status,
@@ -146,7 +179,10 @@ export async function awardPoints(
     console.log('[AWARD POINTS] No points earned, skipping insert')
   }
 
-  return calculation
+  return {
+    ...calculation,
+    finalPoints: Math.round(finalPoints * 100) / 100
+  }
 }
 
 /**

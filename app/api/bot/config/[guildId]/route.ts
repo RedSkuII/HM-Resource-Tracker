@@ -45,6 +45,7 @@ export async function GET(
         autoUpdateEmbeds: true,
         notifyOnWebsiteChanges: true,
         orderFulfillmentBonus: 50,
+        websiteBonusPercentage: 0,
         allowPublicOrders: true,
         exists: false
       }, {
@@ -66,6 +67,7 @@ export async function GET(
       autoUpdateEmbeds: config.autoUpdateEmbeds,
       notifyOnWebsiteChanges: config.notifyOnWebsiteChanges,
       orderFulfillmentBonus: config.orderFulfillmentBonus,
+      websiteBonusPercentage: config.websiteBonusPercentage,
       allowPublicOrders: config.allowPublicOrders,
       createdAt: config.createdAt,
       updatedAt: config.updatedAt,
@@ -114,6 +116,7 @@ export async function PUT(
       autoUpdateEmbeds,
       notifyOnWebsiteChanges,
       orderFulfillmentBonus,
+      websiteBonusPercentage,
       allowPublicOrders
     } = body
 
@@ -138,6 +141,7 @@ export async function PUT(
         autoUpdateEmbeds: autoUpdateEmbeds ?? true,
         notifyOnWebsiteChanges: notifyOnWebsiteChanges ?? true,
         orderFulfillmentBonus: orderFulfillmentBonus ?? 50,
+        websiteBonusPercentage: websiteBonusPercentage ?? 0,
         allowPublicOrders: allowPublicOrders ?? true,
         createdAt: now,
         updatedAt: now
@@ -169,6 +173,7 @@ export async function PUT(
       if (autoUpdateEmbeds !== undefined) updateData.autoUpdateEmbeds = autoUpdateEmbeds
       if (notifyOnWebsiteChanges !== undefined) updateData.notifyOnWebsiteChanges = notifyOnWebsiteChanges
       if (orderFulfillmentBonus !== undefined) updateData.orderFulfillmentBonus = orderFulfillmentBonus
+      if (websiteBonusPercentage !== undefined) updateData.websiteBonusPercentage = websiteBonusPercentage
       if (allowPublicOrders !== undefined) updateData.allowPublicOrders = allowPublicOrders
 
       await db

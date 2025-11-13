@@ -1,0 +1,1 @@
+ALTER TABLE bot_configurations ADD `website_bonus_percentage` integer DEFAULT 0 NOT NULL;
