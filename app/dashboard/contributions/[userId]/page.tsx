@@ -307,7 +307,7 @@ export default function UserContributionsPage() {
                           ) : contribution.actionType === 'SET' ? (
                             <span>Fixed 1 pt</span>
                           ) : (
-                            <span>{contribution.resourceMultiplier}x multiplier{contribution.statusBonus > 0 ? ` +${(contribution.statusBonus * 100).toFixed(0)}%` : ''}</span>
+                            <span>{Math.round((contribution.resourceMultiplier - 1) * 100)}% bonus{contribution.statusBonus > 0 ? ` +${(contribution.statusBonus * 100).toFixed(0)}%` : ''}</span>
                           )}
                         </div>
                       </div>

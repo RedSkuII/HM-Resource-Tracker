@@ -1191,25 +1191,25 @@ export function ResourceTable({ userId }: ResourceTableProps) {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Points Multiplier
+                    Points Bonus
                   </label>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
                       step="10"
-                      min="0"
-                      value={Math.round(createResourceForm.multiplier * 100)}
+                      min="-90"
+                      value={Math.round((createResourceForm.multiplier - 1) * 100)}
                       onChange={(e) => {
-                        const percentage = parseFloat(e.target.value) || 100
-                        setCreateResourceForm(prev => ({ ...prev, multiplier: percentage / 100 }))
+                        const bonusPercentage = parseFloat(e.target.value) || 0
+                        setCreateResourceForm(prev => ({ ...prev, multiplier: 1 + (bonusPercentage / 100) }))
                       }}
                       className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                      placeholder="100"
+                      placeholder="0"
                     />
-                    <span className="text-gray-600 dark:text-gray-400">% = {createResourceForm.multiplier.toFixed(1)}x</span>
+                    <span className="text-gray-600 dark:text-gray-400">%</span>
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Enter as percentage (e.g., 50% = 0.5x, 150% = 1.5x, 500% = 5.0x)
+                    Bonus percentage (0% = normal, 50% = 1.5x points, 100% = 2x points)
                   </p>
                 </div>
               </div>
@@ -1454,25 +1454,25 @@ export function ResourceTable({ userId }: ResourceTableProps) {
             
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Points Multiplier
+                Points Bonus
               </label>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
                   step="10"
-                  min="0"
-                  value={Math.round(createResourceForm.multiplier * 100)}
+                  min="-90"
+                  value={Math.round((createResourceForm.multiplier - 1) * 100)}
                   onChange={(e) => {
-                    const percentage = parseFloat(e.target.value) || 100
-                    setCreateResourceForm(prev => ({ ...prev, multiplier: percentage / 100 }))
+                    const bonusPercentage = parseFloat(e.target.value) || 0
+                    setCreateResourceForm(prev => ({ ...prev, multiplier: 1 + (bonusPercentage / 100) }))
                   }}
                   className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  placeholder="100"
+                  placeholder="0"
                 />
-                <span className="text-gray-600 dark:text-gray-400">% = {createResourceForm.multiplier.toFixed(1)}x</span>
+                <span className="text-gray-600 dark:text-gray-400">%</span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Enter as percentage (e.g., 50% = 0.5x, 150% = 1.5x, 500% = 5.0x)
+                Bonus percentage (0% = normal, 50% = 1.5x points, 100% = 2x points)
               </p>
             </div>
           </div>
@@ -1626,7 +1626,7 @@ export function ResourceTable({ userId }: ResourceTableProps) {
                             {getStatusText(status)}
                           </span>
                           
-                          {/* Multiplier Badge */}
+                          {/* Points Bonus Badge */}
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             resource.multiplier === 0 ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' :
                             (resource.multiplier || 1.0) >= 3.0 ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200' :
@@ -1634,7 +1634,7 @@ export function ResourceTable({ userId }: ResourceTableProps) {
                             (resource.multiplier || 1.0) >= 1.0 ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200' :
                             'bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200'
                           }`}>
-                            {resource.multiplier === 0 ? '0x' : (resource.multiplier || 1.0).toFixed(1) + 'x'}
+                            {resource.multiplier === 0 ? '-100%' : Math.round(((resource.multiplier || 1.0) - 1) * 100) + '%'}
                           </span>
                         </div>
                         
@@ -1757,16 +1757,16 @@ export function ResourceTable({ userId }: ResourceTableProps) {
                                 <input
                                   type="number"
                                   step="10"
-                                  min="0"
-                                  value={Math.round(editResourceForm.multiplier * 100)}
+                                  min="-90"
+                                  value={Math.round((editResourceForm.multiplier - 1) * 100)}
                                   onChange={(e) => {
-                                    const percentage = parseFloat(e.target.value) || 100
-                                    setEditResourceForm(prev => ({ ...prev, multiplier: percentage / 100 }))
+                                    const bonusPercentage = parseFloat(e.target.value) || 0
+                                    setEditResourceForm(prev => ({ ...prev, multiplier: 1 + (bonusPercentage / 100) }))
                                   }}
-                                  placeholder="100"
+                                  placeholder="0"
                                   className="flex-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                 />
-                                <span className="text-xs text-gray-500 dark:text-gray-400">% = {editResourceForm.multiplier.toFixed(1)}x</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">%</span>
                               </div>
                               <div className="flex gap-1">
                                 <button
@@ -1961,7 +1961,7 @@ export function ResourceTable({ userId }: ResourceTableProps) {
                           (resource.multiplier || 1.0) >= 1.0 ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200' :
                           'bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200'
                         }`}>
-                          {resource.multiplier === 0 ? '0x' : (resource.multiplier || 1.0).toFixed(1) + 'x'}
+                          {resource.multiplier === 0 ? '-100%' : Math.round(((resource.multiplier || 1.0) - 1) * 100) + '%'}
                         </span>
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap">
@@ -2069,16 +2069,16 @@ export function ResourceTable({ userId }: ResourceTableProps) {
                                 <input
                                   type="number"
                                   step="10"
-                                  min="0"
-                                  value={Math.round(editResourceForm.multiplier * 100)}
+                                  min="-90"
+                                  value={Math.round((editResourceForm.multiplier - 1) * 100)}
                                   onChange={(e) => {
-                                    const percentage = parseFloat(e.target.value) || 100
-                                    setEditResourceForm(prev => ({ ...prev, multiplier: percentage / 100 }))
+                                    const bonusPercentage = parseFloat(e.target.value) || 0
+                                    setEditResourceForm(prev => ({ ...prev, multiplier: 1 + (bonusPercentage / 100) }))
                                   }}
-                                  placeholder="100"
+                                  placeholder="0"
                                   className="flex-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                 />
-                                <span className="text-xs text-gray-500 dark:text-gray-400">% = {editResourceForm.multiplier.toFixed(1)}x</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">%</span>
                               </div>
                               <div className="flex gap-1">
                                 <button
