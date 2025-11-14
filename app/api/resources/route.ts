@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, resources, resourceHistory, websiteChanges } from '@/lib/db'
-import { eq } from 'drizzle-orm'
+import { eq, count } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
 // Force dynamic rendering - API routes should never be statically generated
@@ -39,31 +39,33 @@ export async function GET(request: NextRequest) {
     const validatedLimit = Math.min(Math.max(1, limit), 100) // Max 100 per page
     const offset = (validatedPage - 1) * validatedLimit
     
-    // Build query with guild filter if provided
-    const baseQuery = guildId 
-      ? db.select().from(resources).where(eq(resources.guildId, guildId))
-      : db.select().from(resources)
+    // Build base query with guild filter if provided
+    const whereClause = guildId ? eq(resources.guildId, guildId) : undefined
+    
+    // Get total count using SQL COUNT - much faster than fetching all rows
+    const countResult = await db
+      .select({ count: count() })
+      .from(resources)
+      .where(whereClause)
+    
+    const totalCount = countResult[0]?.count || 0
+    const totalPages = Math.ceil(totalCount / validatedLimit)
     
     // Get paginated results
-    const paginatedResources = await baseQuery.limit(validatedLimit).offset(offset)
-    
-    // For now, estimate total from first page or use a simple heuristic
-    // If we got less than limit, we're on the last page
-    const isPartialPage = paginatedResources.length < validatedLimit
-    const estimatedTotal = isPartialPage 
-      ? offset + paginatedResources.length 
-      : (validatedPage + 1) * validatedLimit // Estimate there's at least one more page
-    
-    const totalPages = Math.ceil(estimatedTotal / validatedLimit)
+    const queryBuilder = db.select().from(resources)
+    const paginatedResources = await (whereClause 
+      ? queryBuilder.where(whereClause).limit(validatedLimit).offset(offset)
+      : queryBuilder.limit(validatedLimit).offset(offset)
+    )
     
     return NextResponse.json({
       resources: paginatedResources,
       pagination: {
         page: validatedPage,
         limit: validatedLimit,
-        totalCount: estimatedTotal,
+        totalCount,
         totalPages,
-        hasNextPage: !isPartialPage,
+        hasNextPage: validatedPage < totalPages,
         hasPreviousPage: validatedPage > 1
       }
     }, {
