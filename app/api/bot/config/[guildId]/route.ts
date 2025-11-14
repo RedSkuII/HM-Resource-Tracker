@@ -232,7 +232,15 @@ export async function PUT(
         updatedAt: now
       }
 
-      await db.insert(botConfigurations).values(newConfig)
+      console.log('[BOT-CONFIG] Creating new config:', newConfig)
+
+      try {
+        await db.insert(botConfigurations).values(newConfig)
+        console.log('[BOT-CONFIG] Config created successfully')
+      } catch (dbError) {
+        console.error('[BOT-CONFIG] Database insert error:', dbError)
+        throw new Error(`Database insert failed: ${dbError instanceof Error ? dbError.message : String(dbError)}`)
+      }
 
       // TODO: Log configuration change to bot_activity_logs
       
@@ -267,10 +275,18 @@ export async function PUT(
       if (websiteBonusPercentage !== undefined) updateData.websiteBonusPercentage = websiteBonusPercentage
       if (allowPublicOrders !== undefined) updateData.allowPublicOrders = allowPublicOrders
 
-      await db
-        .update(botConfigurations)
-        .set(updateData)
-        .where(eq(botConfigurations.guildId, guildId))
+      console.log('[BOT-CONFIG] Updating config with data:', updateData)
+
+      try {
+        await db
+          .update(botConfigurations)
+          .set(updateData)
+          .where(eq(botConfigurations.guildId, guildId))
+        console.log('[BOT-CONFIG] Config updated successfully')
+      } catch (dbError) {
+        console.error('[BOT-CONFIG] Database update error:', dbError)
+        throw new Error(`Database update failed: ${dbError instanceof Error ? dbError.message : String(dbError)}`)
+      }
 
       // Fetch updated config
       const updatedConfigs = await db
