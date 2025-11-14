@@ -5,7 +5,6 @@ import { hasResourceAccess } from './lib/discord-roles'
 const protectedRoutes = [
   '/dashboard',
   '/resources',
-  '/api/resources',
   '/api/user',
 ]
 
