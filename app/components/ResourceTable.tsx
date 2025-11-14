@@ -196,6 +196,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
   const [editedTargets, setEditedTargets] = useState<Map<string, number>>(new Map())
   const [statusChanges, setStatusChanges] = useState<Map<string, { oldStatus: string, newStatus: string, timestamp: number }>>(new Map())
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [updateModes, setUpdateModes] = useState<Map<string, 'absolute' | 'relative'>>(new Map())
   const [relativeValues, setRelativeValues] = useState<Map<string, number>>(new Map())
@@ -397,6 +398,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
     try {
       console.log('[ResourceTable] Fetching resources for guild:', guildId)
       setLoading(true)
+      setError(null)
       const timestamp = Date.now()
       const guildParam = guildId ? `&guildId=${guildId}` : ''
       const url = `/api/resources?t=${timestamp}${guildParam}`
@@ -420,10 +422,13 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
           createdAt: new Date(resource.createdAt).toISOString(),
         })))
       } else {
-        console.error('[ResourceTable] Failed to fetch resources:', response.status, response.statusText)
+        const errorText = await response.text()
+        console.error('[ResourceTable] Failed to fetch resources:', response.status, errorText)
+        setError(`Failed to load resources: ${response.status} ${response.statusText}`)
       }
     } catch (error) {
       console.error('[ResourceTable] Error fetching resources:', error)
+      setError(`Error loading resources: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       console.log('[ResourceTable] Setting loading to false')
       setLoading(false)
@@ -958,6 +963,24 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       <div className="p-8 text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
         <p className="mt-2 text-gray-600 dark:text-gray-400">Loading resources...</p>
+        <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">Guild ID: {guildId}</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 text-center">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">Error Loading Resources</h3>
+          <p className="text-red-600 dark:text-red-300">{error}</p>
+          <button
+            onClick={() => fetchResources()}
+            className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     )
   }
