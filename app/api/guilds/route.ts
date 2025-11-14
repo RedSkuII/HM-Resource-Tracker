@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, guilds } from '@/lib/db'
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 export async function GET(request: NextRequest) {
   try {
     // Fetch all in-game guilds (public endpoint - no auth required)

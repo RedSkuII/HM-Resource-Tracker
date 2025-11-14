@@ -4,6 +4,10 @@ import { drizzle } from 'drizzle-orm/libsql'
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core'
 import { eq } from 'drizzle-orm'
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 // Minimal schema definition
 const resources = sqliteTable('resources', {
   id: text('id').primaryKey(),

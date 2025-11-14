@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db, resources } from '@/lib/db'
 import { eq } from 'drizzle-orm'
 
+// Force dynamic rendering - don't try to statically generate this route
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 export async function GET(request: NextRequest) {
   try {
     const startTime = Date.now()

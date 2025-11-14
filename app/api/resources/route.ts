@@ -3,6 +3,10 @@ import { db, resources, resourceHistory, websiteChanges } from '@/lib/db'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
+// Force dynamic rendering - API routes should never be statically generated
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 // Lazy imports for auth-related functionality to avoid blocking GET requests
 const getAuthDependencies = async () => {
   const { getServerSession } = await import('next-auth')
