@@ -46,7 +46,14 @@ export async function GET(request: NextRequest) {
     const queryTime = Date.now() - startTime
     console.log(`[API /api/resources] Query completed in ${queryTime}ms, found ${allResources.length} resources`)
     
-    return NextResponse.json(allResources, {
+    // Convert Date objects to ISO strings to avoid serialization issues
+    const serializedResources = allResources.map(r => ({
+      ...r,
+      createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : null,
+      updatedAt: r.updatedAt ? new Date(r.updatedAt).toISOString() : null,
+    }))
+    
+    return NextResponse.json(serializedResources, {
       headers: {
         'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
         'Pragma': 'no-cache',
