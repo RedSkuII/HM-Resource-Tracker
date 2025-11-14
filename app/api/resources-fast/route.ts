@@ -57,9 +57,7 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(serializedResources, {
       headers: {
-        'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
+        'Cache-Control': 'no-store, no-cache, max-age=0',
       }
     })
   } catch (error) {

@@ -55,9 +55,7 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(serializedResources, {
       headers: {
-        'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
+        'Cache-Control': 'no-store, no-cache, max-age=0',
       }
     })
   } catch (error) {
@@ -122,9 +120,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(newResource, {
       headers: {
-        'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
+        'Cache-Control': 'no-store, no-cache, max-age=0',
       }
     })
   } catch (error) {
@@ -172,9 +168,7 @@ export async function PUT(request: NextRequest) {
 
       return NextResponse.json(updatedResource[0], {
         headers: {
-          'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
+          'Cache-Control': 'no-store, no-cache, max-age=0',
         }
       })
     }
@@ -284,12 +278,10 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({
       resources: updatedResources,
       totalPointsEarned,
-      pointsBreakdown: pointsResults.filter(result => result !== null)
+      pointsBreakdown: pointsResults.filter((result: any) => result !== null)
     }, {
       headers: {
-        'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
+        'Cache-Control': 'no-store, no-cache, max-age=0',
       }
     })
   } catch (error) {
