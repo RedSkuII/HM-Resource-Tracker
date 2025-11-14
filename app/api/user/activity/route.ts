@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     const days = parseInt(searchParams.get('days') || '30')
     const isGlobal = searchParams.get('global') === 'true'
     const limit = parseInt(searchParams.get('limit') || '500')
+    const guildId = searchParams.get('guildId')
     const userId = getUserIdentifier(session)
 
     // For backward compatibility, also check for old user identifiers
@@ -50,16 +51,21 @@ export async function GET(request: NextRequest) {
       .from(resourceHistory)
       .innerJoin(resources, eq(resourceHistory.resourceId, resources.id))
       .where(
-        isGlobal 
-          ? gte(resourceHistory.createdAt, daysAgo)
-          : and(
-              // Check current nickname AND old identifiers for backward compatibility
-              or(
-                eq(resourceHistory.updatedBy, userId),
-                ...oldUserIds.map(id => eq(resourceHistory.updatedBy, id as string))
-              ),
-              gte(resourceHistory.createdAt, daysAgo)
-            )
+        and(
+          // Guild filter if provided
+          guildId ? eq(resources.guildId, guildId) : undefined,
+          // Global vs user-specific filter
+          isGlobal 
+            ? gte(resourceHistory.createdAt, daysAgo)
+            : and(
+                // Check current nickname AND old identifiers for backward compatibility
+                or(
+                  eq(resourceHistory.updatedBy, userId),
+                  ...oldUserIds.map(id => eq(resourceHistory.updatedBy, id as string))
+                ),
+                gte(resourceHistory.createdAt, daysAgo)
+              )
+        )
       )
       .orderBy(desc(resourceHistory.createdAt))
       .limit(limit)

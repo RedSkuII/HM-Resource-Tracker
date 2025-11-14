@@ -323,7 +323,8 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
   const fetchRecentActivity = async () => {
     try {
       setActivityLoading(true)
-      const response = await fetch('/api/user/activity?global=true&limit=50', {
+      const guildParam = guildId ? `&guildId=${guildId}` : ''
+      const response = await fetch(`/api/user/activity?global=true&limit=50${guildParam}`, {
         headers: {
           'Cache-Control': 'no-cache',
         },
