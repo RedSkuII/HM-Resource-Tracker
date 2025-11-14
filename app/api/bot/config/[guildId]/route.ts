@@ -141,6 +141,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { guildId: string } }
 ) {
+  let body: any
   try {
     const session = await getServerSession(authOptions)
     
@@ -154,7 +155,7 @@ export async function PUT(
     }
 
     const { guildId } = params
-    const body = await request.json()
+    body = await request.json()
 
     // Validate required fields
     const {
@@ -253,9 +254,14 @@ export async function PUT(
     }
 
   } catch (error) {
-    console.error('Error updating bot configuration:', error)
+    console.error('[BOT-CONFIG] Error updating bot configuration:', error)
+    console.error('[BOT-CONFIG] Error details:', error instanceof Error ? error.message : String(error))
+    console.error('[BOT-CONFIG] Request body:', body)
     return NextResponse.json(
-      { error: 'Failed to update bot configuration' },
+      { 
+        error: 'Failed to update bot configuration',
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     )
   }
