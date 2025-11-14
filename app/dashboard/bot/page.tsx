@@ -102,26 +102,37 @@ export default function BotDashboardPage() {
     }
   }, [status])
 
-  // Fetch in-game guilds
+  // Fetch in-game guilds when Discord server is selected
   useEffect(() => {
     const fetchInGameGuilds = async () => {
+      if (!selectedDiscordServerId) {
+        setInGameGuilds([])
+        return
+      }
+
       try {
-        const response = await fetch('/api/guilds')
+        const response = await fetch(`/api/guilds?discordServerId=${selectedDiscordServerId}`)
         if (!response.ok) {
           throw new Error('Failed to fetch in-game guilds')
         }
         
         const data = await response.json()
         setInGameGuilds(data)
+        
+        // Reset in-game guild selection if current selection is not in the new list
+        if (config?.inGameGuildId && !data.find((g: InGameGuild) => g.id === config.inGameGuildId)) {
+          setConfig(config ? { ...config, inGameGuildId: null } : null)
+        }
       } catch (err) {
         console.error('[BOT-DASHBOARD] Fetch in-game guilds error:', err)
+        setInGameGuilds([])
       }
     }
 
-    if (status === 'authenticated') {
+    if (selectedDiscordServerId) {
       fetchInGameGuilds()
     }
-  }, [status])
+  }, [selectedDiscordServerId])
 
   // Fetch config when Discord server is selected
   useEffect(() => {

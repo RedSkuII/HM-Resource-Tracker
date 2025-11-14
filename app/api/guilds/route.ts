@@ -7,15 +7,25 @@ export const runtime = 'nodejs'
 
 export async function GET(request: NextRequest) {
   try {
-    // Fetch all in-game guilds (public endpoint - no auth required)
-    const allGuilds = await db.select().from(guilds).all()
+    const { searchParams } = new URL(request.url)
+    const discordServerId = searchParams.get('discordServerId')
+    
+    // Fetch in-game guilds, optionally filtered by Discord server ID
+    let allGuilds
+    if (discordServerId) {
+      const { eq } = await import('drizzle-orm')
+      allGuilds = await db.select().from(guilds).where(eq(guilds.discordGuildId, discordServerId)).all()
+    } else {
+      allGuilds = await db.select().from(guilds).all()
+    }
 
     return NextResponse.json(
       allGuilds.map(g => ({
         id: g.id,
         title: g.title,
         maxMembers: g.maxMembers,
-        leaderId: g.leaderId
+        leaderId: g.leaderId,
+        discordGuildId: g.discordGuildId
       })),
       {
         headers: {
