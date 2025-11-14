@@ -133,8 +133,9 @@ export const websiteChanges = sqliteTable('website_changes', {
 // Bot dashboard configuration
 export const botConfigurations = sqliteTable('bot_configurations', {
   id: text('id').primaryKey(),
-  guildId: text('guild_id').notNull().unique(),
-  guildName: text('guild_name'),
+  guildId: text('guild_id').notNull().unique(), // Discord server ID
+  guildName: text('guild_name'), // Legacy field (optional)
+  inGameGuildId: text('in_game_guild_id'), // References guilds.id (house-melange, whitelist-second-guild, etc.)
   botChannelId: text('bot_channel_id'), // Channel where bot posts notifications
   orderChannelId: text('order_channel_id'), // Channel where orders are created
   adminRoleId: text('admin_role_id'), // Role that can access bot dashboard

@@ -1,0 +1,1 @@
+ALTER TABLE bot_configurations ADD `in_game_guild_id` text;

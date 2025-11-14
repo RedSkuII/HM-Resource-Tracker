@@ -71,6 +71,7 @@ export async function GET(
       return NextResponse.json({
         guildId,
         guildName: fetchedGuildName,
+        inGameGuildId: null,
         botChannelId: null,
         orderChannelId: null,
         adminRoleId: null,
@@ -108,6 +109,7 @@ export async function GET(
       id: config.id,
       guildId: config.guildId,
       guildName: guildName,
+      inGameGuildId: config.inGameGuildId,
       botChannelId: config.botChannelId,
       orderChannelId: config.orderChannelId,
       adminRoleId: config.adminRoleId,
@@ -157,6 +159,7 @@ export async function PUT(
     // Validate required fields
     const {
       guildName,
+      inGameGuildId,
       botChannelId,
       orderChannelId,
       adminRoleId,
@@ -182,6 +185,7 @@ export async function PUT(
         id: nanoid(),
         guildId,
         guildName: guildName || null,
+        inGameGuildId: inGameGuildId || null,
         botChannelId: botChannelId || null,
         orderChannelId: orderChannelId || null,
         adminRoleId: adminRoleId || null,
@@ -214,6 +218,7 @@ export async function PUT(
       }
 
       if (guildName !== undefined) updateData.guildName = guildName || null
+      if (inGameGuildId !== undefined) updateData.inGameGuildId = inGameGuildId || null
       if (botChannelId !== undefined) updateData.botChannelId = botChannelId || null
       if (orderChannelId !== undefined) updateData.orderChannelId = orderChannelId || null
       if (adminRoleId !== undefined) updateData.adminRoleId = adminRoleId || null

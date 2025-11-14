@@ -5,16 +5,23 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { BotStatsCards } from '@/app/components/BotStatsCards'
 
-interface Guild {
+interface DiscordServer {
   id: string
   name: string
-  hasConfiguration: boolean
-  lastUpdated?: Date
+  icon: string | null
+  isOwner: boolean
+}
+
+interface InGameGuild {
+  id: string
+  title: string
+  maxMembers: number
+  leaderId: string | null
 }
 
 interface BotConfig {
   guildId: string
-  guildName: string | null
+  inGameGuildId: string | null
   botChannelId: string | null
   orderChannelId: string | null
   adminRoleId: string | null
@@ -47,8 +54,14 @@ interface DiscordGuildData {
 export default function BotDashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [guilds, setGuilds] = useState<Guild[]>([])
-  const [selectedGuildId, setSelectedGuildId] = useState<string | null>(null)
+  
+  // Discord servers (where user is owner/admin)
+  const [discordServers, setDiscordServers] = useState<DiscordServer[]>([])
+  const [selectedDiscordServerId, setSelectedDiscordServerId] = useState<string | null>(null)
+  
+  // In-game guilds (House Melange, Whitelist, etc.)
+  const [inGameGuilds, setInGameGuilds] = useState<InGameGuild[]>([])
+  
   const [config, setConfig] = useState<BotConfig | null>(null)
   const [discordData, setDiscordData] = useState<DiscordGuildData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -60,49 +73,63 @@ export default function BotDashboardPage() {
     if (status === 'unauthenticated') {
       router.push('/')
     }
-    // Add permission check for hasBotAdminAccess when available
   }, [status, router])
 
-  // Fetch guilds
+  // Fetch user's Discord servers (where they are owner/admin)
   useEffect(() => {
-    const fetchGuilds = async () => {
+    const fetchDiscordServers = async () => {
       try {
-        console.log('[BOT-DASHBOARD] Fetching guilds...')
-        const response = await fetch('/api/bot/guilds')
-        console.log('[BOT-DASHBOARD] Response status:', response.status)
-        
+        const response = await fetch('/api/discord/user-servers')
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
-          console.error('[BOT-DASHBOARD] Error response:', errorData)
-          throw new Error(errorData.error || 'Failed to fetch guilds')
+          throw new Error('Failed to fetch Discord servers')
         }
         
         const data = await response.json()
-        console.log('[BOT-DASHBOARD] Guilds data:', data)
-        setGuilds(data.guilds)
-        if (data.guilds.length > 0) {
-          setSelectedGuildId(data.guilds[0].id)
+        setDiscordServers(data.servers)
+        if (data.servers.length > 0) {
+          setSelectedDiscordServerId(data.servers[0].id)
         }
       } catch (err) {
-        console.error('[BOT-DASHBOARD] Fetch error:', err)
-        setError(err instanceof Error ? err.message : 'Failed to load guilds')
+        console.error('[BOT-DASHBOARD] Fetch Discord servers error:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load Discord servers')
       } finally {
         setLoading(false)
       }
     }
 
     if (status === 'authenticated') {
-      fetchGuilds()
+      fetchDiscordServers()
     }
   }, [status])
 
-  // Fetch config when guild is selected
+  // Fetch in-game guilds
+  useEffect(() => {
+    const fetchInGameGuilds = async () => {
+      try {
+        const response = await fetch('/api/guilds')
+        if (!response.ok) {
+          throw new Error('Failed to fetch in-game guilds')
+        }
+        
+        const data = await response.json()
+        setInGameGuilds(data)
+      } catch (err) {
+        console.error('[BOT-DASHBOARD] Fetch in-game guilds error:', err)
+      }
+    }
+
+    if (status === 'authenticated') {
+      fetchInGameGuilds()
+    }
+  }, [status])
+
+  // Fetch config when Discord server is selected
   useEffect(() => {
     const fetchConfig = async () => {
-      if (!selectedGuildId) return
+      if (!selectedDiscordServerId) return
 
       try {
-        const response = await fetch(`/api/bot/config/${selectedGuildId}`)
+        const response = await fetch(`/api/bot/config/${selectedDiscordServerId}`)
         if (!response.ok) throw new Error('Failed to fetch configuration')
         const data = await response.json()
         setConfig(data)
@@ -111,18 +138,18 @@ export default function BotDashboardPage() {
       }
     }
 
-    if (selectedGuildId) {
+    if (selectedDiscordServerId) {
       fetchConfig()
     }
-  }, [selectedGuildId])
+  }, [selectedDiscordServerId])
 
-  // Fetch Discord channels and roles when guild is selected
+  // Fetch Discord channels and roles when server is selected
   useEffect(() => {
     const fetchDiscordData = async () => {
-      if (!selectedGuildId) return
+      if (!selectedDiscordServerId) return
 
       try {
-        const response = await fetch(`/api/discord/guild/${selectedGuildId}`)
+        const response = await fetch(`/api/discord/guild/${selectedDiscordServerId}`)
         if (!response.ok) throw new Error('Failed to fetch Discord data')
         const data = await response.json()
         setDiscordData(data)
@@ -132,19 +159,19 @@ export default function BotDashboardPage() {
       }
     }
 
-    if (selectedGuildId) {
+    if (selectedDiscordServerId) {
       fetchDiscordData()
     }
-  }, [selectedGuildId])
+  }, [selectedDiscordServerId])
 
   const handleSaveConfig = async () => {
-    if (!config || !selectedGuildId) return
+    if (!config || !selectedDiscordServerId) return
 
     setSaving(true)
     setError(null)
 
     try {
-      const response = await fetch(`/api/bot/config/${selectedGuildId}`, {
+      const response = await fetch(`/api/bot/config/${selectedDiscordServerId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config)
@@ -247,28 +274,53 @@ export default function BotDashboardPage() {
           </div>
         )}
 
-        {/* Guild Selector */}
-        {guilds.length > 0 ? (
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Select Server
-            </label>
-            <select
-              value={selectedGuildId || ''}
-              onChange={(e) => setSelectedGuildId(e.target.value)}
-              className="w-full max-w-md px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-            >
-              {guilds.map((guild) => (
-                <option key={guild.id} value={guild.id}>
-                  {guild.name} {guild.hasConfiguration ? '✓' : ''}
-                </option>
-              ))}
-            </select>
+        {/* Server Selectors */}
+        {discordServers.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Discord Server Selector */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Discord Server
+                <span className="text-gray-500 text-xs ml-2">(Your server to configure)</span>
+              </label>
+              <select
+                value={selectedDiscordServerId || ''}
+                onChange={(e) => setSelectedDiscordServerId(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+              >
+                {discordServers.map((server) => (
+                  <option key={server.id} value={server.id}>
+                    {server.name} {server.isOwner && '👑'}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* In-Game Guild Selector */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                In-Game Guild
+                <span className="text-gray-500 text-xs ml-2">(Which guild to track)</span>
+              </label>
+              <select
+                value={config?.inGameGuildId || ''}
+                onChange={(e) => setConfig(config ? { ...config, inGameGuildId: e.target.value || null } : null)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                disabled={!config}
+              >
+                <option value="">Select a guild...</option>
+                {inGameGuilds.map((guild) => (
+                  <option key={guild.id} value={guild.id}>
+                    {guild.title}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         ) : (
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 text-center">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 text-center mb-6">
             <p className="text-yellow-800 dark:text-yellow-200">
-              No configured servers found. Add the bot to your Discord server and run the setup command.
+              You don't have administrator access to any Discord servers. You need to be a server owner or have administrator permissions.
             </p>
           </div>
         )}
@@ -281,20 +333,6 @@ export default function BotDashboardPage() {
             </h2>
 
             <div className="space-y-4">
-              {/* Guild Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Server Name
-                </label>
-                <input
-                  type="text"
-                  value={config.guildName || ''}
-                  onChange={(e) => setConfig({ ...config, guildName: e.target.value })}
-                  placeholder="Enter server name"
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-
               {/* Bot Channel ID */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -473,12 +511,12 @@ export default function BotDashboardPage() {
         )}
 
         {/* Statistics Cards */}
-        {selectedGuildId && (
-          <BotStatsCards guildId={selectedGuildId} />
+        {selectedDiscordServerId && (
+          <BotStatsCards guildId={selectedDiscordServerId} />
         )}
 
         {/* Placeholder for Activity Logs */}
-        {selectedGuildId && (
+        {selectedDiscordServerId && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               Activity Log
