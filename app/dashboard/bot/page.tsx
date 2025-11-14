@@ -22,9 +22,9 @@ interface InGameGuild {
 interface BotConfig {
   guildId: string
   inGameGuildId: string | null
-  botChannelId: string | null
-  orderChannelId: string | null
-  adminRoleId: string | null
+  botChannelId: string[]
+  orderChannelId: string[]
+  adminRoleId: string[]
   autoUpdateEmbeds: boolean
   notifyOnWebsiteChanges: boolean
   orderFulfillmentBonus: number
@@ -438,16 +438,19 @@ export default function BotDashboardPage() {
               {/* Bot Channel ID */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Bot Channel
-                  <span className="text-gray-500 text-xs ml-2">(Where bot posts notifications)</span>
+                  Bot Channels
+                  <span className="text-gray-500 text-xs ml-2">(Where bot posts notifications - hold Ctrl/Cmd to select multiple)</span>
                 </label>
                 {discordData && discordData.channels.length > 0 ? (
                   <select
-                    value={config.botChannelId || ''}
-                    onChange={(e) => setConfig({ ...config, botChannelId: e.target.value || null })}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    multiple
+                    value={config.botChannelId || []}
+                    onChange={(e) => {
+                      const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
+                      setConfig({ ...config, botChannelId: selectedOptions })
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 min-h-[120px]"
                   >
-                    <option value="">Select a channel...</option>
                     {discordData.channels.map((channel) => (
                       <option key={channel.id} value={channel.id}>
                         #{channel.name}
@@ -457,6 +460,24 @@ export default function BotDashboardPage() {
                 ) : (
                   <div className="text-sm text-gray-500 dark:text-gray-400 italic">
                     Loading channels...
+                  </div>
+                )}
+                {config.botChannelId && config.botChannelId.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {config.botChannelId.map(channelId => {
+                      const channel = discordData?.channels.find(c => c.id === channelId)
+                      return channel ? (
+                        <span key={channelId} className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs rounded">
+                          #{channel.name}
+                          <button
+                            onClick={() => setConfig({ ...config, botChannelId: config.botChannelId.filter(id => id !== channelId) })}
+                            className="ml-1 hover:text-blue-600 dark:hover:text-blue-200"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ) : null
+                    })}
                   </div>
                 )}
               </div>
@@ -464,16 +485,19 @@ export default function BotDashboardPage() {
               {/* Order Channel ID */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Order Channel
-                  <span className="text-gray-500 text-xs ml-2">(Where orders are created)</span>
+                  Order Channels
+                  <span className="text-gray-500 text-xs ml-2">(Where orders are created - hold Ctrl/Cmd to select multiple)</span>
                 </label>
                 {discordData && discordData.channels.length > 0 ? (
                   <select
-                    value={config.orderChannelId || ''}
-                    onChange={(e) => setConfig({ ...config, orderChannelId: e.target.value || null })}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    multiple
+                    value={config.orderChannelId || []}
+                    onChange={(e) => {
+                      const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
+                      setConfig({ ...config, orderChannelId: selectedOptions })
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 min-h-[120px]"
                   >
-                    <option value="">Select a channel...</option>
                     {discordData.channels.map((channel) => (
                       <option key={channel.id} value={channel.id}>
                         #{channel.name}
@@ -485,21 +509,42 @@ export default function BotDashboardPage() {
                     Loading channels...
                   </div>
                 )}
+                {config.orderChannelId && config.orderChannelId.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {config.orderChannelId.map(channelId => {
+                      const channel = discordData?.channels.find(c => c.id === channelId)
+                      return channel ? (
+                        <span key={channelId} className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs rounded">
+                          #{channel.name}
+                          <button
+                            onClick={() => setConfig({ ...config, orderChannelId: config.orderChannelId.filter(id => id !== channelId) })}
+                            className="ml-1 hover:text-green-600 dark:hover:text-green-200"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ) : null
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Admin Role ID */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Admin Role
-                  <span className="text-gray-500 text-xs ml-2">(Role that can access this dashboard)</span>
+                  Admin Roles
+                  <span className="text-gray-500 text-xs ml-2">(Roles that can access this dashboard - hold Ctrl/Cmd to select multiple)</span>
                 </label>
                 {discordData && discordData.roles.length > 0 ? (
                   <select
-                    value={config.adminRoleId || ''}
-                    onChange={(e) => setConfig({ ...config, adminRoleId: e.target.value || null })}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    multiple
+                    value={config.adminRoleId || []}
+                    onChange={(e) => {
+                      const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
+                      setConfig({ ...config, adminRoleId: selectedOptions })
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 min-h-[120px]"
                   >
-                    <option value="">Select a role...</option>
                     {discordData.roles.map((role) => (
                       <option key={role.id} value={role.id}>
                         {role.name}
@@ -509,6 +554,24 @@ export default function BotDashboardPage() {
                 ) : (
                   <div className="text-sm text-gray-500 dark:text-gray-400 italic">
                     Loading roles...
+                  </div>
+                )}
+                {config.adminRoleId && config.adminRoleId.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {config.adminRoleId.map(roleId => {
+                      const role = discordData?.roles.find(r => r.id === roleId)
+                      return role ? (
+                        <span key={roleId} className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-xs rounded">
+                          {role.name}
+                          <button
+                            onClick={() => setConfig({ ...config, adminRoleId: config.adminRoleId.filter(id => id !== roleId) })}
+                            className="ml-1 hover:text-purple-600 dark:hover:text-purple-200"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ) : null
+                    })}
                   </div>
                 )}
               </div>

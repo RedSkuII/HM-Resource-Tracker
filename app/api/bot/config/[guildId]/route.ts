@@ -72,9 +72,9 @@ export async function GET(
         guildId,
         guildName: fetchedGuildName,
         inGameGuildId: null,
-        botChannelId: null,
-        orderChannelId: null,
-        adminRoleId: null,
+        botChannelId: [],
+        orderChannelId: [],
+        adminRoleId: [],
         autoUpdateEmbeds: true,
         notifyOnWebsiteChanges: true,
         orderFulfillmentBonus: 50,
@@ -105,14 +105,45 @@ export async function GET(
       }
     }
 
+    // Parse JSON arrays for multi-select fields
+    const parseBotChannelId = () => {
+      if (!config.botChannelId) return []
+      try {
+        return JSON.parse(config.botChannelId)
+      } catch {
+        // Legacy single value support
+        return [config.botChannelId]
+      }
+    }
+
+    const parseOrderChannelId = () => {
+      if (!config.orderChannelId) return []
+      try {
+        return JSON.parse(config.orderChannelId)
+      } catch {
+        // Legacy single value support
+        return [config.orderChannelId]
+      }
+    }
+
+    const parseAdminRoleId = () => {
+      if (!config.adminRoleId) return []
+      try {
+        return JSON.parse(config.adminRoleId)
+      } catch {
+        // Legacy single value support
+        return [config.adminRoleId]
+      }
+    }
+
     return NextResponse.json({
       id: config.id,
       guildId: config.guildId,
       guildName: guildName,
       inGameGuildId: config.inGameGuildId,
-      botChannelId: config.botChannelId,
-      orderChannelId: config.orderChannelId,
-      adminRoleId: config.adminRoleId,
+      botChannelId: parseBotChannelId(),
+      orderChannelId: parseOrderChannelId(),
+      adminRoleId: parseAdminRoleId(),
       autoUpdateEmbeds: config.autoUpdateEmbeds,
       notifyOnWebsiteChanges: config.notifyOnWebsiteChanges,
       orderFulfillmentBonus: config.orderFulfillmentBonus,
@@ -187,9 +218,9 @@ export async function PUT(
         guildId,
         guildName: guildName || null,
         inGameGuildId: inGameGuildId || null,
-        botChannelId: botChannelId || null,
-        orderChannelId: orderChannelId || null,
-        adminRoleId: adminRoleId || null,
+        botChannelId: botChannelId ? JSON.stringify(botChannelId) : null,
+        orderChannelId: orderChannelId ? JSON.stringify(orderChannelId) : null,
+        adminRoleId: adminRoleId ? JSON.stringify(adminRoleId) : null,
         autoUpdateEmbeds: autoUpdateEmbeds ?? true,
         notifyOnWebsiteChanges: notifyOnWebsiteChanges ?? true,
         orderFulfillmentBonus: orderFulfillmentBonus ?? 50,
@@ -205,7 +236,12 @@ export async function PUT(
       
       return NextResponse.json({
         message: 'Bot configuration created successfully',
-        config: newConfig
+        config: {
+          ...newConfig,
+          botChannelId: botChannelId || [],
+          orderChannelId: orderChannelId || [],
+          adminRoleId: adminRoleId || []
+        }
       }, {
         status: 201,
         headers: {
@@ -220,9 +256,9 @@ export async function PUT(
 
       if (guildName !== undefined) updateData.guildName = guildName || null
       if (inGameGuildId !== undefined) updateData.inGameGuildId = inGameGuildId || null
-      if (botChannelId !== undefined) updateData.botChannelId = botChannelId || null
-      if (orderChannelId !== undefined) updateData.orderChannelId = orderChannelId || null
-      if (adminRoleId !== undefined) updateData.adminRoleId = adminRoleId || null
+      if (botChannelId !== undefined) updateData.botChannelId = botChannelId ? JSON.stringify(botChannelId) : null
+      if (orderChannelId !== undefined) updateData.orderChannelId = orderChannelId ? JSON.stringify(orderChannelId) : null
+      if (adminRoleId !== undefined) updateData.adminRoleId = adminRoleId ? JSON.stringify(adminRoleId) : null
       if (autoUpdateEmbeds !== undefined) updateData.autoUpdateEmbeds = autoUpdateEmbeds
       if (notifyOnWebsiteChanges !== undefined) updateData.notifyOnWebsiteChanges = notifyOnWebsiteChanges
       if (orderFulfillmentBonus !== undefined) updateData.orderFulfillmentBonus = orderFulfillmentBonus
@@ -241,11 +277,46 @@ export async function PUT(
         .where(eq(botConfigurations.guildId, guildId))
         .limit(1)
 
+      const updatedConfig = updatedConfigs[0]
+
+      // Parse arrays for response
+      const parseBotChannelId = () => {
+        if (!updatedConfig.botChannelId) return []
+        try {
+          return JSON.parse(updatedConfig.botChannelId)
+        } catch {
+          return [updatedConfig.botChannelId]
+        }
+      }
+
+      const parseOrderChannelId = () => {
+        if (!updatedConfig.orderChannelId) return []
+        try {
+          return JSON.parse(updatedConfig.orderChannelId)
+        } catch {
+          return [updatedConfig.orderChannelId]
+        }
+      }
+
+      const parseAdminRoleId = () => {
+        if (!updatedConfig.adminRoleId) return []
+        try {
+          return JSON.parse(updatedConfig.adminRoleId)
+        } catch {
+          return [updatedConfig.adminRoleId]
+        }
+      }
+
       // TODO: Log configuration change to bot_activity_logs
 
       return NextResponse.json({
         message: 'Bot configuration updated successfully',
-        config: updatedConfigs[0]
+        config: {
+          ...updatedConfig,
+          botChannelId: parseBotChannelId(),
+          orderChannelId: parseOrderChannelId(),
+          adminRoleId: parseAdminRoleId()
+        }
       }, {
         headers: {
           'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',

@@ -136,9 +136,9 @@ export const botConfigurations = sqliteTable('bot_configurations', {
   guildId: text('guild_id').notNull().unique(), // Discord server ID
   guildName: text('guild_name'), // Legacy field (optional)
   inGameGuildId: text('in_game_guild_id'), // References guilds.id (house-melange, whitelist-second-guild, etc.)
-  botChannelId: text('bot_channel_id'), // Channel where bot posts notifications
-  orderChannelId: text('order_channel_id'), // Channel where orders are created
-  adminRoleId: text('admin_role_id'), // Role that can access bot dashboard
+  botChannelId: text('bot_channel_id'), // JSON array of channel IDs where bot posts notifications
+  orderChannelId: text('order_channel_id'), // JSON array of channel IDs where orders are created
+  adminRoleId: text('admin_role_id'), // JSON array of role IDs that can access bot dashboard
   autoUpdateEmbeds: integer('auto_update_embeds', { mode: 'boolean' }).notNull().default(true),
   notifyOnWebsiteChanges: integer('notify_on_website_changes', { mode: 'boolean' }).notNull().default(true),
   orderFulfillmentBonus: integer('order_fulfillment_bonus').notNull().default(50), // Bonus % for Discord order fills (50% = 1.5x)
