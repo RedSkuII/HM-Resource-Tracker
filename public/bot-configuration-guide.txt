@@ -1,0 +1,142 @@
+====================================================================
+DISCORD BOT CONFIGURATION GUIDE
+Resource Tracker - Bot Dashboard Documentation
+====================================================================
+
+QUICK TIP
+---------
+Hold Ctrl (Windows/Linux) or Cmd (Mac) to select multiple channels 
+or roles in the dropdowns below.
+
+====================================================================
+SERVER SELECTION & SORTING
+====================================================================
+
+Discord servers are automatically sorted in the following order:
+
+1. Servers with bot installed (marked with ✅) appear first
+2. Then alphabetically by server name
+3. Servers without the bot (marked with ⚠️) appear at the bottom
+4. Your owned servers show a 👑 crown icon
+
+====================================================================
+MULTI-SELECT CHANNELS & ROLES
+====================================================================
+
+You can select multiple channels and roles for each setting:
+
+• Bot Channels: Where the bot posts stock/inventory updates (blue tags)
+• Order Channels: Where members can place orders (green tags)
+• Admin Roles: Roles that can manage bot configuration (purple tags)
+
+Selected items appear as colored tags below the dropdown. Click the × 
+on any tag to remove it.
+
+====================================================================
+POINTS SYSTEM & BONUSES
+====================================================================
+
+The Resource Update Bonus (%) field controls point multipliers when 
+members update resources. This scales from 0% to 200%:
+
+• 0%: Base points only (0.1 per resource added)
+• 50%: 1.5× multiplier (0.15 per resource)
+• 100%: 2× multiplier (0.2 per resource) - Default
+• 200%: 3× multiplier (0.3 per resource) - Maximum
+
+Note: Bonuses only apply to ADD actions, not SET or REMOVE operations.
+
+====================================================================
+BOT BEHAVIOR TOGGLES
+====================================================================
+
+✅ Auto-Update Discord Embeds
+   When enabled, the bot automatically updates stock embeds in Discord 
+   whenever resources change on the website. Disable this if you prefer 
+   manual updates.
+
+✅ Notify on Website Resource Changes
+   When enabled, the bot sends notifications to bot channels when 
+   resources are updated via the website. Useful for keeping the 
+   community informed.
+
+✅ Allow Public Orders
+   When enabled, any server member can place orders. When disabled, 
+   only users with admin roles can place orders (more restricted mode).
+
+====================================================================
+WORKFLOW FOR SERVER OWNERS
+====================================================================
+
+1. Select your Discord server from the dropdown (bot must be installed)
+2. Link it to an in-game guild (the database that stores resources)
+3. Choose bot channels where inventory updates will be posted
+4. Choose order channels where members can request resources
+5. Select admin roles that can manage the bot configuration
+6. Set the resource update bonus percentage (0-200%)
+7. Configure notification preferences with the three toggles
+8. Click Save Configuration
+
+====================================================================
+MULTI-SERVER BEST PRACTICES
+====================================================================
+
+• Each Discord server can link to one in-game guild
+• Multiple Discord servers can link to the same in-game guild 
+  (useful for alliances)
+• Each server can have different bonus percentages and notification 
+  settings
+• Admin roles are server-specific, not shared across servers
+
+====================================================================
+TROUBLESHOOTING
+====================================================================
+
+❌ Can't see my Discord server in the list?
+   Make sure you've granted the app permission to see your servers 
+   when logging in. Try logging out and back in, and check the OAuth 
+   permissions.
+
+⚠️ Server shows "Bot needs to be added to this server"?
+   The bot isn't installed on that server. Only servers where the bot 
+   is installed can be configured. Add the bot to your server first.
+
+🔄 Changes not saving?
+   Check the browser console for errors. Make sure you've selected at 
+   least one in-game guild. Verify you have admin permissions on the 
+   Discord server.
+
+📊 Bot not posting updates?
+   Ensure "Auto-Update Discord Embeds" is enabled. Check that the bot 
+   has permissions to post in the selected bot channels. Verify the 
+   channel IDs are correct.
+
+====================================================================
+API ENDPOINTS FOR BOT DEVELOPERS
+====================================================================
+
+GET /api/bot/config/{guildId}
+   Retrieve bot configuration for a specific Discord server
+
+PUT /api/bot/config/{guildId}
+   Update bot configuration (requires authentication)
+
+GET /api/discord/user-servers
+   Get list of Discord servers the authenticated user manages
+
+GET /api/discord/bot-status/{guildId}
+   Check if the bot is present in a Discord server
+
+====================================================================
+NEED SUPPORT?
+====================================================================
+
+For additional help, feature requests, or bug reports:
+• Contact your server administrator
+• Check the main dashboard for system announcements
+• Review your bot configuration settings carefully
+
+====================================================================
+Resource Tracker v1.0
+Last Updated: November 2025
+====================================================================
