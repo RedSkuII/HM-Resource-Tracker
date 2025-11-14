@@ -62,11 +62,23 @@ export default function BotDashboardPage() {
   // In-game guilds (House Melange, Whitelist, etc.)
   const [inGameGuilds, setInGameGuilds] = useState<InGameGuild[]>([])
   
+  // Bot presence status
+  const [botIsPresent, setBotIsPresent] = useState<boolean>(false)
+  const [checkingBotStatus, setCheckingBotStatus] = useState(false)
+  
   const [config, setConfig] = useState<BotConfig | null>(null)
   const [discordData, setDiscordData] = useState<DiscordGuildData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  // Bot invite URL
+  const getBotInviteUrl = () => {
+    if (!selectedDiscordServerId) return '#'
+    // Use environment variable or fallback
+    const clientId = process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID || '1421306946946076806'
+    return `https://discord.com/api/oauth2/authorize?client_id=${clientId}&permissions=8&scope=bot&guild_id=${selectedDiscordServerId}`
+  }
 
   // Check permissions
   useEffect(() => {
@@ -102,10 +114,10 @@ export default function BotDashboardPage() {
     }
   }, [status])
 
-  // Fetch in-game guilds when Discord server is selected
+  // Fetch in-game guilds when Discord server is selected AND bot is present
   useEffect(() => {
     const fetchInGameGuilds = async () => {
-      if (!selectedDiscordServerId) {
+      if (!selectedDiscordServerId || !botIsPresent) {
         setInGameGuilds([])
         return
       }
@@ -129,15 +141,48 @@ export default function BotDashboardPage() {
       }
     }
 
-    if (selectedDiscordServerId) {
+    if (selectedDiscordServerId && botIsPresent) {
       fetchInGameGuilds()
+    }
+  }, [selectedDiscordServerId, botIsPresent])
+
+  // Check if bot is present in selected Discord server
+  useEffect(() => {
+    const checkBotPresence = async () => {
+      if (!selectedDiscordServerId) {
+        setBotIsPresent(false)
+        return
+      }
+
+      setCheckingBotStatus(true)
+      try {
+        const response = await fetch(`/api/discord/bot-status/${selectedDiscordServerId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setBotIsPresent(data.isPresent)
+        } else {
+          setBotIsPresent(false)
+        }
+      } catch (err) {
+        console.error('[BOT-DASHBOARD] Failed to check bot status:', err)
+        setBotIsPresent(false)
+      } finally {
+        setCheckingBotStatus(false)
+      }
+    }
+
+    if (selectedDiscordServerId) {
+      checkBotPresence()
     }
   }, [selectedDiscordServerId])
 
-  // Fetch config when Discord server is selected
+  // Fetch config when Discord server is selected AND bot is present
   useEffect(() => {
     const fetchConfig = async () => {
-      if (!selectedDiscordServerId) return
+      if (!selectedDiscordServerId || !botIsPresent) {
+        setConfig(null)
+        return
+      }
 
       try {
         const response = await fetch(`/api/bot/config/${selectedDiscordServerId}`)
@@ -149,15 +194,18 @@ export default function BotDashboardPage() {
       }
     }
 
-    if (selectedDiscordServerId) {
+    if (selectedDiscordServerId && botIsPresent) {
       fetchConfig()
     }
-  }, [selectedDiscordServerId])
+  }, [selectedDiscordServerId, botIsPresent])
 
-  // Fetch Discord channels and roles when server is selected
+  // Fetch Discord channels and roles when server is selected AND bot is present
   useEffect(() => {
     const fetchDiscordData = async () => {
-      if (!selectedDiscordServerId) return
+      if (!selectedDiscordServerId || !botIsPresent) {
+        setDiscordData(null)
+        return
+      }
 
       try {
         const response = await fetch(`/api/discord/guild/${selectedDiscordServerId}`)
@@ -170,10 +218,10 @@ export default function BotDashboardPage() {
       }
     }
 
-    if (selectedDiscordServerId) {
+    if (selectedDiscordServerId && botIsPresent) {
       fetchDiscordData()
     }
-  }, [selectedDiscordServerId])
+  }, [selectedDiscordServerId, botIsPresent])
 
   const handleSaveConfig = async () => {
     if (!config || !selectedDiscordServerId) return
@@ -336,8 +384,51 @@ export default function BotDashboardPage() {
           </div>
         )}
 
+        {/* Bot Not Present - Show Add Bot UI */}
+        {selectedDiscordServerId && !checkingBotStatus && !botIsPresent && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-6 text-center">
+            <div className="mb-6">
+              <div className="mx-auto w-16 h-16 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Bot Not Added to This Server
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+                The Resource Tracker bot is not currently in this Discord server. Add the bot to start configuring resource tracking and order management.
+              </p>
+            </div>
+            
+            <a
+              href={getBotInviteUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors shadow-lg hover:shadow-xl"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+              </svg>
+              Add Bot to Server
+            </a>
+            
+            <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+              After adding the bot, refresh this page to configure settings
+            </p>
+          </div>
+        )}
+
+        {/* Checking Bot Status */}
+        {checkingBotStatus && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-6 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">Checking bot status...</p>
+          </div>
+        )}
+
         {/* Configuration Panel */}
-        {config && (
+        {config && botIsPresent && !checkingBotStatus && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               Configuration
