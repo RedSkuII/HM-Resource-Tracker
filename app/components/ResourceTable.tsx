@@ -809,7 +809,8 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
   const fetchLeaderboard = async () => {
     try {
       setLeaderboardLoading(true)
-      const response = await fetch(`/api/leaderboard?timeFilter=${leaderboardTimeFilter}&limit=10`, {
+      const guildParam = guildId ? `&guildId=${guildId}` : ''
+      const response = await fetch(`/api/leaderboard?timeFilter=${leaderboardTimeFilter}&limit=10${guildParam}`, {
         headers: {
           'Cache-Control': 'no-cache',
         },
@@ -836,11 +837,15 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       fetchRecentActivity()
       fetchLeaderboard()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [guildId])
 
   // Fetch leaderboard when time filter changes
   useEffect(() => {
-    fetchLeaderboard()
+    if (guildId) {
+      fetchLeaderboard()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leaderboardTimeFilter])
 
   // Filter resources based on search term and filters
