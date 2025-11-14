@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions, getUserIdentifier } from '@/lib/auth'
 import { db, resources, resourceHistory, websiteChanges } from '@/lib/db'
 import { eq } from 'drizzle-orm'
-import { hasResourceAccess, hasResourceAdminAccess } from '@/lib/discord-roles'
 import { nanoid } from 'nanoid'
-import { awardPoints } from '@/lib/leaderboard'
+
+// Lazy imports for auth-related functionality to avoid blocking GET requests
+const getAuthDependencies = async () => {
+  const { getServerSession } = await import('next-auth')
+  const { authOptions, getUserIdentifier } = await import('@/lib/auth')
+  const { hasResourceAccess, hasResourceAdminAccess } = await import('@/lib/discord-roles')
+  const { awardPoints } = await import('@/lib/leaderboard')
+  return { getServerSession, authOptions, getUserIdentifier, hasResourceAccess, hasResourceAdminAccess, awardPoints }
+}
 
 // Calculate status based on quantity vs target
 const calculateResourceStatus = (quantity: number, targetQuantity: number | null): 'above_target' | 'at_target' | 'below_target' | 'critical' => {
@@ -58,6 +63,7 @@ export async function GET(request: NextRequest) {
 
 // POST /api/resources - Create new resource (admin only)
 export async function POST(request: NextRequest) {
+  const { getServerSession, authOptions, getUserIdentifier, hasResourceAdminAccess } = await getAuthDependencies()
   const session = await getServerSession(authOptions)
 
   if (!session || !hasResourceAdminAccess(session.user.roles)) {
@@ -122,6 +128,7 @@ export async function POST(request: NextRequest) {
 
 // PUT /api/resources - Update multiple resources or resource metadata
 export async function PUT(request: NextRequest) {
+  const { getServerSession, authOptions, getUserIdentifier, hasResourceAccess, hasResourceAdminAccess, awardPoints } = await getAuthDependencies()
   const session = await getServerSession(authOptions)
 
   if (!session || !hasResourceAccess(session.user.roles)) {
