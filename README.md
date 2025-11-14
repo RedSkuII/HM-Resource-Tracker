@@ -1,12 +1,14 @@
 # Resource Tracker
 
 A comprehensive resource management and tracking portal with Discord authentication and role-based access control. Perfect for gaming communities, organizations, and teams that need to track shared resources, inventory, or assets.
-It was designed for Dune Awakening, but technically this could be used to track anything. Currently the only auth is Discord and it works with a TursoDB (Which you can get for free) but in the future maybe we can add more database types.
-I originall made this for [https://www.silverorder.org)](https://www.silverorder.org) there shouldn't be any references to that, but if there is feel free to submit a PR to fix them.
 
-Honestly I leave this project in the hands of the open source community, if you can build it and it works, I'll approve the pull request 🙏
+Originally designed for Dune Awakening guilds, but can be adapted to track any type of resources. Supports **multiple Discord servers** with **multiple in-game guilds** per server, making it perfect for large gaming communities managing resources across different games or factions.
 
-If you like what i did feel free to 
+Built for [https://www.silverorder.org](https://www.silverorder.org) - if you find any references to it, feel free to submit a PR to fix them.
+
+This project is open to the community - if you can build it and it works, pull requests are welcome! 🙏
+
+If you like what I did, feel free to 
 
 [![Buy Me A Coffee](https://img.buymeacoffee.com/button-api/?text=Buy+me+a+coffee&emoji=☕&slug=yetty&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff)](https://www.buymeacoffee.com/yetty)
 
@@ -14,10 +16,26 @@ If you like what i did feel free to
 
 ## Features
 
+### Core Features
 - **Discord OAuth Authentication** - Secure login with Discord
+- **Multi-Server Support** - Configure different settings for each Discord server you manage
+- **Multi-Guild Tracking** - Track resources for multiple in-game guilds (Houses, Clans, etc.)
 - **Role-Based Access Control** - Permissions managed through Discord server roles
 - **Resource Management** - Track quantities, categories, and changes with visual status indicators
+- **Paginated Views** - Efficient loading of large resource lists (25 items per page)
 - **Activity Logging** - Complete audit trail of all user actions with time filtering
+- **Points & Leaderboard** - Gamified contribution tracking with customizable point bonuses
+
+### Discord Bot Integration
+- **Bot Configuration Dashboard** - Easy setup for Discord bot features
+- **Auto-Presence Detection** - Automatically detects if bot is in your server
+- **Channel Configuration** - Set bot notification channels and order channels
+- **Role Permissions** - Configure admin roles for dashboard access
+- **Bonus Settings** - Customize Discord order fulfillment bonuses (0-200%)
+- **Website Bonuses** - Reward users for adding resources via website (0-200%)
+- **Toggle Features** - Auto-update embeds, website change notifications, public orders
+
+### Data & Privacy
 - **GDPR Compliance** - Data export and deletion tools for privacy compliance
 - **Grid & Table Views** - Multiple ways to view and manage resources
 - **Real-Time Updates** - Live status changes and animations
@@ -47,15 +65,24 @@ cd ResourceTracker
 2. Click "New Application" and give it a name
 3. Go to **OAuth2 → General**:
    - Copy the **Client ID** and **Client Secret** (save these for later)
+   - In **Scopes**, ensure you have: `identify`, `guilds`, `guilds.members.read`
 4. Go to **OAuth2 → Redirects**:
    - Add redirect URI: `https://your-app-name.vercel.app/api/auth/callback/discord`
    - Replace `your-app-name` with your planned Vercel app name
-5. Go to **Bot** (optional, for advanced Discord integration)
+5. Go to **Bot** (optional, for Discord bot integration):
+   - Click "Add Bot" if you want Discord bot features (order management, notifications)
+   - Copy the bot token for later (if using bot features)
+   - Under "Privileged Gateway Intents", enable "Server Members Intent"
 
-### Step 3: Get Discord Server Details
+### Step 3: Get Discord Configuration Details
 1. Enable Developer Mode in Discord (User Settings → Advanced → Developer Mode)
-2. Right-click your Discord server → "Copy Server ID" (this is your `DISCORD_GUILD_ID`)
-3. Right-click on roles you want to use → "Copy ID" (for `DISCORD_ROLES_CONFIG`)
+2. **For single-server setup**:
+   - Right-click your Discord server → "Copy Server ID" (this is your `DISCORD_GUILD_ID`)
+   - Right-click on roles you want to use → "Copy ID" (for `DISCORD_ROLES_CONFIG`)
+3. **For multi-server setup** (recommended):
+   - Skip `DISCORD_GUILD_ID` - the app will auto-detect servers you manage
+   - Each Discord server admin configures their own settings via the Bot Dashboard
+   - Link in-game guilds to Discord servers in the Guilds section
 
 ### Step 4: Create Free Turso Database
 1. Go to https://turso.tech and sign up (free tier: 500 databases, 1B row reads/month)
@@ -75,10 +102,15 @@ cd ResourceTracker
 # Discord OAuth (from Step 2)
 DISCORD_CLIENT_ID=your_discord_client_id
 DISCORD_CLIENT_SECRET=your_discord_client_secret
+
+# Optional: For single-server mode only (leave blank for multi-server)
 DISCORD_GUILD_ID=your_discord_server_id
 
 # Discord Roles (single line JSON - see ENVIRONMENT.md for details)
 DISCORD_ROLES_CONFIG=[{"id":"your_role_id","name":"Admin","level":100,"isAdmin":true,"canAccessResources":true}]
+
+# Optional: For Discord bot features (order management, notifications)
+DISCORD_BOT_TOKEN=your_bot_token_from_discord_developer_portal
 
 # NextAuth (generate with: openssl rand -base64 32)
 NEXTAUTH_URL=https://your-app-name.vercel.app
@@ -134,6 +166,20 @@ Go back to your Discord application and update the redirect URI to match your de
 ### 🎉 You're Done!
 Your Resource Tracker is now running for free! Visit your Vercel URL and sign in with Discord.
 
+**Initial Setup After Deployment:**
+1. Sign in with your Discord account
+2. Go to **Bot Dashboard** to configure your Discord server(s)
+3. Select your Discord server from the dropdown (only shows servers you own/admin)
+4. If the bot isn't in your server, click "Add Bot to Server"
+5. Configure bot channels, roles, and bonus settings
+6. Go to **Resources** page and select your in-game guild to start tracking
+
+**Multi-Server Configuration:**
+- Each Discord server owner/admin can independently configure their bot settings
+- Link in-game guilds to Discord servers in the admin panel
+- Resources are tracked separately per in-game guild
+- Leaderboards and activity logs are guild-specific
+
 **Free Tier Limits:**
 - **Vercel**: 100GB bandwidth, unlimited projects
 - **Turso**: 500 databases, 1B row reads, 1M row writes/month
@@ -175,11 +221,21 @@ See [ENVIRONMENT.md](./ENVIRONMENT.md) for all configuration options.
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
-- **Authentication**: NextAuth.js with Discord provider
-- **Database**: Turso (SQLite), Drizzle ORM
-- **Deployment**: Vercel-ready
-- **Privacy**: GDPR-compliant data handling
+- **Frontend**: Next.js 14 (App Router), React, TypeScript, Tailwind CSS
+- **Authentication**: NextAuth.js with Discord OAuth (scopes: identify, guilds, guilds.members.read)
+- **Database**: Turso (libSQL/SQLite), Drizzle ORM
+- **Deployment**: Vercel-ready (Edge Runtime compatible)
+- **Privacy**: GDPR-compliant data handling with export/deletion features
+- **Bot Integration**: Discord.js compatible for bot features (optional)
+
+## Architecture Highlights
+
+- **Multi-Tenant**: Supports multiple Discord servers with separate configurations
+- **Guild Mapping**: Link in-game guilds (Houses, Clans) to Discord servers via `discordGuildId`
+- **Pagination**: Efficient 25-item pages with SQL COUNT for accurate totals
+- **Points System**: Configurable bonuses for Discord vs website contributions (0-200%)
+- **Bot Presence Detection**: Automatically detects if bot is installed before showing config
+- **Session Caching**: 4-hour JWT tokens with Discord role caching for performance
 
 ## Contributing
 
