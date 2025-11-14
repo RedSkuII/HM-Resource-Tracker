@@ -10,6 +10,7 @@ interface DiscordServer {
   name: string
   icon: string | null
   isOwner: boolean
+  hasBotInstalled?: boolean
 }
 
 interface InGameGuild {
@@ -97,9 +98,39 @@ export default function BotDashboardPage() {
         }
         
         const data = await response.json()
-        setDiscordServers(data.servers)
-        if (data.servers.length > 0) {
-          setSelectedDiscordServerId(data.servers[0].id)
+        
+        // Check bot presence for all servers
+        const serversWithBotStatus = await Promise.all(
+          data.servers.map(async (server: DiscordServer) => {
+            try {
+              const botStatusResponse = await fetch(`/api/discord/bot-status/${server.id}`)
+              const botStatus = await botStatusResponse.json()
+              return {
+                ...server,
+                hasBotInstalled: botStatus.isPresent || false
+              }
+            } catch {
+              return {
+                ...server,
+                hasBotInstalled: false
+              }
+            }
+          })
+        )
+        
+        // Sort: First by bot presence (installed first), then alphabetically by name
+        const sortedServers = serversWithBotStatus.sort((a, b) => {
+          // If bot status differs, prioritize servers with bot
+          if (a.hasBotInstalled !== b.hasBotInstalled) {
+            return a.hasBotInstalled ? -1 : 1
+          }
+          // Otherwise sort alphabetically
+          return a.name.localeCompare(b.name)
+        })
+        
+        setDiscordServers(sortedServers)
+        if (sortedServers.length > 0) {
+          setSelectedDiscordServerId(sortedServers[0].id)
         }
       } catch (err) {
         console.error('[BOT-DASHBOARD] Fetch Discord servers error:', err)
@@ -349,10 +380,17 @@ export default function BotDashboardPage() {
               >
                 {discordServers.map((server) => (
                   <option key={server.id} value={server.id}>
-                    {server.name} {server.isOwner && '👑'}
+                    {server.hasBotInstalled ? '✅ ' : '⚠️ '}{server.name} {server.isOwner && '👑'}
                   </option>
                 ))}
               </select>
+              {selectedDiscordServerId && discordServers.find(s => s.id === selectedDiscordServerId) && (
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  {discordServers.find(s => s.id === selectedDiscordServerId)?.hasBotInstalled 
+                    ? '✅ Bot is installed in this server' 
+                    : '⚠️ Bot needs to be added to this server'}
+                </p>
+              )}
             </div>
 
             {/* In-Game Guild Selector */}
