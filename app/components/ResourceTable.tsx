@@ -404,13 +404,19 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       const url = `/api/resources?t=${timestamp}${guildParam}`
       console.log('[ResourceTable] Fetching from URL:', url)
       
+      // Add timeout to fetch
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 second timeout
+      
       const response = await fetch(url, {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache',
-        }
+        },
+        signal: controller.signal
       })
       
+      clearTimeout(timeoutId)
       console.log('[ResourceTable] Response status:', response.status)
       
       if (response.ok) {
@@ -428,7 +434,11 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       }
     } catch (error) {
       console.error('[ResourceTable] Error fetching resources:', error)
-      setError(`Error loading resources: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      if (error instanceof Error && error.name === 'AbortError') {
+        setError('Request timed out after 15 seconds. The server may be experiencing issues.')
+      } else {
+        setError(`Error loading resources: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
     } finally {
       console.log('[ResourceTable] Setting loading to false')
       setLoading(false)
