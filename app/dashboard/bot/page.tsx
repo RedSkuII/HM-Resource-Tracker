@@ -450,7 +450,7 @@ export default function BotDashboardPage() {
                     <option value="">Select a channel...</option>
                     {discordData.channels.map((channel) => (
                       <option key={channel.id} value={channel.id}>
-                        #{channel.name} {config.botChannelId === channel.id && '✓ (current)'}
+                        #{channel.name}
                       </option>
                     ))}
                   </select>
@@ -476,7 +476,7 @@ export default function BotDashboardPage() {
                     <option value="">Select a channel...</option>
                     {discordData.channels.map((channel) => (
                       <option key={channel.id} value={channel.id}>
-                        #{channel.name} {config.orderChannelId === channel.id && '✓ (current)'}
+                        #{channel.name}
                       </option>
                     ))}
                   </select>
@@ -502,7 +502,7 @@ export default function BotDashboardPage() {
                     <option value="">Select a role...</option>
                     {discordData.roles.map((role) => (
                       <option key={role.id} value={role.id}>
-                        {role.name} {config.adminRoleId === role.id && '✓ (current)'}
+                        {role.name}
                       </option>
                     ))}
                   </select>
