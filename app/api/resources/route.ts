@@ -20,17 +20,26 @@ const calculateResourceStatus = (quantity: number, targetQuantity: number | null
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('[API /api/resources] Starting GET request')
     const { searchParams } = new URL(request.url)
     const guildId = searchParams.get('guildId')
+    console.log('[API /api/resources] guildId:', guildId)
     
     let allResources
+    const startTime = Date.now()
+    
     if (guildId) {
+      console.log('[API /api/resources] Querying by guildId:', guildId)
       // Filter by guild
       allResources = await db.select().from(resources).where(eq(resources.guildId, guildId))
     } else {
+      console.log('[API /api/resources] Querying all resources')
       // Return all resources (for backwards compatibility or admin views)
       allResources = await db.select().from(resources)
     }
+    
+    const queryTime = Date.now() - startTime
+    console.log(`[API /api/resources] Query completed in ${queryTime}ms, found ${allResources.length} resources`)
     
     return NextResponse.json(allResources, {
       headers: {
@@ -40,9 +49,9 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('Error fetching resources:', error)
+    console.error('[API /api/resources] Error fetching resources:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch resources' },
+      { error: 'Failed to fetch resources', details: error instanceof Error ? error.message : String(error) },
       { status: 500 })
   }
 }
