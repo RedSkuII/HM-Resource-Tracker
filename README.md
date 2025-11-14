@@ -14,6 +14,39 @@ If you like what I did, feel free to
 
 ![alt text](image.png)
 
+## � Table of Contents
+
+- [Quick Start](#-quick-start)
+- [Features](#features)
+- [Free Deployment Guide](#-deploy-for-free-recommended)
+- [Discord Bot Configuration](#-discord-bot-configuration-guide)
+- [Local Development](#️-local-development-setup)
+- [Customization](#customization)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture-highlights)
+- [Contributing](#contributing)
+- [License](#license)
+
+## �🚀 Quick Start
+
+**5-Minute Setup:**
+1. ⭐ Fork this repository
+2. 🔐 Create Discord OAuth app ([guide](#step-2-set-up-discord-oauth-application))
+3. 💾 Create free Turso database ([guide](#step-4-create-free-turso-database))
+4. 🚀 Deploy to Vercel with environment variables
+5. 📊 Run database migrations
+6. 🎮 Configure your Discord server in Bot Dashboard
+7. ✅ Start tracking resources!
+
+**What You Get:**
+- ✅ Web portal for resource tracking
+- ✅ Discord authentication & role-based permissions
+- ✅ Points system & leaderboards
+- ✅ Multi-server & multi-guild support
+- ✅ Bot configuration dashboard
+- ✅ GDPR-compliant data management
+- ✅ 100% free hosting (Vercel + Turso)
+
 ## Features
 
 ### Core Features
@@ -236,6 +269,169 @@ See [ENVIRONMENT.md](./ENVIRONMENT.md) for all configuration options.
 - **Points System**: Configurable bonuses for Discord vs website contributions (0-200%)
 - **Bot Presence Detection**: Automatically detects if bot is installed before showing config
 - **Session Caching**: 4-hour JWT tokens with Discord role caching for performance
+
+## 🤖 Discord Bot Configuration Guide
+
+### Bot Dashboard Features
+
+The Bot Dashboard (`/dashboard/bot`) provides a complete interface for configuring Discord bot integration:
+
+#### 1. **Server Selection**
+- **Discord Server Dropdown**: Select which Discord server to configure
+  - Automatically sorted: Servers with bot installed first (✅), then servers without bot (⚠️)
+  - Owner servers marked with 👑
+  - Shows real-time bot presence status
+  - Only displays servers where you have Administrator permissions or ownership
+
+- **In-Game Guild Dropdown**: Select which in-game guild (House, Clan) to track
+  - Filtered by selected Discord server
+  - Links resources to specific Discord communities
+  - Each Discord server can track a different in-game guild
+
+#### 2. **Channel Configuration** (Multi-Select)
+
+**Bot Channels** - Where the bot posts notifications
+- Select multiple channels (hold Ctrl/Cmd)
+- Examples: #announcements, #bot-logs, #resource-tracker
+- Used for: Website change notifications, general bot messages
+- Visual tags show selected channels with quick removal (×)
+
+**Order Channels** - Where resource orders are created
+- Select multiple channels for order management
+- Examples: #orders, #requests, #marketplace
+- Used for: Public order system, fulfillment tracking
+- Supports Discord slash commands for creating/filling orders
+
+#### 3. **Role Configuration** (Multi-Select)
+
+**Admin Roles** - Roles that can access the bot dashboard
+- Select multiple roles (hold Ctrl/Cmd)
+- Examples: @Admin, @Moderator, @Officers
+- Grants access to: Configuration changes, statistics, activity logs
+- Separate from resource permissions (controlled via `DISCORD_ROLES_CONFIG`)
+
+#### 4. **Points & Bonus System**
+
+**Discord Order Fulfillment Bonus: 0-200%**
+- Default: 50% (1.5x points)
+- Controls point multiplier for filling orders via Discord bot
+- Examples:
+  - 0% = No bonus (1.0x base points)
+  - 50% = 1.5x points (recommended)
+  - 100% = 2.0x points (double points)
+  - 200% = 3.0x points (triple points)
+- Encourages Discord-based resource distribution
+
+**Website Addition Bonus: 0-200%**
+- Default: 0% (no bonus)
+- Controls point multiplier for adding resources via website
+- Same scaling as Discord bonus
+- Use cases:
+  - Set higher to encourage website usage
+  - Set lower to prioritize Discord activity
+  - Match Discord bonus for equal rewards
+
+#### 5. **Bot Behavior Toggles**
+
+**✅ Auto-update embeds**
+- **Enabled**: Bot edits existing embed messages when data changes
+- **Disabled**: Creates new messages for each update (historical record)
+- Use case: Keep pinned stock messages synchronized in real-time
+- Prevents: Channel spam from repeated new messages
+
+**✅ Notify on website changes**
+- **Enabled**: Bot posts notifications when resources are added/removed via website
+- **Disabled**: Only Discord-based changes trigger notifications
+- Use case: Keep Discord community informed of website activity
+- Example: "🔔 @Username added 1000x Iron Ore (+10 points)"
+
+**✅ Allow public orders**
+- **Enabled**: Any guild member can create resource requests via Discord
+- **Disabled**: Only admins/designated roles can manage orders
+- Use case: Democratic resource distribution vs. centralized control
+- Example command: `/order create Metal Alloy 500`
+
+### Bot Integration Workflow
+
+#### For Server Owners:
+
+1. **Add Bot to Discord Server**
+   - Select server from dropdown
+   - If bot not present, click "Add Bot to Server" button
+   - Authorize with Administrator permissions
+   - Refresh page to see configuration panel
+
+2. **Configure Channels & Roles**
+   - Select notification channels (where bot posts updates)
+   - Select order channels (where users can request resources)
+   - Assign admin roles (who can modify bot settings)
+   - All fields support multiple selections
+
+3. **Set Point Bonuses**
+   - Adjust Discord order fulfillment bonus (0-200%)
+   - Adjust website addition bonus (0-200%)
+   - Balance between Discord and website engagement
+
+4. **Enable Features**
+   - Toggle auto-update embeds (recommended: ON)
+   - Toggle website notifications (recommended: ON for active guilds)
+   - Toggle public orders (ON for community-driven, OFF for admin-controlled)
+
+5. **Save Configuration**
+   - Click "Save Configuration" button
+   - Settings are stored per Discord server
+   - Each server can have completely different settings
+
+#### For Discord Bot (Separate Python Bot):
+
+The website provides the configuration API, but you need a Discord bot to use these features:
+
+**Required Bot Setup:**
+1. Create bot at Discord Developer Portal
+2. Enable required intents: Server Members Intent
+3. Copy bot token to `DISCORD_BOT_TOKEN` environment variable
+4. Implement bot commands using your preferred framework (Discord.js, discord.py, etc.)
+5. Read configuration from `/api/bot/config/{guildId}` endpoint
+
+**Example Bot Features to Implement:**
+- `/stock` - Show current resource levels (reads from website API)
+- `/order create [item] [quantity]` - Create resource request
+- `/order fill [order_id]` - Fulfill an order (awards bonus points)
+- `/leaderboard` - Show top contributors
+- Auto-update embeds when website data changes
+- Post notifications when resources are added via website
+
+**API Endpoints for Bot:**
+- `GET /api/bot/config/{guildId}` - Get bot configuration
+- `GET /api/resources?guildId={guildId}` - Get resources
+- `GET /api/leaderboard?guildId={guildId}` - Get leaderboard
+- `PUT /api/resources` - Update resources (awards points)
+
+### Multi-Server Best Practices
+
+1. **Separate Configurations**: Each Discord server can track different in-game guilds
+2. **Independent Points**: Leaderboards are per in-game guild, not per Discord server
+3. **Flexible Bonuses**: Adjust bonuses per server based on community preferences
+4. **Gradual Rollout**: Start with one server, refine settings, then expand
+
+### Troubleshooting
+
+**Bot not appearing in server list?**
+- Ensure you have Administrator permissions or ownership
+- Check OAuth scopes include `guilds` and `guilds.members.read`
+- Try signing out and back in to refresh Discord token
+
+**Can't save configuration?**
+- Ensure bot is added to the server first
+- Check that you selected at least one channel/role (or leave empty for none)
+- Verify in-game guild is selected
+- Check browser console for detailed error messages
+
+**Bot commands not working?**
+- Configuration is stored, but bot implementation is separate
+- Refer to your Discord bot codebase (Discord.js/discord.py)
+- Ensure bot has proper permissions in configured channels
+- Check bot token is valid in environment variables
 
 ## Contributing
 
