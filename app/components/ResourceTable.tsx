@@ -272,6 +272,16 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
     showDialog: false
   })
 
+  // Update createResourceForm guildId when guildId prop changes
+  useEffect(() => {
+    if (guildId) {
+      setCreateResourceForm(prev => ({
+        ...prev,
+        guildId: guildId
+      }))
+    }
+  }, [guildId])
+
   // Load view preference
   useEffect(() => {
     const savedViewMode = localStorage.getItem('resource-view-mode')
