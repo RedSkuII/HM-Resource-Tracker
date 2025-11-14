@@ -105,6 +105,7 @@ export async function awardPoints(
     category: string
     status: string
     multiplier: number
+    guildId: string | null
   },
   source: 'website' | 'discord' = 'website'
 ): Promise<PointsCalculation> {
@@ -163,6 +164,7 @@ export async function awardPoints(
       id: nanoid(),
       userId,
       resourceId,
+      guildId: resourceData.guildId,
       actionType,
       quantityChanged,
       basePoints: calculation.basePoints,
@@ -186,16 +188,19 @@ export async function awardPoints(
 }
 
 /**
- * Get leaderboard rankings with optional time filtering and pagination
+ * Get leaderboard rankings with optional time filtering, guild filtering, and pagination
  */
 export async function getLeaderboard(
   timeFilter?: '24h' | '7d' | '30d' | 'all', 
   limit = 50, 
-  offset = 0
+  offset = 0,
+  guildId?: string | null
 ): Promise<{ rankings: any[], total: number }> {
   try {
-    let timeCondition = sql`1 = 1` // Default to no time filter
+    // Build conditions array
+    const conditions: any[] = []
 
+    // Time filter
     if (timeFilter && timeFilter !== 'all') {
       const now = new Date()
       let cutoffDate: Date
@@ -212,10 +217,18 @@ export async function getLeaderboard(
           break
       }
 
-      timeCondition = gte(leaderboard.createdAt, cutoffDate!)
+      conditions.push(gte(leaderboard.createdAt, cutoffDate!))
     }
 
-    console.log(`Fetching leaderboard with filter: ${timeFilter}, limit: ${limit}, offset: ${offset}`)
+    // Guild filter
+    if (guildId) {
+      conditions.push(eq(leaderboard.guildId, guildId))
+    }
+
+    // Combine conditions
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined
+
+    console.log(`Fetching leaderboard with filter: ${timeFilter}, guild: ${guildId || 'all'}, limit: ${limit}, offset: ${offset}`)
 
     // Get total count for pagination
     const totalResult = await db
@@ -223,7 +236,7 @@ export async function getLeaderboard(
         count: sql<number>`COUNT(DISTINCT ${leaderboard.userId})`.as('count')
       })
       .from(leaderboard)
-      .where(timeCondition)
+      .where(whereClause)
 
     const total = totalResult[0]?.count || 0
 
@@ -236,7 +249,7 @@ export async function getLeaderboard(
       })
       .from(leaderboard)
       .leftJoin(users, eq(leaderboard.userId, users.discordId))
-      .where(timeCondition)
+      .where(whereClause)
       .groupBy(leaderboard.userId)
       .orderBy(desc(sql`SUM(${leaderboard.finalPoints})`))
       .limit(limit)

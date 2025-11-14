@@ -149,6 +149,7 @@ interface ResourceUpdate {
 
 interface ResourceTableProps {
   userId: string
+  guildId?: string | null
 }
 
 interface PointsCalculation {
@@ -179,7 +180,7 @@ interface CongratulationsState {
 // Category options for dropdown
 const CATEGORY_OPTIONS = ['Raw', 'Refined', 'Components', 'Other']
 
-export function ResourceTable({ userId }: ResourceTableProps) {
+export function ResourceTable({ userId, guildId }: ResourceTableProps) {
   const { data: session } = useSession()
   const router = useRouter()
   
@@ -247,6 +248,7 @@ export function ResourceTable({ userId }: ResourceTableProps) {
   // Create new resource state
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [createResourceForm, setCreateResourceForm] = useState({
+    guildId: guildId || '',
     name: '',
     category: 'Raw',
     description: '',
@@ -395,7 +397,8 @@ export function ResourceTable({ userId }: ResourceTableProps) {
     try {
       setLoading(true)
       const timestamp = Date.now()
-      const response = await fetch(`/api/resources?t=${timestamp}`, {
+      const guildParam = guildId ? `&guildId=${guildId}` : ''
+      const response = await fetch(`/api/resources?t=${timestamp}${guildParam}`, {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache',
@@ -627,6 +630,7 @@ export function ResourceTable({ userId }: ResourceTableProps) {
         setResources(prev => [...prev, newResource])
         setShowCreateForm(false)
         setCreateResourceForm({
+          guildId: guildId || '',
           name: '',
           category: 'Raw',
           description: '',
@@ -825,12 +829,14 @@ export function ResourceTable({ userId }: ResourceTableProps) {
     }
   }
 
-  // Fetch resources on component mount
+  // Fetch resources on component mount and when guildId changes
   useEffect(() => {
-    fetchResources()
-    fetchRecentActivity()
-    fetchLeaderboard()
-  }, [])
+    if (guildId) {
+      fetchResources()
+      fetchRecentActivity()
+      fetchLeaderboard()
+    }
+  }, [guildId])
 
   // Fetch leaderboard when time filter changes
   useEffect(() => {
@@ -1226,6 +1232,7 @@ export function ResourceTable({ userId }: ResourceTableProps) {
                   onClick={() => {
                     setShowCreateForm(false)
                     setCreateResourceForm({
+                      guildId: guildId || '',
                       name: '',
                       category: 'Raw',
                       description: '',
@@ -1489,6 +1496,7 @@ export function ResourceTable({ userId }: ResourceTableProps) {
               onClick={() => {
                 setShowCreateForm(false)
                 setCreateResourceForm({
+                  guildId: guildId || '',
                   name: '',
                   category: 'Raw',
                   description: '',

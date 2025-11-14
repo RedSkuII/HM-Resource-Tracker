@@ -27,8 +27,20 @@ export const userSessions = sqliteTable('user_sessions', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 })
 
+// In-game guilds table
+export const guilds = sqliteTable('guilds', {
+  id: text('id').primaryKey(), // Slug version of title (e.g., 'house-melange')
+  discordGuildId: text('discord_guild_id').notNull(), // Discord server ID
+  title: text('title').notNull(), // Display name (e.g., 'House Melange')
+  maxMembers: integer('max_members').notNull().default(32),
+  leaderId: text('leader_id'), // Discord user ID of guild leader
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+})
+
 export const resources = sqliteTable('resources', {
   id: text('id').primaryKey(),
+  guildId: text('guild_id'), // In-game guild ID (e.g., 'house-melange', 'whitelist-second-guild')
   name: text('name').notNull(),
   quantity: integer('quantity').notNull().default(0),
   description: text('description'),
@@ -46,6 +58,7 @@ export const resources = sqliteTable('resources', {
 export const resourceHistory = sqliteTable('resource_history', {
   id: text('id').primaryKey(),
   resourceId: text('resource_id').notNull().references(() => resources.id),
+  guildId: text('guild_id'), // In-game guild ID
   previousQuantity: integer('previous_quantity').notNull(),
   newQuantity: integer('new_quantity').notNull(),
   changeAmount: integer('change_amount').notNull(), // +/- amount
@@ -57,6 +70,7 @@ export const resourceHistory = sqliteTable('resource_history', {
 
 export const leaderboard = sqliteTable('leaderboard', {
   id: text('id').primaryKey(),
+  guildId: text('guild_id'), // In-game guild ID
   userId: text('user_id').notNull(),
   resourceId: text('resource_id').notNull().references(() => resources.id),
   actionType: text('action_type').notNull(), // 'ADD', 'SET', 'REMOVE'
@@ -151,7 +165,8 @@ export const botActivityLogs = sqliteTable('bot_activity_logs', {
 export const db = drizzle(client, { 
   schema: { 
     users, 
-    userSessions, 
+    userSessions,
+    guilds,
     resources, 
     resourceHistory, 
     leaderboard,

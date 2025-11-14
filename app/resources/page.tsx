@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { ClientNavigation } from '../components/ClientNavigation'
-import { ResourceTable } from '../components/ResourceTable'
+import { ResourceTableWithGuildSelector } from '../components/ResourceTableWithGuildSelector'
 
 export default async function ResourcesPage() {
   const session = await getServerSession(authOptions)
@@ -30,8 +30,8 @@ export default async function ResourcesPage() {
 
 
 
-          {/* Resource Table */}
-          <ResourceTable userId={session.user.id || session.user.email || 'unknown'} />
+          {/* Resource Table with Guild Selector */}
+          <ResourceTableWithGuildSelector userId={session.user.id || session.user.email || 'unknown'} />
         </div>
       </main>
     </div>

@@ -101,7 +101,8 @@ export async function PUT(
           name: resource.name,
           category: resource.category || 'Other',
           status: resourceStatus,
-          multiplier: resource.multiplier || 1.0
+          multiplier: resource.multiplier || 1.0,
+          guildId: resource.guildId
         }
       )
     }

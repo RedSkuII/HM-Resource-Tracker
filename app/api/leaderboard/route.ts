@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url)
+    const guildId = searchParams.get('guildId')
     const timeFilter = searchParams.get('timeFilter') as '24h' | '7d' | '30d' | 'all' || 'all'
     const limit = parseInt(searchParams.get('limit') || '50')
     const page = parseInt(searchParams.get('page') || '1')
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * pageSize
     const effectiveLimit = searchParams.get('limit') ? limit : pageSize
 
-    const result = await getLeaderboard(timeFilter, effectiveLimit, offset)
+    const result = await getLeaderboard(timeFilter, effectiveLimit, offset, guildId)
 
     return NextResponse.json({
       leaderboard: result.rankings,

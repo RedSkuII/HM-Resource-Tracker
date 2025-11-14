@@ -20,7 +20,17 @@ const calculateResourceStatus = (quantity: number, targetQuantity: number | null
 
 export async function GET(request: NextRequest) {
   try {
-    const allResources = await db.select().from(resources)
+    const { searchParams } = new URL(request.url)
+    const guildId = searchParams.get('guildId')
+    
+    let allResources
+    if (guildId) {
+      // Filter by guild
+      allResources = await db.select().from(resources).where(eq(resources.guildId, guildId))
+    } else {
+      // Return all resources (for backwards compatibility or admin views)
+      allResources = await db.select().from(resources)
+    }
     
     return NextResponse.json(allResources, {
       headers: {
@@ -46,15 +56,20 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { name, category, description, imageUrl, quantity, targetQuantity, multiplier } = await request.json()
+    const { guildId, name, category, description, imageUrl, quantity, targetQuantity, multiplier } = await request.json()
     const userId = getUserIdentifier(session)
 
     if (!name || !category) {
       return NextResponse.json({ error: 'Name and category are required' }, { status: 400 })
     }
 
+    if (!guildId) {
+      return NextResponse.json({ error: 'guildId is required' }, { status: 400 })
+    }
+
     const newResource = {
       id: nanoid(),
+      guildId,
       name,
       quantity: quantity || 0,
       description: description || null,
@@ -73,6 +88,7 @@ export async function POST(request: NextRequest) {
     await db.insert(resourceHistory).values({
       id: nanoid(),
       resourceId: newResource.id,
+      guildId,
       previousQuantity: 0,
       newQuantity: newResource.quantity,
       changeAmount: newResource.quantity,
@@ -176,6 +192,7 @@ export async function PUT(request: NextRequest) {
       await db.insert(resourceHistory).values({
         id: nanoid(),
         resourceId: update.id,
+        guildId: resource.guildId,
         previousQuantity,
         newQuantity: update.quantity,
         changeAmount,
@@ -225,7 +242,8 @@ export async function PUT(request: NextRequest) {
             name: resource.name,
             category: resource.category || 'Other',
             status: newStatus,
-            multiplier: resource.multiplier || 1.0
+            multiplier: resource.multiplier || 1.0,
+            guildId: resource.guildId
           }
         )
       }
