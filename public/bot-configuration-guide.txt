@@ -273,405 +273,180 @@ TROUBLESHOOTING
 --------------------------------------
 • Verify you're an Administrator or Owner on the Discord server
 • Check that your Discord roles are properly synced
-• Ensure DISCORD_ROLES_CONFIG environment variable is correctly formatted
 • Try signing out and signing back in
 • Contact your server owner for role assignment
 
 ⚡ Bot commands not working?
 ----------------------------
-• Configuration is stored, but bot implementation is separate
-• Ensure your Discord bot code is running (separate from website)
-• Check bot token is valid in DISCORD_BOT_TOKEN environment variable
-• Verify bot has Slash Command permissions
-• Confirm bot is reading config from API endpoint correctly
-• Check bot framework (Discord.js/discord.py) is up to date
-
-🌐 Website integration issues?
-------------------------------
-• Verify NEXTAUTH_URL matches your deployed URL
-• Check all environment variables are set correctly
-• Ensure Turso database connection is working
-• Run npm run db:push to apply schema migrations
-• Check Vercel deployment logs for errors
-• Verify Discord OAuth redirect URI matches deployment URL
+• Ensure the bot is online and added to your Discord server
+• Verify bot has proper permissions in the configured channels
+• Check that you have the required roles to use specific commands
+• Try using commands in the channels you configured as order/bot channels
+• Contact support if commands continue to fail
 
 ====================================================================
-API ENDPOINTS FOR BOT DEVELOPERS
+AVAILABLE BOT COMMANDS
 ====================================================================
 
-The website provides REST API endpoints that your Discord bot can use
-to read configuration and interact with resources. All endpoints
-require proper authentication.
+Core Commands (Available to all members):
+------------------------------------------
+/stock
+• Shows current resource levels for your guild
+• Displays quantities, categories, and status indicators
+• Color-coded by resource status (green=good, red=critical)
 
-Configuration Endpoints:
-------------------------
-GET /api/bot/config/{guildId}
-• Retrieve bot configuration for a specific Discord server
-• Returns: Bot channels, order channels, admin roles, bonuses, toggles
-• Use this to configure your bot's behavior per server
-• Example response:
-  {
-    "guildId": "123456789",
-    "inGameGuildId": "guild_abc",
-    "botChannelId": ["channel1", "channel2"],
-    "orderChannelId": ["channel3"],
-    "adminRoleId": ["role1", "role2"],
-    "autoUpdateEmbeds": true,
-    "notifyOnWebsiteChanges": true,
-    "allowPublicOrders": true,
-    "orderFulfillmentBonus": 50,
-    "websiteBonusPercentage": 100
-  }
+/leaderboard
+• Shows top contributors in your guild
+• Displays total points and recent activity
+• Updates in real-time as contributions are made
 
-PUT /api/bot/config/{guildId}
-• Update bot configuration (requires authentication)
-• Used by the dashboard to save settings
-• Not typically called by Discord bot directly
+/help
+• Lists all available bot commands
+• Shows usage examples and descriptions
+• Provides quick reference for features
 
-Resource Endpoints:
--------------------
-GET /api/resources?guildId={guildId}
-• Retrieve all resources for an in-game guild
-• Returns: Array of resources with quantities, categories, status
-• Use this for /stock or /inventory bot commands
-• Supports pagination with page and limit parameters
+Order Management Commands:
+--------------------------
+Note: Available to all members if "Allow Public Orders" is enabled,
+otherwise restricted to admin roles only.
 
-PUT /api/resources
-• Update resource quantities (awards points automatically)
-• Requires authentication
-• Use this when bot processes orders or manual updates
-• Include: resourceId, quantity, changeType, reason, updatedBy
+/order create [item] [quantity]
+• Create a resource request
+• Example: /order create Metal Alloy 500
+• Bot notifies in configured order channels
 
-GET /api/resources/{resourceId}
-• Get details for a specific resource
-• Returns: Name, quantity, category, target, status, last update
+/order list
+• View all pending orders
+• Shows requestor, item, quantity, and timestamp
+• Filter by your own orders or view all
 
-Leaderboard Endpoints:
-----------------------
-GET /api/leaderboard?guildId={guildId}
-• Get top contributors for an in-game guild
-• Returns: Username, total points, contribution counts
-• Use this for /leaderboard bot command
-• Includes points from both Discord and website actions
+/order fill [order_id]
+• Fulfill a pending order
+• Automatically awards bonus points based on configuration
+• Updates resource quantities and notifies requestor
 
-User & Server Endpoints:
--------------------------
-GET /api/discord/user-servers
-• Get list of Discord servers the authenticated user manages
-• Used by dashboard for server dropdown
-• Requires user authentication (not typically used by bot)
+/order cancel [order_id]
+• Cancel your own pending order
+• Admins can cancel any order
+• Removes from pending list
 
-GET /api/discord/bot-status/{guildId}
-• Check if the bot is present in a Discord server
-• Returns: { isPresent: true/false }
-• Used by dashboard to show bot presence indicators
+Admin Commands (Restricted to configured admin roles):
+-------------------------------------------------------
+/config show
+• Display current bot configuration for your server
+• Shows channels, roles, bonuses, and toggle settings
+• Useful for verifying setup
 
-Authentication:
----------------
-• Most endpoints require NextAuth.js session authentication
-• Bot should use service account or API key for server-to-server calls
-• For bot commands, verify user permissions before allowing actions
-• Check user's Discord roles against adminRoleId from config
+/stock update [item] [quantity] [reason]
+• Manually update resource quantities via Discord
+• Awards points based on website bonus percentage
+• Records action in audit log
+• Example: /stock update Iron Ore 1000 "Harvested from expedition"
 
-Rate Limiting:
---------------
-• Respect API rate limits (check response headers)
-• Implement caching for frequently accessed data
-• Don't poll /api/resources more than once per minute
-• Use webhooks or database triggers for real-time updates (advanced)
-
-Example Bot Implementation Flow:
----------------------------------
-1. Bot starts up, reads config from /api/bot/config/{guildId}
-2. Register slash commands based on config (public orders, etc.)
-3. When /stock command used, fetch from /api/resources
-4. When order filled, update via /api/resources (awards points)
-5. Poll for changes or implement webhook to detect website updates
-7. Post notifications to configured bot channels
-8. Update embeds in Discord when resources change
-
-====================================================================
-DISCORD BOT IMPLEMENTATION GUIDE
-====================================================================
-
-Important: The website provides configuration storage and APIs, but
-you need to implement a separate Discord bot to use these features.
-
-Required Bot Setup:
--------------------
-1. Create bot at Discord Developer Portal
-   • Go to https://discord.com/developers/applications
-   • Click "New Application"
-   • Go to "Bot" tab and click "Add Bot"
-   • Copy bot token for later use
-
-2. Enable required intents:
-   • Server Members Intent (for role checking)
-   • Message Content Intent (optional, for prefix commands)
-   • Presence Intent (optional, for status updates)
-
-3. Configure bot permissions:
-   • Administrator (recommended for full functionality)
-   • Or minimum: Send Messages, Embed Links, Read Messages, 
-     Use Slash Commands, Manage Messages
-
-4. Add bot to your server:
-   • Use OAuth2 URL Generator in Developer Portal
-   • Select "bot" and "applications.commands" scopes
-   • Select required permissions
-   • Use generated URL to add bot to servers
-
-Environment Variables for Bot:
--------------------------------
-DISCORD_BOT_TOKEN=your_bot_token_here
-WEBSITE_API_URL=https://your-resource-tracker.vercel.app
-NEXTAUTH_SECRET=same_secret_as_website_for_api_auth
-
-Recommended Bot Features to Implement:
----------------------------------------
-Core Commands:
-• /stock - Show current resource levels (read from /api/resources)
-• /leaderboard - Show top contributors (read from /api/leaderboard)
-• /help - Display bot commands and usage
-
-Order Management (if allowPublicOrders enabled):
-• /order create [item] [quantity] - Create resource request
-• /order fill [order_id] - Fulfill an order (awards bonus points)
-• /order list - Show pending orders
-• /order cancel [order_id] - Cancel your order
-
-Admin Commands (restricted to adminRoleId):
-• /config show - Display current bot configuration
-• /config reload - Refresh config from website API
-• /stock update [item] [quantity] - Manual resource update
-• /stock refresh - Force refresh stock embed
-
-Notification Features:
-• Auto-update stock embeds when website data changes
-• Post notifications when resources updated via website
-• Alert when resources reach critical status
-• Announce new high scores on leaderboard
-
-Example Bot Architecture (Discord.js):
----------------------------------------
-const { Client, IntentsBitField, REST, Routes } = require('discord.js');
-
-const client = new Client({
-  intents: [
-    IntentsBitField.Flags.Guilds,
-    IntentsBitField.Flags.GuildMembers
-  ]
-});
-
-// On bot startup
-client.once('ready', async () => {
-  // Load config from website API
-  const config = await fetch(`${API_URL}/api/bot/config/${guildId}`)
-    .then(r => r.json());
-  
-  // Register slash commands
-  registerCommands(client, config);
-  
-  // Start polling for resource changes (or use webhooks)
-  setInterval(() => checkForUpdates(config), 60000);
-});
-
-// Handle slash commands
-client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
-  
-  if (interaction.commandName === 'stock') {
-    // Fetch resources from API
-    const resources = await fetch(`${API_URL}/api/resources?guildId=${guildId}`)
-      .then(r => r.json());
-    
-    // Create embed and reply
-    await interaction.reply({ embeds: [createStockEmbed(resources)] });
-  }
-  
-  if (interaction.commandName === 'order') {
-    // Handle order creation/fulfillment
-    // Award points via PUT /api/resources
-  }
-});
-
-Example Bot Architecture (discord.py):
----------------------------------------
-import discord
-from discord import app_commands
-import aiohttp
-
-class ResourceBot(discord.Client):
-    def __init__(self):
-        intents = discord.Intents.default()
-        intents.members = True
-        super().__init__(intents=intents)
-        self.tree = app_commands.CommandTree(self)
-    
-    async def on_ready(self):
-        # Load config from website API
-        async with aiohttp.ClientSession() as session:
-            async with session.get(f'{API_URL}/api/bot/config/{guild_id}') as r:
-                self.config = await r.json()
-        
-        # Sync slash commands
-        await self.tree.sync()
-        
-        # Start background tasks
-        self.loop.create_task(self.check_for_updates())
-
-@bot.tree.command(name="stock", description="Show current resource levels")
-async def stock(interaction: discord.Interaction):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(f'{API_URL}/api/resources?guildId={guild_id}') as r:
-            resources = await r.json()
-    
-    embed = create_stock_embed(resources)
-    await interaction.response.send_message(embed=embed)
-
-Best Practices:
----------------
-• Cache config from /api/bot/config, reload periodically
-• Use embeds for rich formatting
-• Implement permission checks before allowing commands
-• Handle API errors gracefully (timeouts, rate limits)
-• Log all bot actions for debugging
-• Use slash commands instead of prefix commands
-• Implement cooldowns on resource-intensive commands
-• Store order data in your own database or use website API
-
-Testing Your Bot:
------------------
-1. Start bot locally with test token
-2. Add to your test Discord server
-3. Configure bot channels and roles via website dashboard
-4. Test each slash command
-5. Verify points are awarded correctly
-6. Check notifications appear in configured channels
-7. Test permission restrictions
-8. Monitor for errors and fix issues
-
-====================================================================
-ADDITIONAL RESOURCES
-====================================================================
-
-Environment Variables:
-----------------------
-For complete list of environment variables and configuration options,
-see ENVIRONMENT.md in the repository or contact your system administrator.
-
-Key variables:
-• DISCORD_CLIENT_ID - Your Discord OAuth app client ID
-• DISCORD_CLIENT_SECRET - Your Discord OAuth app secret
-• DISCORD_BOT_TOKEN - Your Discord bot token (for bot features)
-• DISCORD_ROLES_CONFIG - JSON array defining role permissions
-• NEXTAUTH_SECRET - Secret for session encryption
-• TURSO_DATABASE_URL - Database connection URL
-• TURSO_AUTH_TOKEN - Database authentication token
-
-Database Schema:
-----------------
-Main tables:
-• users - Discord user profiles
-• guilds - In-game guilds (Houses, Clans)
-• resources - Resource inventory with quantities
-• resource_history - Audit trail of all changes
-• user_points - Leaderboard scores
-• bot_configurations - Discord bot settings per server
-
-For schema details, see database-schema.md or use Drizzle Studio:
-npm run db:studio
-
-Deployment Guide:
------------------
-• Free deployment on Vercel + Turso
-• Supports serverless and edge runtime
-• Automatic deployments from GitHub
-• Environment variables configured in Vercel dashboard
-• Database migrations via npm run db:push
-
-For detailed deployment steps, see DEPLOYMENT.md
-
-Discord Bot Frameworks:
------------------------
-• Discord.js (JavaScript/TypeScript) - https://discord.js.org
-• discord.py (Python) - https://discordpy.readthedocs.io
-• Discord4J (Java) - https://discord4j.com
-• Discordia (Lua) - https://github.com/SinisterRectus/Discordia
+/stock refresh
+• Force refresh the stock embed
+• Useful if auto-update is disabled
+• Manually syncs Discord with website data
 
 ====================================================================
 NEED SUPPORT?
 ====================================================================
 
 For additional help, feature requests, or bug reports:
-• Contact your server administrator or system owner
-• Check the main dashboard for system announcements
-• Review your bot configuration settings carefully
-• Consult the README.md file in the repository
-• Check deployment logs in Vercel dashboard
-• Review database logs in Turso dashboard
+• Contact your server administrator for configuration assistance
+• Check the main dashboard for system announcements and updates
+• Review your bot configuration settings carefully in the dashboard
+• Report issues or request features through your community channels
 
-Common Support Scenarios:
--------------------------
-• Configuration issues → Check environment variables
-• Permission errors → Verify Discord roles and OAuth scopes
-• Bot offline → Check bot token and hosting service
-• Database errors → Run npm run db:push to apply migrations
-• Points not awarded → Check bonus settings and action type (ADD vs SET)
-
-====================================================================
-TECHNICAL SPECIFICATIONS
-====================================================================
-
-Technology Stack:
+Common Questions:
 -----------------
-• Frontend: Next.js 14 (App Router), React, TypeScript
-• Styling: Tailwind CSS with dark mode support
-• Authentication: NextAuth.js with Discord OAuth
-• Database: Turso (libSQL/SQLite), Drizzle ORM
-• Hosting: Vercel (Edge Runtime compatible)
-• Bot Framework: Your choice (Discord.js, discord.py, etc.)
+Q: How do I add the bot to my Discord server?
+A: Click the "Add Bot to Server" button in the Bot Dashboard after 
+   selecting your server from the dropdown.
 
-Performance Characteristics:
-----------------------------
-• JWT session tokens: 4-hour lifespan
-• API response times: <100ms (typical)
-• Database queries: Indexed for fast lookups
-• Pagination: 25 items per page default
-• Real-time updates: Poll every 60 seconds or use webhooks
+Q: Who can configure the bot settings?
+A: Server owners and administrators can access the Bot Dashboard. 
+   Admin roles configured in the dashboard can also modify settings.
 
-Security Features:
-------------------
-• Discord OAuth 2.0 authentication
-• Role-based access control (RBAC)
-• CSRF protection via NextAuth
-• Environment variable encryption
-• SQL injection prevention (Drizzle ORM parameterized queries)
-• GDPR compliance: Data export and deletion
+Q: How are points calculated?
+A: Base points are 0.1 per resource. ADD actions receive the configured
+   website or Discord bonus (0-200%). SET actions award flat 1 point.
+   Status bonuses add +10% for critical, +5% for below target.
+
+Q: Can multiple servers share the same resources?
+A: Yes! Multiple Discord servers can link to the same in-game guild,
+   allowing alliances to share resource tracking while maintaining
+   independent bot configurations.
+
+Q: What happens if I change the bonus percentages?
+A: New bonuses apply to all future actions. Previously awarded points
+   are not retroactively changed.
+
+Q: How do I reset or clear old orders?
+A: Use /order cancel for individual orders, or contact support for
+   bulk order management.
+
+====================================================================
+SERVICE INFORMATION
+====================================================================
+
+This Resource Tracker system is hosted and maintained for your use.
+All technical infrastructure, database management, and bot hosting
+are handled centrally.
+
+Data Privacy & Security:
+------------------------
+• Your Discord data is used only for authentication and permissions
+• Resource data is stored securely in encrypted databases
+• GDPR compliant: You can export or delete your data at any time
+• Activity logs maintain transparency of all actions
+• No data is shared with third parties
+
+System Availability:
+--------------------
+• Bot and website are hosted 24/7 for continuous access
+• Regular backups ensure data protection
+• Automatic updates deployed without service interruption
+• Monitored for performance and uptime
+
+Your Responsibilities:
+----------------------
+• Configure your Discord server settings properly
+• Ensure bot has required permissions in your server
+• Manage admin roles and channel assignments
+• Monitor resource tracking for your guild
+• Report any issues or concerns promptly
 
 ====================================================================
 VERSION INFORMATION
 ====================================================================
 
 Resource Tracker Version: 1.0
+Documentation Version: 3.0
 Last Updated: November 2025
-Documentation Version: 2.0
 
-Compatibility:
---------------
-• Next.js: 14.x
-• Node.js: 18.x or higher
-• Discord API: v10
-• Turso: Latest
-• Modern browsers: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
+System Features:
+----------------
+• Discord OAuth authentication
+• Multi-server support with independent configurations
+• Multi-guild resource tracking
+• Points system with configurable bonuses (0-200%)
+• Real-time leaderboards
+• Order management system
+• Complete activity audit logs
+• Auto-updating Discord embeds
+• Website and Discord integration
+• Mobile-responsive design with dark mode
 
 ====================================================================
 END OF DOCUMENTATION
 ====================================================================
 
-This documentation covers the Discord Bot Configuration Dashboard.
-For complete system documentation including deployment, customization,
-and advanced features, consult the full documentation set in your
-repository or contact your system administrator.
+This guide covers everything you need to configure and use the
+Discord Bot Dashboard and Resource Tracker system.
+
+For ongoing support and feature requests, contact your community
+administrators or use the designated support channels.
 
 Thank you for using Resource Tracker!
+====================================================================
