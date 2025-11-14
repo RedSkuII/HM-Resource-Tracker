@@ -57,6 +57,7 @@ async function applyMigrations() {
       PRAGMA table_info(bot_configurations)
     `)
     const hasWebsiteBonus = columns.rows.some(r => r.name === 'website_bonus_percentage')
+    const hasInGameGuildId = columns.rows.some(r => r.name === 'in_game_guild_id')
 
     if (!hasWebsiteBonus) {
       console.log('\n⚠️  Missing website_bonus_percentage column. Applying migration 0008...')
@@ -69,6 +70,16 @@ async function applyMigrations() {
       console.log('✅ Migration 0008 applied!')
     } else {
       console.log('✅ website_bonus_percentage column already exists')
+    }
+
+    if (!hasInGameGuildId) {
+      console.log('\n⚠️  Missing in_game_guild_id column. Applying migration 0012...')
+      await client.execute(`
+        ALTER TABLE bot_configurations ADD COLUMN in_game_guild_id TEXT
+      `)
+      console.log('✅ Migration 0012 applied (in_game_guild_id column added)!')
+    } else {
+      console.log('✅ in_game_guild_id column already exists')
     }
 
     // Verify final state
