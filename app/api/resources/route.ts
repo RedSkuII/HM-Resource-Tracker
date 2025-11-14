@@ -29,22 +29,45 @@ const calculateResourceStatus = (quantity: number, targetQuantity: number | null
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('[API /api/resources] Starting GET request')
     const { searchParams } = new URL(request.url)
     const guildId = searchParams.get('guildId')
-    console.log('[API /api/resources] guildId:', guildId)
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    const limit = parseInt(searchParams.get('limit') || '25', 10)
     
-    const startTime = Date.now()
+    // Validate pagination params
+    const validatedPage = Math.max(1, page)
+    const validatedLimit = Math.min(Math.max(1, limit), 100) // Max 100 per page
+    const offset = (validatedPage - 1) * validatedLimit
     
-    // TEST: Fetch with limit to see if dataset size is the issue
-    console.log('[API /api/resources] Fetching with LIMIT 10')
-    const allResources = await db.select().from(resources).limit(10)
+    // Build query with guild filter if provided
+    const query = guildId 
+      ? db.select().from(resources).where(eq(resources.guildId, guildId))
+      : db.select().from(resources)
     
-    const queryTime = Date.now() - startTime
-    console.log(`[API /api/resources] Query completed in ${queryTime}ms, found ${allResources.length} resources`)
+    // Get total count for pagination metadata
+    const countQuery = guildId
+      ? db.select().from(resources).where(eq(resources.guildId, guildId))
+      : db.select().from(resources)
     
-    // Return resources without any transformation to avoid serialization issues
-    return NextResponse.json(allResources, {
+    const [paginatedResources, allResources] = await Promise.all([
+      query.limit(validatedLimit).offset(offset),
+      countQuery
+    ])
+    
+    const totalCount = allResources.length
+    const totalPages = Math.ceil(totalCount / validatedLimit)
+    
+    return NextResponse.json({
+      resources: paginatedResources,
+      pagination: {
+        page: validatedPage,
+        limit: validatedLimit,
+        totalCount,
+        totalPages,
+        hasNextPage: validatedPage < totalPages,
+        hasPreviousPage: validatedPage > 1
+      }
+    }, {
       headers: {
         'Cache-Control': 'no-store, no-cache, max-age=0',
       }
