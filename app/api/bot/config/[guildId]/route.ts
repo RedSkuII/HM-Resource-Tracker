@@ -188,6 +188,8 @@ export async function PUT(
     const { guildId } = params
     body = await request.json()
 
+    console.log('[BOT-CONFIG] PUT request received:', { guildId, body })
+
     // Validate required fields
     const {
       guildName,
@@ -218,9 +220,9 @@ export async function PUT(
         guildId,
         guildName: guildName || null,
         inGameGuildId: inGameGuildId || null,
-        botChannelId: botChannelId ? JSON.stringify(botChannelId) : null,
-        orderChannelId: orderChannelId ? JSON.stringify(orderChannelId) : null,
-        adminRoleId: adminRoleId ? JSON.stringify(adminRoleId) : null,
+        botChannelId: (botChannelId && botChannelId.length > 0) ? JSON.stringify(botChannelId) : null,
+        orderChannelId: (orderChannelId && orderChannelId.length > 0) ? JSON.stringify(orderChannelId) : null,
+        adminRoleId: (adminRoleId && adminRoleId.length > 0) ? JSON.stringify(adminRoleId) : null,
         autoUpdateEmbeds: autoUpdateEmbeds ?? true,
         notifyOnWebsiteChanges: notifyOnWebsiteChanges ?? true,
         orderFulfillmentBonus: orderFulfillmentBonus ?? 50,
@@ -256,9 +258,9 @@ export async function PUT(
 
       if (guildName !== undefined) updateData.guildName = guildName || null
       if (inGameGuildId !== undefined) updateData.inGameGuildId = inGameGuildId || null
-      if (botChannelId !== undefined) updateData.botChannelId = botChannelId ? JSON.stringify(botChannelId) : null
-      if (orderChannelId !== undefined) updateData.orderChannelId = orderChannelId ? JSON.stringify(orderChannelId) : null
-      if (adminRoleId !== undefined) updateData.adminRoleId = adminRoleId ? JSON.stringify(adminRoleId) : null
+      if (botChannelId !== undefined) updateData.botChannelId = (botChannelId && botChannelId.length > 0) ? JSON.stringify(botChannelId) : null
+      if (orderChannelId !== undefined) updateData.orderChannelId = (orderChannelId && orderChannelId.length > 0) ? JSON.stringify(orderChannelId) : null
+      if (adminRoleId !== undefined) updateData.adminRoleId = (adminRoleId && adminRoleId.length > 0) ? JSON.stringify(adminRoleId) : null
       if (autoUpdateEmbeds !== undefined) updateData.autoUpdateEmbeds = autoUpdateEmbeds
       if (notifyOnWebsiteChanges !== undefined) updateData.notifyOnWebsiteChanges = notifyOnWebsiteChanges
       if (orderFulfillmentBonus !== undefined) updateData.orderFulfillmentBonus = orderFulfillmentBonus
