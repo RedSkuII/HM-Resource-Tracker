@@ -401,7 +401,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       setError(null)
       const timestamp = Date.now()
       const guildParam = guildId ? `&guildId=${guildId}` : ''
-      const url = `/api/resources-simple?t=${timestamp}${guildParam}`
+      const url = `/api/resources?t=${timestamp}${guildParam}`
       console.log('[ResourceTable] Fetching from URL:', url)
       
       // Add timeout to fetch
