@@ -34,24 +34,22 @@ export async function GET(request: NextRequest) {
     const guildId = searchParams.get('guildId')
     console.log('[API /api/resources] guildId:', guildId)
     
-    let allResources
     const startTime = Date.now()
     
-    if (guildId) {
-      console.log('[API /api/resources] Querying by guildId:', guildId)
-      // Filter by guild
-      allResources = await db.select().from(resources).where(eq(resources.guildId, guildId))
-    } else {
-      console.log('[API /api/resources] Querying all resources')
-      // Return all resources (for backwards compatibility or admin views)
-      allResources = await db.select().from(resources)
-    }
+    // TEMPORARILY: Fetch ALL resources without filtering to test if WHERE clause is the issue
+    console.log('[API /api/resources] Fetching ALL resources (no filter)')
+    const allResources = await db.select().from(resources)
+    
+    // Filter client-side for now
+    const filteredResources = guildId 
+      ? allResources.filter(r => r.guildId === guildId)
+      : allResources
     
     const queryTime = Date.now() - startTime
-    console.log(`[API /api/resources] Query completed in ${queryTime}ms, found ${allResources.length} resources`)
+    console.log(`[API /api/resources] Query completed in ${queryTime}ms, found ${allResources.length} total, ${filteredResources.length} for guild`)
     
     // Return resources without any transformation to avoid serialization issues
-    return NextResponse.json(allResources, {
+    return NextResponse.json(filteredResources, {
       headers: {
         'Cache-Control': 'no-store, no-cache, max-age=0',
       }
