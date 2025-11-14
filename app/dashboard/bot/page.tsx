@@ -72,6 +72,7 @@ export default function BotDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showDocumentation, setShowDocumentation] = useState(false)
   
   // Bot invite URL
   const getBotInviteUrl = () => {
@@ -254,6 +255,20 @@ export default function BotDashboardPage() {
     }
   }, [selectedDiscordServerId, botIsPresent])
 
+  // Close documentation modal with Escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showDocumentation) {
+        setShowDocumentation(false)
+      }
+    }
+
+    if (showDocumentation) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [showDocumentation])
+
   const handleSaveConfig = async () => {
     if (!config || !selectedDiscordServerId) return
 
@@ -327,7 +342,7 @@ export default function BotDashboardPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Navigation Buttons */}
-        <div className="mb-6 flex gap-3">
+        <div className="mb-6 flex gap-3 flex-wrap">
           <button
             onClick={() => router.push('/dashboard')}
             className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
@@ -345,6 +360,15 @@ export default function BotDashboardPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             </svg>
             Resources
+          </button>
+          <button
+            onClick={() => setShowDocumentation(true)}
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2 ml-auto"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            Documentation
           </button>
         </div>
 
@@ -730,6 +754,175 @@ export default function BotDashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Documentation Modal */}
+      {showDocumentation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                Documentation
+              </h2>
+              <button
+                onClick={() => setShowDocumentation(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content - Scrollable */}
+            <div className="flex-1 overflow-y-auto p-6 prose prose-sm dark:prose-invert max-w-none">
+              <div className="space-y-6">
+                <section>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">🤖 Discord Bot Configuration Guide</h3>
+                  
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                      <strong>Quick Tip:</strong> Hold <kbd className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs">Ctrl</kbd> (Windows/Linux) or <kbd className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs">Cmd</kbd> (Mac) to select multiple channels or roles in the dropdowns below.
+                    </p>
+                  </div>
+
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mt-4 mb-2">Server Selection & Sorting</h4>
+                  <p className="text-gray-700 dark:text-gray-300 mb-2">Discord servers are automatically sorted in the following order:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-gray-700 dark:text-gray-300 ml-4">
+                    <li><strong>Servers with bot installed</strong> (marked with ✅) appear first</li>
+                    <li>Then alphabetically by server name</li>
+                    <li>Servers without the bot (marked with ⚠️) appear at the bottom</li>
+                    <li>Your owned servers show a 👑 crown icon</li>
+                  </ol>
+
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mt-6 mb-2">Multi-Select Channels & Roles</h4>
+                  <p className="text-gray-700 dark:text-gray-300 mb-2">You can select multiple channels and roles for each setting:</p>
+                  <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 ml-4">
+                    <li><strong>Bot Channels:</strong> Where the bot posts stock/inventory updates (blue tags)</li>
+                    <li><strong>Order Channels:</strong> Where members can place orders (green tags)</li>
+                    <li><strong>Admin Roles:</strong> Roles that can manage bot configuration (purple tags)</li>
+                  </ul>
+                  <p className="text-gray-700 dark:text-gray-300 mt-2">
+                    Selected items appear as colored tags below the dropdown. Click the <strong>×</strong> on any tag to remove it.
+                  </p>
+
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mt-6 mb-2">Points System & Bonuses</h4>
+                  <p className="text-gray-700 dark:text-gray-300 mb-2">
+                    The <strong>Resource Update Bonus (%)</strong> field controls point multipliers when members update resources. This scales from 0% to 200%:
+                  </p>
+                  <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 ml-4">
+                    <li><strong>0%:</strong> Base points only (0.1 per resource added)</li>
+                    <li><strong>50%:</strong> 1.5× multiplier (0.15 per resource)</li>
+                    <li><strong>100%:</strong> 2× multiplier (0.2 per resource) - <em>Default</em></li>
+                    <li><strong>200%:</strong> 3× multiplier (0.3 per resource) - <em>Maximum</em></li>
+                  </ul>
+                  <p className="text-gray-700 dark:text-gray-300 mt-2">
+                    <strong>Note:</strong> Bonuses only apply to ADD actions, not SET or REMOVE operations.
+                  </p>
+
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mt-6 mb-2">Bot Behavior Toggles</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-gray-700 dark:text-gray-300 font-medium">✅ Auto-Update Discord Embeds</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm ml-4">
+                        When enabled, the bot automatically updates stock embeds in Discord whenever resources change on the website. Disable this if you prefer manual updates.
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-700 dark:text-gray-300 font-medium">✅ Notify on Website Resource Changes</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm ml-4">
+                        When enabled, the bot sends notifications to bot channels when resources are updated via the website. Useful for keeping the community informed.
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-700 dark:text-gray-300 font-medium">✅ Allow Public Orders</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm ml-4">
+                        When enabled, any server member can place orders. When disabled, only users with admin roles can place orders (more restricted mode).
+                      </p>
+                    </div>
+                  </div>
+
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mt-6 mb-2">Workflow for Server Owners</h4>
+                  <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 ml-4">
+                    <li>Select your Discord server from the dropdown (bot must be installed)</li>
+                    <li>Link it to an in-game guild (the database that stores resources)</li>
+                    <li>Choose bot channels where inventory updates will be posted</li>
+                    <li>Choose order channels where members can request resources</li>
+                    <li>Select admin roles that can manage the bot configuration</li>
+                    <li>Set the resource update bonus percentage (0-200%)</li>
+                    <li>Configure notification preferences with the three toggles</li>
+                    <li>Click <strong>Save Configuration</strong></li>
+                  </ol>
+
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mt-6 mb-2">Multi-Server Best Practices</h4>
+                  <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 ml-4">
+                    <li>Each Discord server can link to one in-game guild</li>
+                    <li>Multiple Discord servers can link to the same in-game guild (useful for alliances)</li>
+                    <li>Each server can have different bonus percentages and notification settings</li>
+                    <li>Admin roles are server-specific, not shared across servers</li>
+                  </ul>
+
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mt-6 mb-2">Troubleshooting</h4>
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-gray-700 dark:text-gray-300 font-medium">❌ Can't see my Discord server in the list?</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm ml-4">
+                        Make sure you've granted the app permission to see your servers when logging in. Try logging out and back in, and check the OAuth permissions.
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-700 dark:text-gray-300 font-medium">⚠️ Server shows "Bot needs to be added to this server"?</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm ml-4">
+                        The bot isn't installed on that server. Only servers where the bot is installed can be configured. Add the bot to your server first.
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-700 dark:text-gray-300 font-medium">🔄 Changes not saving?</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm ml-4">
+                        Check the browser console for errors. Make sure you've selected at least one in-game guild. Verify you have admin permissions on the Discord server.
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-700 dark:text-gray-300 font-medium">📊 Bot not posting updates?</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm ml-4">
+                        Ensure "Auto-Update Discord Embeds" is enabled. Check that the bot has permissions to post in the selected bot channels. Verify the channel IDs are correct.
+                      </p>
+                    </div>
+                  </div>
+                </section>
+
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Need More Help?</h4>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    For complete documentation including API endpoints, deployment guides, and architecture details, see the full{' '}
+                    <a 
+                      href="https://github.com/RedSkiesIO/ResourceTracker" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      README on GitHub
+                    </a>.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+              <button
+                onClick={() => setShowDocumentation(false)}
+                className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
