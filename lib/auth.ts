@@ -12,8 +12,8 @@ interface UserPermissions {
   hasDataExportAccess: boolean
 }
 
-// Discord API scopes needed for role checking
-const scopes = ['identify', 'guilds.members.read'].join(' ')
+// Discord API scopes needed for role checking and server access
+const scopes = ['identify', 'guilds', 'guilds.members.read'].join(' ')
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -206,6 +206,11 @@ export const authOptions: NextAuthOptions = {
           hasUserManagementAccess: false,
           hasDataExportAccess: false
         }
+      }
+      
+      // Add access token to session for API calls
+      if (token.accessToken) {
+        (session as any).accessToken = token.accessToken
       }
 
       return session
