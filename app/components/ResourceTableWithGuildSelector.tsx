@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import GuildSelector from './GuildSelector'
 import { ResourceTable } from './ResourceTable'
 
@@ -10,6 +10,15 @@ interface ResourceTableWithGuildSelectorProps {
 
 export function ResourceTableWithGuildSelector({ userId }: ResourceTableWithGuildSelectorProps) {
   const [selectedGuildId, setSelectedGuildId] = useState<string | null>(null)
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  // Mark as initialized once a guild is selected
+  useEffect(() => {
+    if (selectedGuildId && !isInitialized) {
+      console.log('[ResourceTableWithGuildSelector] Guild initialized:', selectedGuildId)
+      setIsInitialized(true)
+    }
+  }, [selectedGuildId, isInitialized])
 
   return (
     <div className="space-y-6">
@@ -31,9 +40,12 @@ export function ResourceTableWithGuildSelector({ userId }: ResourceTableWithGuil
         <ResourceTable userId={userId} guildId={selectedGuildId} />
       ) : (
         <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-8 text-center">
-          <p className="text-gray-500 dark:text-gray-400">
-            Select a guild to view resources
-          </p>
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-500 border-t-transparent"></div>
+            <p className="text-gray-500 dark:text-gray-400">
+              Loading guilds...
+            </p>
+          </div>
         </div>
       )}
     </div>

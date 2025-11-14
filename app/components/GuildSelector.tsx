@@ -24,15 +24,23 @@ export default function GuildSelector({ selectedGuildId, onGuildChange }: GuildS
 
   const fetchGuilds = async () => {
     try {
-      const response = await fetch('/api/guilds')
+      const response = await fetch('/api/guilds', {
+        headers: {
+          'Cache-Control': 'no-cache',
+        }
+      })
       if (response.ok) {
         const data = await response.json()
+        console.log('Guilds fetched:', data)
         setGuilds(data)
         
         // Auto-select first guild if none selected
         if (!selectedGuildId && data.length > 0) {
+          console.log('Auto-selecting guild:', data[0].id)
           onGuildChange(data[0].id)
         }
+      } else {
+        console.error('Failed to fetch guilds:', response.status, response.statusText)
       }
     } catch (error) {
       console.error('Error fetching guilds:', error)

@@ -395,27 +395,37 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
   // Fetch resources from API
   const fetchResources = async () => {
     try {
+      console.log('[ResourceTable] Fetching resources for guild:', guildId)
       setLoading(true)
       const timestamp = Date.now()
       const guildParam = guildId ? `&guildId=${guildId}` : ''
-      const response = await fetch(`/api/resources?t=${timestamp}${guildParam}`, {
+      const url = `/api/resources?t=${timestamp}${guildParam}`
+      console.log('[ResourceTable] Fetching from URL:', url)
+      
+      const response = await fetch(url, {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache',
         }
       })
       
+      console.log('[ResourceTable] Response status:', response.status)
+      
       if (response.ok) {
         const data = await response.json()
+        console.log('[ResourceTable] Received resources:', data.length)
         setResources(data.map((resource: any) => ({
           ...resource,
           updatedAt: new Date(resource.updatedAt).toISOString(),
           createdAt: new Date(resource.createdAt).toISOString(),
         })))
+      } else {
+        console.error('[ResourceTable] Failed to fetch resources:', response.status, response.statusText)
       }
     } catch (error) {
-      console.error('Error fetching resources:', error)
+      console.error('[ResourceTable] Error fetching resources:', error)
     } finally {
+      console.log('[ResourceTable] Setting loading to false')
       setLoading(false)
     }
   }
