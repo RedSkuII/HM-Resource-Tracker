@@ -36,20 +36,15 @@ export async function GET(request: NextRequest) {
     
     const startTime = Date.now()
     
-    // TEMPORARILY: Fetch ALL resources without filtering to test if WHERE clause is the issue
-    console.log('[API /api/resources] Fetching ALL resources (no filter)')
-    const allResources = await db.select().from(resources)
-    
-    // Filter client-side for now
-    const filteredResources = guildId 
-      ? allResources.filter(r => r.guildId === guildId)
-      : allResources
+    // TEST: Fetch with limit to see if dataset size is the issue
+    console.log('[API /api/resources] Fetching with LIMIT 10')
+    const allResources = await db.select().from(resources).limit(10)
     
     const queryTime = Date.now() - startTime
-    console.log(`[API /api/resources] Query completed in ${queryTime}ms, found ${allResources.length} total, ${filteredResources.length} for guild`)
+    console.log(`[API /api/resources] Query completed in ${queryTime}ms, found ${allResources.length} resources`)
     
     // Return resources without any transformation to avoid serialization issues
-    return NextResponse.json(filteredResources, {
+    return NextResponse.json(allResources, {
       headers: {
         'Cache-Control': 'no-store, no-cache, max-age=0',
       }
