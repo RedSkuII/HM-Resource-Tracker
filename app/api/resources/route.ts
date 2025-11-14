@@ -40,31 +40,30 @@ export async function GET(request: NextRequest) {
     const offset = (validatedPage - 1) * validatedLimit
     
     // Build query with guild filter if provided
-    const query = guildId 
+    const baseQuery = guildId 
       ? db.select().from(resources).where(eq(resources.guildId, guildId))
       : db.select().from(resources)
     
-    // Get total count for pagination metadata
-    const countQuery = guildId
-      ? db.select().from(resources).where(eq(resources.guildId, guildId))
-      : db.select().from(resources)
+    // Get paginated results
+    const paginatedResources = await baseQuery.limit(validatedLimit).offset(offset)
     
-    const [paginatedResources, allResources] = await Promise.all([
-      query.limit(validatedLimit).offset(offset),
-      countQuery
-    ])
+    // For now, estimate total from first page or use a simple heuristic
+    // If we got less than limit, we're on the last page
+    const isPartialPage = paginatedResources.length < validatedLimit
+    const estimatedTotal = isPartialPage 
+      ? offset + paginatedResources.length 
+      : (validatedPage + 1) * validatedLimit // Estimate there's at least one more page
     
-    const totalCount = allResources.length
-    const totalPages = Math.ceil(totalCount / validatedLimit)
+    const totalPages = Math.ceil(estimatedTotal / validatedLimit)
     
     return NextResponse.json({
       resources: paginatedResources,
       pagination: {
         page: validatedPage,
         limit: validatedLimit,
-        totalCount,
+        totalCount: estimatedTotal,
         totalPages,
-        hasNextPage: validatedPage < totalPages,
+        hasNextPage: !isPartialPage,
         hasPreviousPage: validatedPage > 1
       }
     }, {
