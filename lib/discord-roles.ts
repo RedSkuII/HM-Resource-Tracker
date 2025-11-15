@@ -192,3 +192,8 @@ export function hasBotAdminAccess(userRoles: string[], isServerOwner: boolean = 
   
   return userRoles.some(role => botAdminRoles.includes(role))
 }
+
+// Helper function to check if user owns any of their Discord servers
+export function isDiscordServerOwner(session: any): boolean {
+  return session?.user?.ownedServerIds?.length > 0 || false
+}

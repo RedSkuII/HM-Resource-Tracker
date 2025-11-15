@@ -125,8 +125,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const { getServerSession, authOptions, getUserIdentifier, hasResourceAdminAccess } = await getAuthDependencies()
   const session = await getServerSession(authOptions)
+  
+  // Check if user is a server owner
+  const { isDiscordServerOwner } = await import('@/lib/discord-roles')
+  const isOwner = isDiscordServerOwner(session)
 
-  if (!session || !hasResourceAdminAccess(session.user.roles)) {
+  if (!session || !hasResourceAdminAccess(session.user.roles, isOwner)) {
     return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
   }
 
@@ -216,8 +220,12 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   const { getServerSession, authOptions, getUserIdentifier, hasResourceAccess, hasResourceAdminAccess, awardPoints } = await getAuthDependencies()
   const session = await getServerSession(authOptions)
+  
+  // Check if user is a server owner
+  const { isDiscordServerOwner } = await import('@/lib/discord-roles')
+  const isOwner = isDiscordServerOwner(session)
 
-  if (!session || !hasResourceAccess(session.user.roles)) {
+  if (!session || !hasResourceAccess(session.user.roles, isOwner)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -229,7 +237,7 @@ export async function PUT(request: NextRequest) {
 
     // Handle resource metadata update (admin only)
     if (resourceMetadata) {
-      if (!hasResourceAdminAccess(session.user.roles)) {
+      if (!hasResourceAdminAccess(session.user.roles, isOwner)) {
         return NextResponse.json({ error: 'Admin access required for metadata updates' }, { status: 403 })
       }
 

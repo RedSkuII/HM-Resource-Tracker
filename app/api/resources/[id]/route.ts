@@ -29,7 +29,11 @@ export async function PUT(
 ) {
   const session = await getServerSession(authOptions)
   
-  if (!session || !hasResourceAccess(session.user.roles)) {
+  // Check if user is a server owner
+  const { isDiscordServerOwner } = await import('@/lib/discord-roles')
+  const isOwner = isDiscordServerOwner(session)
+  
+  if (!session || !hasResourceAccess(session.user.roles, isOwner)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -153,7 +157,11 @@ export async function DELETE(
 ) {
   const session = await getServerSession(authOptions)
   
-  if (!session || !hasResourceAdminAccess(session.user.roles)) {
+  // Check if user is a server owner
+  const { isDiscordServerOwner } = await import('@/lib/discord-roles')
+  const isOwner = isDiscordServerOwner(session)
+  
+  if (!session || !hasResourceAdminAccess(session.user.roles, isOwner)) {
     return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
   }
 

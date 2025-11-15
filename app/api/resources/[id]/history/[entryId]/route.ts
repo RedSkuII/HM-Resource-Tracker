@@ -18,8 +18,12 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Check if user is a server owner
+    const { isDiscordServerOwner } = await import('@/lib/discord-roles')
+    const isOwner = isDiscordServerOwner(session)
+
     const userRoles = session.user.roles || []
-    if (!hasResourceAdminAccess(userRoles)) {
+    if (!hasResourceAdminAccess(userRoles, isOwner)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 

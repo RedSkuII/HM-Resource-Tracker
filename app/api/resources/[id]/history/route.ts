@@ -13,7 +13,11 @@ export async function GET(
 ) {
   const session = await getServerSession(authOptions)
   
-  if (!session || !hasResourceAccess(session.user.roles)) {
+  // Check if user is a server owner
+  const { isDiscordServerOwner } = await import('@/lib/discord-roles')
+  const isOwner = isDiscordServerOwner(session)
+  
+  if (!session || !hasResourceAccess(session.user.roles, isOwner)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
