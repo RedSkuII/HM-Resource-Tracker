@@ -29,9 +29,10 @@ Discord Server Dropdown:
 
 In-Game Guild Dropdown:
 - Select which in-game guild (House, Clan) to track
-- Filtered by selected Discord server
-- Links resources to specific Discord communities
-- Each Discord server can track a different in-game guild
+- Each Discord server can link to ONE in-game guild only
+- Each in-game guild can only be linked to ONE Discord server
+- This ensures clear ownership and prevents conflicts
+- Once linked, only that Discord server can configure that guild
 
 Adding Bot to Server:
 1. Select your Discord server from dropdown
@@ -189,46 +190,58 @@ Step 8: Verify Bot Functionality
 • Check points are awarded correctly
 
 ====================================================================
-MULTI-SERVER BEST PRACTICES
+MULTI-SERVER & MULTI-GUILD ARCHITECTURE
 ====================================================================
 
-Understanding Multi-Server Architecture:
-----------------------------------------
-• Each Discord server can have independent bot configuration
-• Multiple Discord servers can track the same in-game guild (for 
-  alliances)
-• Resources are shared across all Discord servers linked to the same 
-  in-game guild
-• Leaderboards show contributions from all linked Discord servers
-• Each server can have different bonus percentages and notification 
-  settings
+Understanding the 1:1 Relationship:
+-----------------------------------
+• Each Discord server can link to ONE in-game guild only
+• Each in-game guild can only be linked to ONE Discord server
+• This prevents conflicts and ensures clear ownership
+• Once a guild is linked to a Discord server, other servers cannot claim it
+• Each Discord server has independent bot configuration (channels, roles, bonuses)
+
+Why This Structure?
+-------------------
+• Clear Ownership: Prevents multiple communities from conflicting over resource 
+  management
+• Data Integrity: Ensures only one team controls each in-game guild's data
+• Permission Clarity: Discord roles and permissions map cleanly to one guild
+• Leaderboard Accuracy: Points and contributions belong to one community
+• Configuration Simplicity: No confusion about which server's settings apply
 
 Recommended Configurations:
 ----------------------------
-• Single In-Game Guild, Multiple Discord Servers:
-  - Alliance scenario: Multiple Discord communities sharing resources
-  - Each server configures their own channels and roles
-  - Points tracked globally across all servers
-  - Set similar bonus percentages for fairness
+• Single Discord Server, Single In-Game Guild:
+  - Standard setup: One community tracking one guild
+  - Simplest configuration
+  - All resources and points tracked for your guild
+  - Perfect for most organizations
 
-• Multiple In-Game Guilds, Single Discord Server:
-  - Multi-faction scenario: Tracking different Houses/Clans
-  - Create separate channels for each guild
-  - Configure bot for primary guild only
-  - Use website for other guilds
+• Single Discord Server, Tracking Multiple Guilds:
+  - NOT CURRENTLY SUPPORTED via bot dashboard
+  - Workaround: Use website directly for additional guilds
+  - Contact support if you need multi-guild tracking from one Discord
 
-• Multiple Servers, Multiple Guilds:
-  - Complex organization with separate communities
-  - Each server links to their primary in-game guild
-  - Independent tracking and leaderboards
-  - Separate admin teams per server
+• Multiple Discord Servers, Multiple In-Game Guilds:
+  - Each Discord server links to a different in-game guild
+  - Separate communities managing separate guilds
+  - Independent tracking and leaderboards per server
+  - Example: Alliance with multiple Houses, each with their own Discord
+
+What If You Need to Switch Guilds?
+-----------------------------------
+• Contact your administrator to unlink the current guild from your Discord server
+• Once unlinked, you can link to a different in-game guild
+• Previous data is preserved but no longer accessible from your Discord server
+• This prevents accidental conflicts
 
 Important Notes:
 ----------------
-• Admin roles are server-specific, not shared across servers
+• Admin roles are server-specific, not shared across Discord servers
 • Bot presence must be confirmed before configuration appears
 • Configuration changes only affect the selected Discord server
-• In-game guild resources are shared, but Discord permissions are not
+• If your desired guild is already linked elsewhere, it cannot be selected
 
 ====================================================================
 TROUBLESHOOTING
