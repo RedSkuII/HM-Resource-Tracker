@@ -18,18 +18,20 @@ interface GuildSelectorProps {
 export default function GuildSelector({ selectedGuildId, onGuildChange, hasLoadedFromStorage = false }: GuildSelectorProps) {
   const [guilds, setGuilds] = useState<Guild[]>([])
   const [loading, setLoading] = useState(true)
+  const [hasAutoSelected, setHasAutoSelected] = useState(false)
 
   useEffect(() => {
     fetchGuilds()
   }, [])
 
-  // Auto-select first guild when both conditions are met
+  // Auto-select first guild when both conditions are met (only once)
   useEffect(() => {
-    if (!selectedGuildId && hasLoadedFromStorage && guilds.length > 0 && !loading) {
+    if (!selectedGuildId && hasLoadedFromStorage && guilds.length > 0 && !loading && !hasAutoSelected) {
       console.log('Auto-selecting guild after both loaded:', guilds[0].id)
+      setHasAutoSelected(true)
       onGuildChange(guilds[0].id)
     }
-  }, [selectedGuildId, hasLoadedFromStorage, guilds, loading])
+  }, [selectedGuildId, hasLoadedFromStorage, guilds, loading, hasAutoSelected])
 
   const fetchGuilds = async () => {
     try {
