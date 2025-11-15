@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 
 interface Guild {
   id: string
@@ -16,13 +17,19 @@ interface GuildSelectorProps {
 }
 
 export default function GuildSelector({ selectedGuildId, onGuildChange, hasLoadedFromStorage = false }: GuildSelectorProps) {
+  const { data: session, status } = useSession()
   const [guilds, setGuilds] = useState<Guild[]>([])
   const [loading, setLoading] = useState(true)
   const [hasAutoSelected, setHasAutoSelected] = useState(false)
 
   useEffect(() => {
-    fetchGuilds()
-  }, [])
+    // Only fetch guilds when session is ready
+    if (status === 'authenticated') {
+      fetchGuilds()
+    } else if (status === 'loading') {
+      console.log('[GuildSelector] Waiting for session to load...')
+    }
+  }, [status])
 
   // Auto-select first guild when both conditions are met (only once)
   useEffect(() => {
