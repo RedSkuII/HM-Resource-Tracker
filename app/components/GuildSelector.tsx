@@ -46,7 +46,16 @@ export default function GuildSelector({ selectedGuildId, onGuildChange, hasLoade
       if (response.ok) {
         const data = await response.json()
         console.log('Guilds fetched:', data)
-        setGuilds(data)
+        
+        // Only update guilds if we got data, otherwise keep existing guilds
+        if (data && data.length > 0) {
+          setGuilds(data)
+        } else if (guilds.length === 0) {
+          // Only set empty if we had no guilds before
+          setGuilds(data)
+        } else {
+          console.warn('Guilds API returned empty, keeping cached guilds')
+        }
       } else {
         console.error('Failed to fetch guilds:', response.status, response.statusText)
       }
