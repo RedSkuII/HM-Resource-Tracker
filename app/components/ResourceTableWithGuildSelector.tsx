@@ -16,7 +16,9 @@ export function ResourceTableWithGuildSelector({ userId }: ResourceTableWithGuil
   // Load the last selected guild from localStorage on mount
   useEffect(() => {
     const lastSelectedGuild = localStorage.getItem('lastSelectedGuildId')
+    console.log('[ResourceTableWithGuildSelector] Loading from localStorage:', lastSelectedGuild)
     if (lastSelectedGuild) {
+      console.log('[ResourceTableWithGuildSelector] Setting guild from localStorage:', lastSelectedGuild)
       setSelectedGuildId(lastSelectedGuild)
     }
     setHasLoadedFromStorage(true)
@@ -25,6 +27,7 @@ export function ResourceTableWithGuildSelector({ userId }: ResourceTableWithGuil
   // Save selected guild to localStorage whenever it changes
   useEffect(() => {
     if (selectedGuildId) {
+      console.log('[ResourceTableWithGuildSelector] Saving to localStorage:', selectedGuildId)
       localStorage.setItem('lastSelectedGuildId', selectedGuildId)
       if (!isInitialized) {
         console.log('[ResourceTableWithGuildSelector] Guild initialized:', selectedGuildId)
