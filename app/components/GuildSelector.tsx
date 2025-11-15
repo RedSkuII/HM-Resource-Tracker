@@ -23,6 +23,14 @@ export default function GuildSelector({ selectedGuildId, onGuildChange, hasLoade
     fetchGuilds()
   }, [])
 
+  // Auto-select first guild when both conditions are met
+  useEffect(() => {
+    if (!selectedGuildId && hasLoadedFromStorage && guilds.length > 0 && !loading) {
+      console.log('Auto-selecting guild after both loaded:', guilds[0].id)
+      onGuildChange(guilds[0].id)
+    }
+  }, [selectedGuildId, hasLoadedFromStorage, guilds, loading])
+
   const fetchGuilds = async () => {
     try {
       const response = await fetch('/api/guilds', {
@@ -34,15 +42,6 @@ export default function GuildSelector({ selectedGuildId, onGuildChange, hasLoade
         const data = await response.json()
         console.log('Guilds fetched:', data)
         setGuilds(data)
-        
-        // Only auto-select first guild if:
-        // 1. No guild is currently selected
-        // 2. Parent has finished loading from localStorage
-        // 3. There are guilds available
-        if (!selectedGuildId && hasLoadedFromStorage && data.length > 0) {
-          console.log('Auto-selecting guild:', data[0].id)
-          onGuildChange(data[0].id)
-        }
       } else {
         console.error('Failed to fetch guilds:', response.status, response.statusText)
       }
