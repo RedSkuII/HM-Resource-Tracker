@@ -112,7 +112,12 @@ export function getHierarchyRoles(userRoles: string[]): Array<RoleConfig> {
 
 
 // Helper function to check if user has resource access
-export function hasResourceAccess(userRoles: string[]): boolean {
+export function hasResourceAccess(userRoles: string[], isServerOwner: boolean = false): boolean {
+  // Server owners always have access
+  if (isServerOwner) {
+    return true
+  }
+  
   if (RESOURCE_ACCESS_ROLES.length === 0) {
     console.warn('DISCORD_ROLES_CONFIG not configured - allowing all server members access.')
     return true // Allow access when no roles are configured
@@ -121,7 +126,12 @@ export function hasResourceAccess(userRoles: string[]): boolean {
 }
 
 // Helper function to check if user has resource admin access (edit/delete/create)
-export function hasResourceAdminAccess(userRoles: string[]): boolean {
+export function hasResourceAdminAccess(userRoles: string[], isServerOwner: boolean = false): boolean {
+  // Server owners always have admin access
+  if (isServerOwner) {
+    return true
+  }
+  
   if (RESOURCE_ADMIN_ROLES.length === 0) {
     console.warn('No admin roles configured in DISCORD_ROLES_CONFIG - allowing all server members admin access.')
     return true // Allow admin access when no roles are configured
@@ -130,7 +140,12 @@ export function hasResourceAdminAccess(userRoles: string[]): boolean {
 }
 
 // Helper function to check if user has admin access for target editing
-export function hasTargetEditAccess(userRoles: string[]): boolean {
+export function hasTargetEditAccess(userRoles: string[], isServerOwner: boolean = false): boolean {
+  // Server owners always have target edit access
+  if (isServerOwner) {
+    return true
+  }
+  
   if (TARGET_ADMIN_ROLES.length === 0) {
     console.warn('No target edit roles configured in DISCORD_ROLES_CONFIG - no users will have target edit access.')
     return false
@@ -159,12 +174,17 @@ export function hasDataExportAccess(userRoles: string[]): boolean {
 }
 
 // Helper function to check if user can access bot dashboard
-export function hasBotAdminAccess(userRoles: string[]): boolean {
+export function hasBotAdminAccess(userRoles: string[], isServerOwner: boolean = false): boolean {
+  // Server owners always have bot admin access
+  if (isServerOwner) {
+    return true
+  }
+  
   const botAdminRoles = ROLE_HIERARCHY.filter(role => role.canManageBotSettings).map(role => role.id)
   
   if (botAdminRoles.length === 0) {
     // If no specific bot admin roles configured, fall back to resource admin access
-    return hasResourceAdminAccess(userRoles)
+    return hasResourceAdminAccess(userRoles, isServerOwner)
   }
   
   return userRoles.some(role => botAdminRoles.includes(role))

@@ -21,6 +21,7 @@ declare module "next-auth" {
       isInGuild: boolean
       discordNickname?: string | null
       customNickname?: string | null
+      ownedServerIds: string[]
       permissions: UserPermissions
     }
   }
@@ -31,6 +32,7 @@ declare module "next-auth" {
     isInGuild?: boolean
     rolesFetched?: boolean
     discordNickname?: string | null
+    ownedServerIds?: string[]
     permissions?: UserPermissions
   }
 } 

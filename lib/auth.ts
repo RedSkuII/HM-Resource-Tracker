@@ -118,6 +118,25 @@ export const authOptions: NextAuthOptions = {
       if (token.accessToken && (!token.rolesFetched || trigger === 'update')) {
         try {
           const guildId = process.env.DISCORD_GUILD_ID!
+          
+          // Fetch user's Discord servers to check ownership
+          const guildsResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+            headers: {
+              Authorization: `Bearer ${token.accessToken}`,
+            },
+          })
+          
+          let ownedServerIds: string[] = []
+          if (guildsResponse.ok) {
+            const guilds = await guildsResponse.json()
+            // Filter servers where user is the owner
+            ownedServerIds = guilds
+              .filter((guild: any) => guild.owner === true)
+              .map((guild: any) => guild.id)
+            
+            token.ownedServerIds = ownedServerIds
+          }
+          
           const response = await fetch(
             `https://discord.com/api/v10/users/@me/guilds/${guildId}/member`,
             {
@@ -155,7 +174,8 @@ export const authOptions: NextAuthOptions = {
               console.log('Discord member data:', { 
                 nick: member.nick, 
                 username: member.user?.username,
-                global_name: member.user?.global_name 
+                global_name: member.user?.global_name,
+                ownedServers: ownedServerIds.length
               })
             }
           } else {
@@ -169,6 +189,7 @@ export const authOptions: NextAuthOptions = {
           token.userRoles = []
           token.isInGuild = false
           token.discordNickname = null
+          token.ownedServerIds = []
         }
         
         // Mark roles as fetched to prevent future API calls (unless explicitly triggered)
@@ -176,10 +197,13 @@ export const authOptions: NextAuthOptions = {
         
         // Compute permissions server-side to avoid client-side environment variable issues
         const userRoles = (token.userRoles || []) as string[]
+        const ownedServers = (token.ownedServerIds || []) as string[]
+        const isServerOwner = ownedServers.length > 0
+        
         token.permissions = {
-          hasResourceAccess: hasResourceAccess(userRoles),
-          hasResourceAdminAccess: hasResourceAdminAccess(userRoles),
-          hasTargetEditAccess: hasTargetEditAccess(userRoles),
+          hasResourceAccess: hasResourceAccess(userRoles, isServerOwner),
+          hasResourceAdminAccess: hasResourceAdminAccess(userRoles, isServerOwner),
+          hasTargetEditAccess: hasTargetEditAccess(userRoles, isServerOwner),
           // 🆕 Add new permission computations:
           hasReportAccess: hasReportAccess(userRoles),
           hasUserManagementAccess: hasUserManagementAccess(userRoles),
@@ -197,6 +221,7 @@ export const authOptions: NextAuthOptions = {
         roles: (token.userRoles || []) as string[],
         isInGuild: Boolean(token.isInGuild),
         discordNickname: token.discordNickname as string | null,
+        ownedServerIds: (token.ownedServerIds || []) as string[],
         // Include pre-computed permissions to avoid client-side env var issues
         permissions: token.permissions as UserPermissions || {
           hasResourceAccess: false,
