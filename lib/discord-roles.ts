@@ -18,7 +18,10 @@ function parseRoleConfig(): RoleConfig[] {
   try {
     const roleConfig = process.env.DISCORD_ROLES_CONFIG
     if (!roleConfig) {
-      console.warn('No DISCORD_ROLES_CONFIG found, using empty configuration')
+      // Only log on server startup, not repeatedly
+      if (process.env.NODE_ENV === 'development') {
+        console.info('No DISCORD_ROLES_CONFIG found - using server owner permissions only')
+      }
       return []
     }
     
@@ -119,7 +122,7 @@ export function hasResourceAccess(userRoles: string[], isServerOwner: boolean = 
   }
   
   if (RESOURCE_ACCESS_ROLES.length === 0) {
-    console.warn('DISCORD_ROLES_CONFIG not configured - allowing all server members access.')
+    // Only log once per session, not on every call
     return true // Allow access when no roles are configured
   }
   return userRoles.some(role => RESOURCE_ACCESS_ROLES.includes(role))
@@ -133,7 +136,7 @@ export function hasResourceAdminAccess(userRoles: string[], isServerOwner: boole
   }
   
   if (RESOURCE_ADMIN_ROLES.length === 0) {
-    console.warn('No admin roles configured in DISCORD_ROLES_CONFIG - allowing all server members admin access.')
+    // Only log once per session, not on every call
     return true // Allow admin access when no roles are configured
   }
   return userRoles.some(role => RESOURCE_ADMIN_ROLES.includes(role))
@@ -147,7 +150,7 @@ export function hasTargetEditAccess(userRoles: string[], isServerOwner: boolean 
   }
   
   if (TARGET_ADMIN_ROLES.length === 0) {
-    console.warn('No target edit roles configured in DISCORD_ROLES_CONFIG - no users will have target edit access.')
+    // Return false silently - server owners will still have access
     return false
   }
   return userRoles.some(role => TARGET_ADMIN_ROLES.includes(role))
