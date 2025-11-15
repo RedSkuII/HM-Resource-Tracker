@@ -28,11 +28,11 @@ Discord Server Dropdown:
   ownership
 
 In-Game Guild Dropdown:
-- Select which in-game guild (House, Clan) to track
-- Each Discord server can link to ONE in-game guild only
-- Each in-game guild can only be linked to ONE Discord server
-- This ensures clear ownership and prevents conflicts
-- Once linked, only that Discord server can configure that guild
+- Select which in-game guild (House, Clan) to manage
+- Your Discord server can have MULTIPLE in-game guilds
+- Each in-game guild can only belong to ONE Discord server
+- Guilds on your server are completely separate (independent tracking)
+- Switch between guilds to view/edit their resources separately
 
 Adding Bot to Server:
 1. Select your Discord server from dropdown
@@ -193,55 +193,79 @@ Step 8: Verify Bot Functionality
 MULTI-SERVER & MULTI-GUILD ARCHITECTURE
 ====================================================================
 
-Understanding the 1:1 Relationship:
------------------------------------
-• Each Discord server can link to ONE in-game guild only
-• Each in-game guild can only be linked to ONE Discord server
-• This prevents conflicts and ensures clear ownership
+Understanding the Many-to-One Relationship:
+-------------------------------------------
+• ONE Discord server can manage MULTIPLE in-game guilds ✅
+• ONE in-game guild can only belong to ONE Discord server ✅
+• Guilds on the same Discord server are completely separate from each other
+• Each guild has independent resources, leaderboards, and activity logs
 • Once a guild is linked to a Discord server, other servers cannot claim it
-• Each Discord server has independent bot configuration (channels, roles, bonuses)
+
+How It Works:
+-------------
+1. Multiple Guilds per Discord Server:
+   • Your Discord can track "House Melange", "Whitelist Second Guild", etc.
+   • Each guild is managed independently through the guild selector dropdown
+   • Perfect for alliances managing multiple Houses/Clans from one Discord
+
+2. Guild Exclusivity:
+   • Once you link a guild to your Discord server, it's locked to that server
+   • Other Discord servers cannot add or configure that guild
+   • This prevents conflicts and ensures clear ownership
+
+3. Independent Tracking:
+   • Resources: Each guild has separate resource quantities
+   • Leaderboards: Points tracked separately per guild
+   • Activity Logs: Actions recorded per guild
+   • Bot Configuration: Settings apply to selected guild only
+
+4. Easy Guild Switching:
+   • Use the guild selector dropdown on Resources page
+   • Previous guild selection remembered via browser
+   • Switch anytime to view/edit different guild's data
+   • No data mixing between guilds
 
 Why This Structure?
 -------------------
-• Clear Ownership: Prevents multiple communities from conflicting over resource 
-  management
-• Data Integrity: Ensures only one team controls each in-game guild's data
-• Permission Clarity: Discord roles and permissions map cleanly to one guild
-• Leaderboard Accuracy: Points and contributions belong to one community
-• Configuration Simplicity: No confusion about which server's settings apply
+• Organized Management: Alliance leaders can manage multiple guilds from one Discord
+• Clear Ownership: Each guild belongs to one community only
+• Data Integrity: No confusion about which server controls which guild
+• Permission Clarity: Discord roles and permissions apply across all your guilds
+• Scalability: Add unlimited guilds to your Discord server as needed
 
-Recommended Configurations:
-----------------------------
-• Single Discord Server, Single In-Game Guild:
-  - Standard setup: One community tracking one guild
+Example Scenarios:
+------------------
+• Single Guild Setup:
+  - One Discord server managing one in-game guild
   - Simplest configuration
-  - All resources and points tracked for your guild
-  - Perfect for most organizations
+  - Most common for individual guilds/clans
 
-• Single Discord Server, Tracking Multiple Guilds:
-  - NOT CURRENTLY SUPPORTED via bot dashboard
-  - Workaround: Use website directly for additional guilds
-  - Contact support if you need multi-guild tracking from one Discord
+• Alliance Management:
+  - One Discord server tracking 3 different Houses
+  - Each House has separate resources and leaderboards
+  - Alliance leaders can switch between Houses easily
+  - Example: "Silver Order Alliance" Discord manages House Atreides, 
+    House Harkonnen, and House Corrino
 
-• Multiple Discord Servers, Multiple In-Game Guilds:
-  - Each Discord server links to a different in-game guild
-  - Separate communities managing separate guilds
-  - Independent tracking and leaderboards per server
-  - Example: Alliance with multiple Houses, each with their own Discord
+• Multi-Faction Community:
+  - Gaming community with separate Clans/Factions
+  - All managed from one Discord server
+  - Each faction competes independently on their own leaderboard
+  - Resources don't mix between factions
 
-What If You Need to Switch Guilds?
------------------------------------
-• Contact your administrator to unlink the current guild from your Discord server
-• Once unlinked, you can link to a different in-game guild
-• Previous data is preserved but no longer accessible from your Discord server
-• This prevents accidental conflicts
+What You CANNOT Do:
+-------------------
+✗ Link the same guild to multiple Discord servers (guild exclusivity)
+✗ Share resources between guilds on your Discord (completely separate)
+✗ Combine leaderboards across guilds (tracked independently)
+✗ Transfer a guild to another Discord server (requires admin unlinking)
 
 Important Notes:
 ----------------
-• Admin roles are server-specific, not shared across Discord servers
+• Admin roles are server-specific, apply to all guilds on your server
 • Bot presence must be confirmed before configuration appears
 • Configuration changes only affect the selected Discord server
-• If your desired guild is already linked elsewhere, it cannot be selected
+• If your desired guild is already linked elsewhere, it cannot be added
 
 ====================================================================
 TROUBLESHOOTING

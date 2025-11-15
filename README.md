@@ -2,7 +2,7 @@
 
 A comprehensive resource management and tracking portal with Discord authentication and role-based access control. Perfect for gaming communities, organizations, and teams that need to track shared resources, inventory, or assets.
 
-Originally designed for Dune Awakening guilds, but can be adapted to track any type of resources. Supports **multiple Discord servers**, each tracking their own in-game guild with a 1:1 relationship between Discord servers and in-game guilds.
+Originally designed for Dune Awakening guilds, but can be adapted to track any type of resources. Supports **multiple Discord servers** with **multiple in-game guilds per server**. Each in-game guild belongs to only one Discord server, but Discord servers can manage multiple guilds independently.
 
 Built for [https://www.silverorder.org](https://www.silverorder.org) - if you find any references to it, feel free to submit a PR to fix them.
 
@@ -52,7 +52,7 @@ If you like what I did, feel free to
 ### Core Features
 - **Discord OAuth Authentication** - Secure login with Discord
 - **Multi-Server Support** - Configure different settings for each Discord server you manage
-- **Guild Tracking** - Each Discord server tracks ONE in-game guild (1:1 relationship)
+- **Multi-Guild Tracking** - Each Discord server can manage multiple in-game guilds independently
 - **Role-Based Access Control** - Permissions managed through Discord server roles
 - **Resource Management** - Track quantities, categories, and changes with visual status indicators
 - **Paginated Views** - Efficient loading of large resource lists (25 items per page)
@@ -207,13 +207,13 @@ Your Resource Tracker is now running for free! Visit your Vercel URL and sign in
 5. Configure bot channels, roles, and bonus settings
 6. Go to **Resources** page and select your in-game guild to start tracking
 
-**Multi-Server Configuration:**
+**Multi-Server & Multi-Guild Configuration:**
 - Each Discord server owner/admin can independently configure their bot settings
-- Each Discord server links to ONE in-game guild (1:1 relationship)
-- Each in-game guild can only be linked to ONE Discord server
-- This ensures clear ownership and prevents configuration conflicts
-- Resources are tracked separately per in-game guild
-- Leaderboards and activity logs are guild-specific
+- **One Discord server can manage MULTIPLE in-game guilds**
+- **Each in-game guild can only belong to ONE Discord server** (prevents conflicts)
+- Guilds on the same Discord server are completely separate from each other
+- Resources, leaderboards, and activity logs are tracked separately per guild
+- Switch between guilds using the guild selector dropdown
 
 **Guild Dropdown Behavior:**
 - The system automatically retries if guilds don't load immediately
@@ -415,23 +415,30 @@ The website provides the configuration API, but you need a Discord bot to use th
 - `GET /api/leaderboard?guildId={guildId}` - Get leaderboard
 - `PUT /api/resources` - Update resources (awards points)
 
-### Multi-Server Architecture
+### Multi-Server & Multi-Guild Architecture
 
-**1:1 Relationship Between Discord Servers and In-Game Guilds:**
-- Each Discord server can link to ONE in-game guild only
-- Each in-game guild can only be linked to ONE Discord server
-- This prevents conflicts and ensures clear ownership
+**Many-to-One Relationship:**
+- **One Discord server → Multiple in-game guilds** ✅
+- **One in-game guild → Only ONE Discord server** ✅
+- Guilds on the same Discord server remain completely separate (no shared data)
+
+**How It Works:**
+1. **Multiple Guilds per Discord Server**: Your Discord can track "House Melange", "Whitelist Second Guild", and others
+2. **Guild Exclusivity**: Once a guild is linked to your Discord server, other Discord servers cannot claim it
+3. **Independent Tracking**: Each guild has separate resources, leaderboards, and activity logs
+4. **Easy Switching**: Use the guild selector dropdown to switch between your server's guilds
 
 **Best Practices:**
-1. **Clear Ownership**: Each in-game guild is managed by one Discord community
-2. **Independent Configuration**: Each Discord server has separate bot settings (channels, roles, bonuses)
-3. **Separate Tracking**: Leaderboards and activity logs are specific to each in-game guild
-4. **Scalability**: Supports unlimited Discord servers, each with their own guild
+1. **Clear Ownership**: Each in-game guild is managed by one Discord community only
+2. **Separate Management**: Guilds on your server don't share resources or points
+3. **Organized Structure**: Perfect for alliances managing multiple Houses/Clans from one Discord
+4. **Scalability**: Add unlimited guilds to your Discord server as your organization grows
 
 **Example Scenarios:**
-- **Single Organization**: One Discord server managing one in-game guild (most common)
-- **Multiple Guilds**: Alliance with 3 Houses, each House has their own Discord server
-- **Switching Guilds**: Contact admin to unlink and relink to a different guild (preserves old data)
+- **Single Guild**: One Discord server managing one in-game guild (simplest setup)
+- **Alliance Management**: One Discord server tracking 3 different Houses independently
+- **Multi-Faction**: Gaming community with separate Clans, all managed from one Discord
+- **Switching Between Guilds**: Users select which guild to view/edit via dropdown (no data mixing)
 
 ### Troubleshooting
 
