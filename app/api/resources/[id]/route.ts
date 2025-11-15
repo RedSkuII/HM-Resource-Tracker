@@ -22,6 +22,61 @@ const calculateResourceStatus = (quantity: number, targetQuantity: number | null
 // Import role-checking functions from discord-roles.ts
 import { hasTargetEditAccess } from '@/lib/discord-roles'
 
+// GET /api/resources/[id] - Get single resource
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions)
+  
+  // Check if user is a server owner
+  const { isDiscordServerOwner } = await import('@/lib/discord-roles')
+  const isOwner = isDiscordServerOwner(session)
+  
+  if (!session || !hasResourceAccess(session.user.roles, isOwner)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    // Get the resource
+    const resource = await db.select().from(resources).where(eq(resources.id, params.id)).limit(1)
+    
+    if (resource.length === 0) {
+      return NextResponse.json({ error: 'Resource not found' }, { status: 404 })
+    }
+
+    // Verify user has access to the resource's guild
+    if (resource[0].guildId) {
+      const discordToken = (session as any).accessToken
+      if (discordToken) {
+        const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+          headers: { 'Authorization': `Bearer ${discordToken}` },
+        })
+        if (discordResponse.ok) {
+          const servers = await discordResponse.json()
+          const userDiscordServers = servers.map((server: any) => server.id)
+          const { guilds } = await import('@/lib/db')
+          const guild = await db.select().from(guilds).where(eq(guilds.id, resource[0].guildId!)).limit(1)
+          if (guild.length === 0 || !guild[0].discordGuildId || !userDiscordServers.includes(guild[0].discordGuildId)) {
+            return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
+          }
+        }
+      }
+    }
+
+    return NextResponse.json(resource[0], {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    })
+  } catch (error) {
+    console.error('Error fetching resource:', error)
+    return NextResponse.json({ error: 'Failed to fetch resource' }, { status: 500 })
+  }
+}
+
 // PUT /api/resources/[id] - Update single resource
 export async function PUT(
   request: NextRequest,

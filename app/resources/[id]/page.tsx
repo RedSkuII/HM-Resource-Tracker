@@ -351,7 +351,7 @@ export default function ResourceDetailPage() {
     const fetchResource = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`/api/resources`, {
+        const response = await fetch(`/api/resources/${resourceId}`, {
           cache: 'no-store',
           headers: {
             'Cache-Control': 'no-cache',
@@ -359,12 +359,9 @@ export default function ResourceDetailPage() {
         })
 
         if (response.ok) {
-          const data = await response.json()
-          // Handle both old format (array) and new format (object with resources array)
-          const resources = Array.isArray(data) ? data : data.resources
-          const foundResource = resources?.find((r: Resource) => r.id === resourceId)
+          const foundResource = await response.json()
 
-          if (foundResource) {
+          if (foundResource && !foundResource.error) {
             setResource({
               ...foundResource,
               // Fix date parsing - only convert if it's not already a string
@@ -381,7 +378,8 @@ export default function ResourceDetailPage() {
             setError('Resource not found')
           }
         } else {
-          setError('Failed to fetch resource')
+          const errorData = await response.json()
+          setError(errorData.error || 'Failed to fetch resource')
         }
       } catch (error) {
         console.error('Error fetching resource:', error)
