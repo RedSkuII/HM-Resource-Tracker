@@ -360,11 +360,11 @@ export async function PUT(request: NextRequest) {
         createdAt: new Date(),
       })
 
-      // Log change for Discord bot polling (only for additions to sync with orders)
-      if (changeAmount > 0) {
+      // Log change for Discord bot polling
+      if (changeAmount !== 0) {  // Log both increases and decreases
         await db.insert(websiteChanges).values({
           id: nanoid(),
-          changeType: 'resource_update',
+          changeType: changeAmount > 0 ? 'resource_increase' : 'resource_decrease',
           resourceId: update.id,
           orderId: null,
           previousValue: previousQuantity.toString(),
