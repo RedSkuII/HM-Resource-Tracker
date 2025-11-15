@@ -32,10 +32,15 @@ export async function GET(request: NextRequest) {
           const servers = await discordResponse.json()
           // Get IDs of all Discord servers the user is a member of
           userDiscordServers = servers.map((server: any) => server.id)
+          console.log('[GUILDS API] User Discord servers:', userDiscordServers)
+        } else {
+          console.error('[GUILDS API] Discord API error:', discordResponse.status, await discordResponse.text())
         }
       } catch (error) {
         console.error('[GUILDS API] Error fetching user Discord servers:', error)
       }
+    } else {
+      console.warn('[GUILDS API] No Discord access token available in session')
     }
 
     const { searchParams } = new URL(request.url)
@@ -54,6 +59,7 @@ export async function GET(request: NextRequest) {
     } else {
       // Return only guilds linked to Discord servers the user is a member of
       if (userDiscordServers.length === 0) {
+        console.warn('[GUILDS API] No Discord servers found for user, returning empty array')
         return NextResponse.json([], {
           headers: {
             'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -61,7 +67,9 @@ export async function GET(request: NextRequest) {
         })
       }
       
+      console.log('[GUILDS API] Fetching guilds for Discord servers:', userDiscordServers)
       allGuilds = await db.select().from(guilds).where(inArray(guilds.discordGuildId, userDiscordServers)).all()
+      console.log('[GUILDS API] Found guilds:', allGuilds.length)
     }
 
     return NextResponse.json(
