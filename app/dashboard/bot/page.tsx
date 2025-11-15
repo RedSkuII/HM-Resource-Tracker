@@ -824,8 +824,115 @@ export default function BotDashboardPage() {
                 </label>
               </div>
 
+              {/* Guild Access Roles (for selected in-game guild) */}
+              {config.inGameGuildId && (
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Guild Access Roles
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Configure which Discord roles can access <strong>{inGameGuilds.find(g => g.id === config.inGameGuildId)?.title || 'this guild'}'s</strong> resources.
+                    If no roles are set, all users with resource access can view the guild.
+                  </p>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Required Discord Roles (hold Ctrl/Cmd to select multiple)
+                    </label>
+                    {discordData && discordData.roles.length > 0 ? (
+                      <select
+                        multiple
+                        value={inGameGuilds.find(g => g.id === config.inGameGuildId)?.roleIds || []}
+                        onChange={(e) => {
+                          const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
+                          setInGameGuilds(prev => 
+                            prev.map(g => g.id === config.inGameGuildId ? { ...g, roleIds: selectedOptions } : g)
+                          )
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                      >
+                        {discordData.roles.map((role) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="text-sm text-gray-500 dark:text-gray-400 italic">
+                        Loading roles...
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Selected Roles Display */}
+                  {inGameGuilds.find(g => g.id === config.inGameGuildId)?.roleIds && inGameGuilds.find(g => g.id === config.inGameGuildId)!.roleIds!.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {inGameGuilds.find(g => g.id === config.inGameGuildId)!.roleIds!.map(roleId => {
+                        const role = discordData?.roles.find(r => r.id === roleId)
+                        return role ? (
+                          <span key={roleId} className="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 text-xs rounded">
+                            {role.name}
+                            <button
+                              onClick={() => {
+                                const currentGuild = inGameGuilds.find(g => g.id === config.inGameGuildId)
+                                const newRoleIds = currentGuild?.roleIds?.filter(id => id !== roleId) || []
+                                setInGameGuilds(prev => 
+                                  prev.map(g => g.id === config.inGameGuildId ? { ...g, roleIds: newRoleIds } : g)
+                                )
+                              }}
+                              className="ml-1 hover:text-indigo-600 dark:hover:text-indigo-200"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ) : null
+                      })}
+                    </div>
+                  )}
+
+                  {/* Save Guild Roles Button */}
+                  <div className="mt-4 flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        const currentGuild = inGameGuilds.find(g => g.id === config.inGameGuildId)
+                        if (currentGuild) {
+                          handleUpdateGuildRoles(currentGuild.id, currentGuild.roleIds || [])
+                        }
+                      }}
+                      disabled={savingGuildRoles === config.inGameGuildId}
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm rounded-lg font-medium transition-colors"
+                    >
+                      {savingGuildRoles === config.inGameGuildId ? 'Saving Guild Roles...' : 'Save Guild Roles'}
+                    </button>
+                    {inGameGuilds.find(g => g.id === config.inGameGuildId)?.roleIds && inGameGuilds.find(g => g.id === config.inGameGuildId)!.roleIds!.length > 0 && (
+                      <button
+                        onClick={() => {
+                          if (config.inGameGuildId) {
+                            setInGameGuilds(prev => 
+                              prev.map(g => g.id === config.inGameGuildId ? { ...g, roleIds: [] } : g)
+                            )
+                            handleUpdateGuildRoles(config.inGameGuildId, [])
+                          }
+                        }}
+                        disabled={savingGuildRoles === config.inGameGuildId}
+                        className="px-4 py-2 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white text-sm rounded-lg font-medium transition-colors"
+                      >
+                        Clear All
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Info Box */}
+                  <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <p className="text-xs text-blue-800 dark:text-blue-200">
+                      <strong>💡 Tip:</strong> Users must have at least ONE of the selected roles to access this guild's resources. Leave empty to allow all users with resource access.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Save Button */}
-              <div className="pt-4">
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button
                   onClick={handleSaveConfig}
                   disabled={saving}
@@ -834,145 +941,6 @@ export default function BotDashboardPage() {
                   {saving ? 'Saving...' : 'Save Configuration'}
                 </button>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Guild-Specific Role Requirements */}
-        {inGameGuilds.length > 0 && botIsPresent && !checkingBotStatus && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Guild Access Roles
-              </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Configure which Discord roles can access each in-game guild's resources. If no roles are set, all users with resource access can view the guild.
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              {inGameGuilds.map((guild) => (
-                <div key={guild.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                  {/* Guild Header */}
-                  <button
-                    onClick={() => setExpandedGuild(expandedGuild === guild.id ? null : guild.id)}
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-3">
-                      <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      <div className="text-left">
-                        <p className="font-medium text-gray-900 dark:text-white">{guild.title}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {guild.roleIds && guild.roleIds.length > 0 
-                            ? `${guild.roleIds.length} role(s) required`
-                            : 'No restrictions (all users with access)'}
-                        </p>
-                      </div>
-                    </div>
-                    <svg 
-                      className={`w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform ${expandedGuild === guild.id ? 'rotate-180' : ''}`} 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-
-                  {/* Guild Role Selection (Expanded) */}
-                  {expandedGuild === guild.id && (
-                    <div className="p-4 bg-white dark:bg-gray-800">
-                      <div className="mb-3">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Required Discord Roles (hold Ctrl/Cmd to select multiple)
-                        </label>
-                        {discordData && discordData.roles.length > 0 ? (
-                          <select
-                            multiple
-                            value={guild.roleIds || []}
-                            onChange={(e) => {
-                              const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
-                              setInGameGuilds(prev => 
-                                prev.map(g => g.id === guild.id ? { ...g, roleIds: selectedOptions } : g)
-                              )
-                            }}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 min-h-[120px]"
-                          >
-                            {discordData.roles.map((role) => (
-                              <option key={role.id} value={role.id}>
-                                {role.name}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <div className="text-sm text-gray-500 dark:text-gray-400 italic">
-                            Loading roles...
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Selected Roles Display */}
-                      {guild.roleIds && guild.roleIds.length > 0 && (
-                        <div className="mb-3 flex flex-wrap gap-2">
-                          {guild.roleIds.map(roleId => {
-                            const role = discordData?.roles.find(r => r.id === roleId)
-                            return role ? (
-                              <span key={roleId} className="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 text-xs rounded">
-                                {role.name}
-                                <button
-                                  onClick={() => {
-                                    const newRoleIds = guild.roleIds?.filter(id => id !== roleId) || []
-                                    setInGameGuilds(prev => 
-                                      prev.map(g => g.id === guild.id ? { ...g, roleIds: newRoleIds } : g)
-                                    )
-                                  }}
-                                  className="ml-1 hover:text-indigo-600 dark:hover:text-indigo-200"
-                                >
-                                  ×
-                                </button>
-                              </span>
-                            ) : null
-                          })}
-                        </div>
-                      )}
-
-                      {/* Save Button */}
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleUpdateGuildRoles(guild.id, guild.roleIds || [])}
-                          disabled={savingGuildRoles === guild.id}
-                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm rounded-lg font-medium transition-colors"
-                        >
-                          {savingGuildRoles === guild.id ? 'Saving...' : 'Save Guild Roles'}
-                        </button>
-                        {guild.roleIds && guild.roleIds.length > 0 && (
-                          <button
-                            onClick={() => {
-                              setInGameGuilds(prev => 
-                                prev.map(g => g.id === guild.id ? { ...g, roleIds: [] } : g)
-                              )
-                              handleUpdateGuildRoles(guild.id, [])
-                            }}
-                            disabled={savingGuildRoles === guild.id}
-                            className="px-4 py-2 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white text-sm rounded-lg font-medium transition-colors"
-                          >
-                            Clear All
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Info Box */}
-                      <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                        <p className="text-xs text-blue-800 dark:text-blue-200">
-                          <strong>💡 Tip:</strong> Users must have at least ONE of the selected roles to access this guild's resources. Leave empty to allow all users with resource access.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
             </div>
           </div>
         )}
