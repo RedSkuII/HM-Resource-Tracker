@@ -35,6 +35,7 @@ export const guilds = sqliteTable('guilds', {
   maxMembers: integer('max_members').notNull().default(32),
   leaderId: text('leader_id'), // Discord user ID of guild leader
   guildAccessRoles: text('guild_access_roles'), // JSON array of Discord role IDs that can access this guild's resources
+  defaultRoleId: text('default_role_id'), // Discord role ID for view-only access to this guild
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 })

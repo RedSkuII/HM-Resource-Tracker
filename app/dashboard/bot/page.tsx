@@ -19,6 +19,7 @@ interface InGameGuild {
   maxMembers: number
   leaderId: string | null
   roleIds?: string[]
+  defaultRoleId?: string | null
 }
 
 interface BotConfig {
@@ -95,6 +96,7 @@ export default function BotDashboardPage() {
   
   // Guild roles management
   const [savingGuildRoles, setSavingGuildRoles] = useState<string | null>(null)
+  const [savingDefaultRole, setSavingDefaultRole] = useState<string | null>(null)
   const [expandedGuild, setExpandedGuild] = useState<string | null>(null)
   
   // Bot invite URL
@@ -381,6 +383,35 @@ export default function BotDashboardPage() {
     }
   }
 
+  const handleUpdateDefaultRole = async (guildId: string, defaultRoleId: string | null) => {
+    setSavingDefaultRole(guildId)
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/guilds/${guildId}/default-role`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ defaultRoleId })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to update default role')
+      }
+
+      // Update local state
+      setInGameGuilds(prev => 
+        prev.map(g => g.id === guildId ? { ...g, defaultRoleId } : g)
+      )
+
+      alert(`Default role updated successfully!`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update default role')
+    } finally {
+      setSavingDefaultRole(null)
+    }
+  }
+
   const fetchGuildRoles = async (guildId: string) => {
     try {
       const response = await fetch(`/api/guilds/${guildId}/roles`)
@@ -389,9 +420,9 @@ export default function BotDashboardPage() {
       }
       
       const data = await response.json()
-      // Update the guild with its role IDs
+      // Update the guild with its role IDs and default role ID
       setInGameGuilds(prev => 
-        prev.map(g => g.id === guildId ? { ...g, roleIds: data.roleIds } : g)
+        prev.map(g => g.id === guildId ? { ...g, roleIds: data.roleIds, defaultRoleId: data.defaultRoleId || null } : g)
       )
     } catch (err) {
       console.error(`[BOT-DASHBOARD] Error fetching roles for guild ${guildId}:`, err)
@@ -926,6 +957,89 @@ export default function BotDashboardPage() {
                   <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                     <p className="text-xs text-blue-800 dark:text-blue-200">
                       <strong>💡 Tip:</strong> Users must have at least ONE of the selected roles to access this guild's resources. Leave empty to allow all users with resource access.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Default Role (for selected in-game guild) */}
+              {config.inGameGuildId && (
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Default View Role
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Set a Discord role that gets <strong>view-only</strong> access to <strong>{inGameGuilds.find(g => g.id === config.inGameGuildId)?.title || 'this guild'}'s</strong> resources.
+                    Users with this role can VIEW resources but cannot edit them.
+                  </p>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      View-Only Discord Role
+                    </label>
+                    {discordData && discordData.roles.length > 0 ? (
+                      <select
+                        value={inGameGuilds.find(g => g.id === config.inGameGuildId)?.defaultRoleId || ''}
+                        onChange={(e) => {
+                          setInGameGuilds(prev => 
+                            prev.map(g => g.id === config.inGameGuildId ? { ...g, defaultRoleId: e.target.value || null } : g)
+                          )
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">No default role (manual access only)</option>
+                        {discordData.roles.map((role) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="text-sm text-gray-500 dark:text-gray-400 italic">
+                        Loading roles...
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Selected Role Display */}
+                  {inGameGuilds.find(g => g.id === config.inGameGuildId)?.defaultRoleId && (
+                    <div className="mt-3">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs rounded">
+                        👁️ {discordData?.roles.find(r => r.id === inGameGuilds.find(g => g.id === config.inGameGuildId)?.defaultRoleId)?.name || 'Unknown Role'}
+                        <button
+                          onClick={() => {
+                            setInGameGuilds(prev => 
+                              prev.map(g => g.id === config.inGameGuildId ? { ...g, defaultRoleId: null } : g)
+                            )
+                          }}
+                          className="ml-1 hover:text-green-600 dark:hover:text-green-200"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Save Default Role Button */}
+                  <div className="mt-4 flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        const currentGuild = inGameGuilds.find(g => g.id === config.inGameGuildId)
+                        if (currentGuild) {
+                          handleUpdateDefaultRole(currentGuild.id, currentGuild.defaultRoleId || null)
+                        }
+                      }}
+                      disabled={savingDefaultRole === config.inGameGuildId}
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white text-sm rounded-lg font-medium transition-colors"
+                    >
+                      {savingDefaultRole === config.inGameGuildId ? 'Saving Default Role...' : 'Save Default Role'}
+                    </button>
+                  </div>
+
+                  {/* Info Box */}
+                  <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                    <p className="text-xs text-amber-800 dark:text-amber-200">
+                      <strong>🔒 Permission Hierarchy:</strong> Default role gives VIEW-ONLY access. Guild Access Roles (above) give EDIT access. Users with Guild Access Roles automatically get view access too.
                     </p>
                   </div>
                 </div>

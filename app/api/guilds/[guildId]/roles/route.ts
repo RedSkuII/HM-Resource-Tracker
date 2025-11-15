@@ -122,6 +122,7 @@ export async function GET(
       guildId: guild[0].id,
       guildTitle: guild[0].title,
       roleIds,
+      defaultRoleId: guild[0].defaultRoleId || null,
       discordGuildId: guild[0].discordGuildId
     })
 
