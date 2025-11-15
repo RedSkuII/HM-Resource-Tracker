@@ -213,6 +213,12 @@ Your Resource Tracker is now running for free! Visit your Vercel URL and sign in
 - Resources are tracked separately per in-game guild
 - Leaderboards and activity logs are guild-specific
 
+**Guild Dropdown Behavior:**
+- The system automatically retries if guilds don't load immediately
+- If you see "No Guilds Available", wait 1-2 seconds for the retry
+- This is normal during session authentication - guilds will appear automatically
+- No manual refresh needed - the system handles this for you
+
 **Free Tier Limits:**
 - **Vercel**: 100GB bandwidth, unlimited projects
 - **Turso**: 500 databases, 1B row reads, 1M row writes/month
@@ -415,6 +421,13 @@ The website provides the configuration API, but you need a Discord bot to use th
 4. **Gradual Rollout**: Start with one server, refine settings, then expand
 
 ### Troubleshooting
+
+**Guild dropdown showing "No Guilds Available"?**
+- This is normal during initial page load - wait 1-2 seconds
+- The system automatically retries authentication and fetches guilds
+- Guilds will appear automatically without manual refresh
+- If issue persists after 5 seconds, try refreshing the page once
+- Check that you've granted Discord OAuth permissions (identify, guilds, guilds.members.read)
 
 **Bot not appearing in server list?**
 - Ensure you have Administrator permissions or ownership

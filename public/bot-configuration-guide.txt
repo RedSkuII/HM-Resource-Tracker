@@ -234,6 +234,24 @@ Important Notes:
 TROUBLESHOOTING
 ====================================================================
 
+⏳ Guild dropdown shows "No Guilds Available" or "Loading..."?
+--------------------------------------------------------------
+• This is NORMAL during initial page load - the system is authenticating
+  with Discord
+• The system automatically retries authentication after 1 second
+• Your guilds will appear automatically within 1-2 seconds
+• NO MANUAL REFRESH NEEDED - just wait for the automatic retry
+• If guilds don't appear after 5 seconds, try refreshing the page once
+• This behavior prevents race conditions between page load and Discord
+  authentication
+• You may see this briefly when navigating between pages - this is expected
+
+Technical Details:
+• The app waits for your Discord session to fully authenticate
+• It then fetches your Discord servers and matches them to configured guilds
+• If the first attempt is too early, it automatically retries
+• Your previous guild selection is remembered via browser localStorage
+
 ❌ Can't see my Discord server in the list?
 -------------------------------------------
 • Ensure you've granted the app permission to see your servers when 
