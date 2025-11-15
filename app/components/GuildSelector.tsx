@@ -25,9 +25,12 @@ export default function GuildSelector({ selectedGuildId, onGuildChange, hasLoade
   useEffect(() => {
     // Only fetch guilds when session is ready
     if (status === 'authenticated') {
+      console.log('[GuildSelector] Session authenticated, fetching guilds...')
       fetchGuilds()
     } else if (status === 'loading') {
       console.log('[GuildSelector] Waiting for session to load...')
+    } else {
+      console.log('[GuildSelector] Session status:', status)
     }
   }, [status])
 
@@ -58,8 +61,11 @@ export default function GuildSelector({ selectedGuildId, onGuildChange, hasLoade
         if (data && data.length > 0) {
           setGuilds(data)
         } else if (guilds.length === 0) {
-          // Only set empty if we had no guilds before
-          setGuilds(data)
+          // If we got empty and have no cached guilds, retry once after a delay
+          console.warn('Guilds API returned empty on first try, retrying in 1 second...')
+          setTimeout(() => {
+            fetchGuilds()
+          }, 1000)
         } else {
           console.warn('Guilds API returned empty, keeping cached guilds')
         }
