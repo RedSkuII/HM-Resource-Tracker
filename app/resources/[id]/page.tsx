@@ -359,8 +359,10 @@ export default function ResourceDetailPage() {
         })
 
         if (response.ok) {
-          const resources = await response.json()
-          const foundResource = resources.find((r: Resource) => r.id === resourceId)
+          const data = await response.json()
+          // Handle both old format (array) and new format (object with resources array)
+          const resources = Array.isArray(data) ? data : data.resources
+          const foundResource = resources?.find((r: Resource) => r.id === resourceId)
 
           if (foundResource) {
             setResource({

@@ -36,6 +36,26 @@ export async function PUT(
       return NextResponse.json({ error: 'Resource not found' }, { status: 404 })
     }
 
+    // Verify user has access to the resource's guild
+    const resource = currentResource[0]
+    if (resource.guildId) {
+      const discordToken = (session as any).accessToken
+      if (discordToken) {
+        const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+          headers: { 'Authorization': `Bearer ${discordToken}` },
+        })
+        if (discordResponse.ok) {
+          const servers = await discordResponse.json()
+          const userDiscordServers = servers.map((server: any) => server.id)
+          const { guilds } = await import('@/lib/db')
+          const guild = await db.select().from(guilds).where(eq(guilds.id, resource.guildId!)).limit(1)
+          if (guild.length === 0 || !guild[0].discordGuildId || !userDiscordServers.includes(guild[0].discordGuildId)) {
+            return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
+          }
+        }
+      }
+    }
+
     // Update the resource target quantity only (status is calculated client-side)
     await db.update(resources)
       .set({

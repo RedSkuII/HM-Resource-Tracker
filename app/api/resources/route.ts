@@ -34,6 +34,46 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1', 10)
     const limit = parseInt(searchParams.get('limit') || '25', 10)
     
+    // Verify user has access to the requested guild
+    if (guildId) {
+      const { getServerSession, authOptions } = await getAuthDependencies()
+      const session = await getServerSession(authOptions)
+      
+      if (!session || !session.user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      
+      // Verify the guild belongs to a Discord server the user is in
+      const discordToken = (session as any).accessToken
+      if (discordToken) {
+        try {
+          // Fetch user's Discord servers
+          const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+            headers: {
+              'Authorization': `Bearer ${discordToken}`,
+            },
+          })
+          
+          if (discordResponse.ok) {
+            const servers = await discordResponse.json()
+            const userDiscordServers = servers.map((server: any) => server.id)
+            
+            // Check if the requested guild belongs to any of user's Discord servers
+            const { guilds } = await import('@/lib/db')
+            const { eq } = await import('drizzle-orm')
+            const guild = await db.select().from(guilds).where(eq(guilds.id, guildId)).limit(1)
+            
+            if (guild.length === 0 || !guild[0].discordGuildId || !userDiscordServers.includes(guild[0].discordGuildId)) {
+              return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
+            }
+          }
+        } catch (error) {
+          console.error('[API /api/resources] Error verifying guild access:', error)
+          return NextResponse.json({ error: 'Failed to verify access' }, { status: 500 })
+        }
+      }
+    }
+    
     // Validate pagination params
     const validatedPage = Math.max(1, page)
     const validatedLimit = Math.min(Math.max(1, limit), 100) // Max 100 per page
@@ -102,6 +142,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'guildId is required' }, { status: 400 })
     }
 
+    // Verify user has access to this guild
+    const discordToken = (session as any).accessToken
+    if (discordToken) {
+      try {
+        const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+          headers: {
+            'Authorization': `Bearer ${discordToken}`,
+          },
+        })
+        
+        if (discordResponse.ok) {
+          const servers = await discordResponse.json()
+          const userDiscordServers = servers.map((server: any) => server.id)
+          
+          const { guilds } = await import('@/lib/db')
+          const { eq } = await import('drizzle-orm')
+          const guild = await db.select().from(guilds).where(eq(guilds.id, guildId)).limit(1)
+          
+          if (guild.length === 0 || !guild[0].discordGuildId || !userDiscordServers.includes(guild[0].discordGuildId)) {
+            return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
+          }
+        }
+      } catch (error) {
+        console.error('[API POST /api/resources] Error verifying guild access:', error)
+        return NextResponse.json({ error: 'Failed to verify access' }, { status: 500 })
+      }
+    }
+
     const newResource = {
       id: nanoid(),
       guildId,
@@ -167,6 +235,26 @@ export async function PUT(request: NextRequest) {
 
       const { id, name, category, description, imageUrl, multiplier } = resourceMetadata
 
+      // Verify user has access to the resource's guild
+      const existingResource = await db.select().from(resources).where(eq(resources.id, id)).limit(1)
+      if (existingResource.length > 0 && existingResource[0].guildId) {
+        const discordToken = (session as any).accessToken
+        if (discordToken) {
+          const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+            headers: { 'Authorization': `Bearer ${discordToken}` },
+          })
+          if (discordResponse.ok) {
+            const servers = await discordResponse.json()
+            const userDiscordServers = servers.map((server: any) => server.id)
+            const { guilds } = await import('@/lib/db')
+            const guild = await db.select().from(guilds).where(eq(guilds.id, existingResource[0].guildId!)).limit(1)
+            if (guild.length === 0 || !guild[0].discordGuildId || !userDiscordServers.includes(guild[0].discordGuildId)) {
+              return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
+            }
+          }
+        }
+      }
+
       // Update resource metadata
       const updatedResource = await db.update(resources)
         .set({
@@ -193,6 +281,36 @@ export async function PUT(request: NextRequest) {
         { error: 'Invalid request format' },
         { status: 400 }
       )
+    }
+    
+    // Verify user has access to all resources being updated
+    const resourceIds = resourceUpdates.map(u => u.id)
+    const resourcesToUpdate = await db.select().from(resources).where(
+      (await import('drizzle-orm')).inArray(resources.id, resourceIds)
+    )
+    
+    if (resourcesToUpdate.length > 0) {
+      const discordToken = (session as any).accessToken
+      if (discordToken) {
+        const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+          headers: { 'Authorization': `Bearer ${discordToken}` },
+        })
+        if (discordResponse.ok) {
+          const servers = await discordResponse.json()
+          const userDiscordServers = servers.map((server: any) => server.id)
+          const { guilds } = await import('@/lib/db')
+          const guildIds = [...new Set(resourcesToUpdate.map(r => r.guildId).filter((id): id is string => id !== null))]
+          const relevantGuilds = await db.select().from(guilds).where(
+            (await import('drizzle-orm')).inArray(guilds.id, guildIds)
+          )
+          
+          for (const guild of relevantGuilds) {
+            if (!guild.discordGuildId || !userDiscordServers.includes(guild.discordGuildId)) {
+              return NextResponse.json({ error: 'Access denied to one or more guilds' }, { status: 403 })
+            }
+          }
+        }
+      }
     }
     
     // Handle quantity updates with points calculation
