@@ -1,6 +1,70 @@
 {
-  "currentVersion": "2.0.0",
+  "currentVersion": "3.0.0",
   "releases": [
+    {
+      "version": "3.0.0",
+      "date": "2025-11-14",
+      "title": "Multi-Guild Support & Enhanced Security",
+      "type": "major",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Added multi-guild support - track resources for multiple Discord servers in one deployment"
+        },
+        {
+          "type": "feature",
+          "description": "Implemented Discord server membership-based guild isolation for enhanced security"
+        },
+        {
+          "type": "feature",
+          "description": "Added automatic admin access for Discord server owners - no role configuration required"
+        },
+        {
+          "type": "feature",
+          "description": "Created guild selector on resources page to switch between your guilds"
+        },
+        {
+          "type": "feature",
+          "description": "Added in-game guild ID field for better Discord-to-game integration"
+        },
+        {
+          "type": "improvement",
+          "description": "Rebranded from 'Dune Awakening Guild' to 'Guild Resource Tracker' for generic use"
+        },
+        {
+          "type": "improvement",
+          "description": "Updated deployment URL from hm-resource-tracker to trz-resource-tracker"
+        },
+        {
+          "type": "improvement",
+          "description": "Disabled automatic 'What's New' popup - now shows only when clicking version number"
+        },
+        {
+          "type": "improvement",
+          "description": "Reduced excessive console logging for role permission checks"
+        },
+        {
+          "type": "improvement",
+          "description": "Enhanced resource detail pages with guild validation"
+        },
+        {
+          "type": "bugfix",
+          "description": "Fixed resource access issues - users can only view resources from their Discord servers"
+        },
+        {
+          "type": "bugfix",
+          "description": "Fixed server owner permission checks across all API endpoints"
+        },
+        {
+          "type": "bugfix",
+          "description": "Fixed resource detail page 'Resource Not Found' errors for all guilds"
+        },
+        {
+          "type": "bugfix",
+          "description": "Fixed OAuth redirect issues during URL migration"
+        }
+      ]
+    },
     {
       "version": "2.0.0",
       "date": "2025-01-04",
