@@ -26,12 +26,15 @@ export default function GuildSelector({ selectedGuildId, onGuildChange, hasLoade
 
   // Auto-select first guild when both conditions are met (only once)
   useEffect(() => {
-    if (!selectedGuildId && hasLoadedFromStorage && guilds.length > 0 && !loading && !hasAutoSelected) {
+    // Validate that selectedGuildId exists in the guilds list
+    const selectedGuildExists = selectedGuildId && guilds.some(g => g.id === selectedGuildId)
+    
+    if (!selectedGuildExists && hasLoadedFromStorage && guilds.length > 0 && !loading && !hasAutoSelected) {
       console.log('Auto-selecting guild after both loaded:', guilds[0].id)
       setHasAutoSelected(true)
       onGuildChange(guilds[0].id)
     }
-  }, [selectedGuildId, hasLoadedFromStorage, guilds, loading, hasAutoSelected])
+  }, [selectedGuildId, hasLoadedFromStorage, guilds, loading, hasAutoSelected, onGuildChange])
 
   const fetchGuilds = async () => {
     try {
@@ -88,7 +91,7 @@ export default function GuildSelector({ selectedGuildId, onGuildChange, hasLoade
       </label>
       <select
         id="guild-selector"
-        value={selectedGuildId || ''}
+        value={selectedGuildId && guilds.some(g => g.id === selectedGuildId) ? selectedGuildId : (guilds[0]?.id || '')}
         onChange={(e) => onGuildChange(e.target.value)}
         className="rounded-lg border border-gray-600 bg-gray-700 px-4 py-2 text-white shadow-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
       >
