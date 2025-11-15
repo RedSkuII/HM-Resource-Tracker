@@ -52,6 +52,20 @@ interface DiscordGuildData {
   roles: DiscordRole[]
 }
 
+interface ActivityLog {
+  id: string
+  guildId: string
+  eventType: string
+  userId: string | null
+  username: string | null
+  resourceId: string | null
+  resourceName: string | null
+  quantity: number | null
+  pointsAwarded: number | null
+  details: any
+  createdAt: Date
+}
+
 export default function BotDashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -73,6 +87,10 @@ export default function BotDashboardPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showDocumentation, setShowDocumentation] = useState(false)
+  
+  // Activity logs
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([])
+  const [loadingLogs, setLoadingLogs] = useState(false)
   
   // Bot invite URL
   const getBotInviteUrl = () => {
@@ -252,6 +270,33 @@ export default function BotDashboardPage() {
 
     if (selectedDiscordServerId && botIsPresent) {
       fetchDiscordData()
+    }
+  }, [selectedDiscordServerId, botIsPresent])
+
+  // Fetch activity logs when server is selected AND bot is present
+  useEffect(() => {
+    const fetchActivityLogs = async () => {
+      if (!selectedDiscordServerId || !botIsPresent) {
+        setActivityLogs([])
+        return
+      }
+
+      setLoadingLogs(true)
+      try {
+        const response = await fetch(`/api/bot/activity/${selectedDiscordServerId}`)
+        if (!response.ok) throw new Error('Failed to fetch activity logs')
+        const data = await response.json()
+        setActivityLogs(data)
+      } catch (err) {
+        console.error('[BOT-DASHBOARD] Failed to fetch activity logs:', err)
+        setActivityLogs([])
+      } finally {
+        setLoadingLogs(false)
+      }
+    }
+
+    if (selectedDiscordServerId && botIsPresent) {
+      fetchActivityLogs()
     }
   }, [selectedDiscordServerId, botIsPresent])
 
@@ -745,12 +790,150 @@ export default function BotDashboardPage() {
         {/* Placeholder for Activity Logs */}
         {selectedDiscordServerId && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Activity Log
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Activity log component coming soon...
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Activity Log
+              </h2>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Last 100 events
+              </span>
+            </div>
+
+            {loadingLogs ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              </div>
+            ) : activityLogs.length === 0 ? (
+              <div className="text-center py-12">
+                <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  No activity logs yet
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  Activity will appear here when users interact with the bot
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {activityLogs.map((log) => {
+                  const getEventIcon = (eventType: string) => {
+                    switch (eventType) {
+                      case 'order_created':
+                        return (
+                          <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                        )
+                      case 'order_filled':
+                        return (
+                          <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        )
+                      case 'order_cancelled':
+                        return (
+                          <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        )
+                      case 'stock_updated':
+                        return (
+                          <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                          </svg>
+                        )
+                      case 'embed_updated':
+                        return (
+                          <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                        )
+                      case 'config_changed':
+                        return (
+                          <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                        )
+                      default:
+                        return (
+                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        )
+                    }
+                  }
+
+                  const getEventLabel = (eventType: string) => {
+                    const labels: Record<string, string> = {
+                      order_created: 'Order Created',
+                      order_filled: 'Order Filled',
+                      order_cancelled: 'Order Cancelled',
+                      stock_updated: 'Stock Updated',
+                      embed_updated: 'Embed Updated',
+                      config_changed: 'Config Changed'
+                    }
+                    return labels[eventType] || eventType
+                  }
+
+                  const formatTimestamp = (date: Date) => {
+                    const now = new Date()
+                    const timestamp = new Date(date)
+                    const diffMs = now.getTime() - timestamp.getTime()
+                    const diffMins = Math.floor(diffMs / 60000)
+                    const diffHours = Math.floor(diffMs / 3600000)
+                    const diffDays = Math.floor(diffMs / 86400000)
+
+                    if (diffMins < 1) return 'Just now'
+                    if (diffMins < 60) return `${diffMins}m ago`
+                    if (diffHours < 24) return `${diffHours}h ago`
+                    if (diffDays < 7) return `${diffDays}d ago`
+                    return timestamp.toLocaleDateString()
+                  }
+
+                  return (
+                    <div
+                      key={log.id}
+                      className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      <div className="flex-shrink-0 mt-0.5">
+                        {getEventIcon(log.eventType)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                              {getEventLabel(log.eventType)}
+                            </p>
+                            {log.resourceName && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                                {log.resourceName}
+                                {log.quantity !== null && ` (${log.quantity > 0 ? '+' : ''}${log.quantity.toLocaleString()})`}
+                              </p>
+                            )}
+                            {log.username && (
+                              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                                by {log.username}
+                              </p>
+                            )}
+                            {log.pointsAwarded !== null && log.pointsAwarded > 0 && (
+                              <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                                +{log.pointsAwarded.toFixed(1)} points awarded
+                              </p>
+                            )}
+                          </div>
+                          <time className="text-xs text-gray-500 dark:text-gray-500 whitespace-nowrap">
+                            {formatTimestamp(log.createdAt)}
+                          </time>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>
