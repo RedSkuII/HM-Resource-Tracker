@@ -12,11 +12,22 @@ export function ResourceTableWithGuildSelector({ userId }: ResourceTableWithGuil
   const [selectedGuildId, setSelectedGuildId] = useState<string | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
 
-  // Mark as initialized once a guild is selected
+  // Load the last selected guild from localStorage on mount
   useEffect(() => {
-    if (selectedGuildId && !isInitialized) {
-      console.log('[ResourceTableWithGuildSelector] Guild initialized:', selectedGuildId)
-      setIsInitialized(true)
+    const lastSelectedGuild = localStorage.getItem('lastSelectedGuildId')
+    if (lastSelectedGuild) {
+      setSelectedGuildId(lastSelectedGuild)
+    }
+  }, [])
+
+  // Save selected guild to localStorage whenever it changes
+  useEffect(() => {
+    if (selectedGuildId) {
+      localStorage.setItem('lastSelectedGuildId', selectedGuildId)
+      if (!isInitialized) {
+        console.log('[ResourceTableWithGuildSelector] Guild initialized:', selectedGuildId)
+        setIsInitialized(true)
+      }
     }
   }, [selectedGuildId, isInitialized])
 
