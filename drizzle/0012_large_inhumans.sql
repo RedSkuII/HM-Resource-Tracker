@@ -1,0 +1,1 @@
+ALTER TABLE guilds ADD `guild_access_roles` text;

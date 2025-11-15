@@ -13,7 +13,8 @@ const getAuthDependencies = async () => {
   const { authOptions, getUserIdentifier } = await import('@/lib/auth')
   const { hasResourceAccess, hasResourceAdminAccess } = await import('@/lib/discord-roles')
   const { awardPoints } = await import('@/lib/leaderboard')
-  return { getServerSession, authOptions, getUserIdentifier, hasResourceAccess, hasResourceAdminAccess, awardPoints }
+  const { canAccessGuild } = await import('@/lib/guild-access')
+  return { getServerSession, authOptions, getUserIdentifier, hasResourceAccess, hasResourceAdminAccess, awardPoints, canAccessGuild }
 }
 
 // Calculate status based on quantity vs target
@@ -36,11 +37,24 @@ export async function GET(request: NextRequest) {
     
     // Verify user has access to the requested guild
     if (guildId) {
-      const { getServerSession, authOptions } = await getAuthDependencies()
+      const { getServerSession, authOptions, canAccessGuild } = await getAuthDependencies()
       const session = await getServerSession(authOptions)
       
       if (!session || !session.user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      
+      // Check guild-specific role requirements
+      const userRoles = session.user.roles || []
+      const hasGlobalAccess = session.user.permissions?.hasResourceAdminAccess || false
+      const canAccess = await canAccessGuild(guildId, userRoles, hasGlobalAccess)
+      
+      if (!canAccess) {
+        console.log(`[API /api/resources] User ${session.user.name} denied access to guild ${guildId}`)
+        return NextResponse.json(
+          { error: 'You do not have the required Discord roles to access this guild' }, 
+          { status: 403 }
+        )
       }
       
       // Verify the guild belongs to a Discord server the user is in
