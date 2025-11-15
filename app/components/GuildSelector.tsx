@@ -12,9 +12,10 @@ interface Guild {
 interface GuildSelectorProps {
   selectedGuildId: string | null
   onGuildChange: (guildId: string) => void
+  hasLoadedFromStorage?: boolean
 }
 
-export default function GuildSelector({ selectedGuildId, onGuildChange }: GuildSelectorProps) {
+export default function GuildSelector({ selectedGuildId, onGuildChange, hasLoadedFromStorage = false }: GuildSelectorProps) {
   const [guilds, setGuilds] = useState<Guild[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -34,8 +35,11 @@ export default function GuildSelector({ selectedGuildId, onGuildChange }: GuildS
         console.log('Guilds fetched:', data)
         setGuilds(data)
         
-        // Auto-select first guild if none selected
-        if (!selectedGuildId && data.length > 0) {
+        // Only auto-select first guild if:
+        // 1. No guild is currently selected
+        // 2. Parent has finished loading from localStorage
+        // 3. There are guilds available
+        if (!selectedGuildId && hasLoadedFromStorage && data.length > 0) {
           console.log('Auto-selecting guild:', data[0].id)
           onGuildChange(data[0].id)
         }

@@ -11,6 +11,7 @@ interface ResourceTableWithGuildSelectorProps {
 export function ResourceTableWithGuildSelector({ userId }: ResourceTableWithGuildSelectorProps) {
   const [selectedGuildId, setSelectedGuildId] = useState<string | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
+  const [hasLoadedFromStorage, setHasLoadedFromStorage] = useState(false)
 
   // Load the last selected guild from localStorage on mount
   useEffect(() => {
@@ -18,6 +19,7 @@ export function ResourceTableWithGuildSelector({ userId }: ResourceTableWithGuil
     if (lastSelectedGuild) {
       setSelectedGuildId(lastSelectedGuild)
     }
+    setHasLoadedFromStorage(true)
   }, [])
 
   // Save selected guild to localStorage whenever it changes
@@ -37,7 +39,8 @@ export function ResourceTableWithGuildSelector({ userId }: ResourceTableWithGuil
       <div className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
         <GuildSelector 
           selectedGuildId={selectedGuildId} 
-          onGuildChange={setSelectedGuildId} 
+          onGuildChange={setSelectedGuildId}
+          hasLoadedFromStorage={hasLoadedFromStorage}
         />
         {selectedGuildId && (
           <div className="text-sm text-gray-500 dark:text-gray-400">
