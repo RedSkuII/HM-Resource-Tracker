@@ -37,6 +37,10 @@ export function WhatsNewModal({ isOpen: externalIsOpen, onClose: externalOnClose
       return
     }
 
+    // Automatic changelog popup is disabled - only show when manually clicked
+    // Users can click the version number to view changelog
+    return
+
     // Otherwise, use automatic detection
     if (forceShow) return // Skip automatic detection if force showing
 
