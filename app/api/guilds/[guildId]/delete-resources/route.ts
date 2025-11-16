@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { db, resources, resourceHistory, leaderboard, guilds } from '@/lib/db'
-import { eq, and } from 'drizzle-orm'
+import { 
+  db, 
+  resources, 
+  resourceHistory, 
+  leaderboard, 
+  guilds,
+  discordOrders,
+  resourceDiscordMapping,
+  websiteChanges
+} from '@/lib/db'
+import { eq, and, inArray } from 'drizzle-orm'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,20 +64,60 @@ export async function DELETE(
     }
 
     // Delete all resources and related data for this in-game guild
-    // 1. Delete leaderboard entries
-    await db.delete(leaderboard).where(eq(leaderboard.guildId, guildId))
     
-    // 2. Delete resource history
-    await db.delete(resourceHistory).where(eq(resourceHistory.guildId, guildId))
+    // First, get all resource IDs for this guild
+    const guildResources = await db
+      .select({ id: resources.id })
+      .from(resources)
+      .where(eq(resources.guildId, guildId))
     
-    // 3. Delete resources
-    const deletedResources = await db.delete(resources).where(eq(resources.guildId, guildId))
+    const resourceIds = guildResources.map(r => r.id)
+    
+    if (resourceIds.length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: `No resources found for guild ${guild.title}`,
+        guildId,
+        guildTitle: guild.title
+      })
+    }
+
+    // Delete in order of foreign key dependencies
+    
+    // 1. Delete resource history entries (references resources.id)
+    for (const resourceId of resourceIds) {
+      await db.delete(resourceHistory).where(eq(resourceHistory.resourceId, resourceId))
+    }
+    
+    // 2. Delete leaderboard entries (references resources.id)
+    for (const resourceId of resourceIds) {
+      await db.delete(leaderboard).where(eq(leaderboard.resourceId, resourceId))
+    }
+    
+    // 3. Delete discord orders (references resources.id)
+    for (const resourceId of resourceIds) {
+      await db.delete(discordOrders).where(eq(discordOrders.resourceId, resourceId))
+    }
+    
+    // 4. Delete resource discord mappings (references resources.id)
+    for (const resourceId of resourceIds) {
+      await db.delete(resourceDiscordMapping).where(eq(resourceDiscordMapping.resourceId, resourceId))
+    }
+    
+    // 5. Delete website changes (references resources.id)
+    for (const resourceId of resourceIds) {
+      await db.delete(websiteChanges).where(eq(websiteChanges.resourceId, resourceId))
+    }
+    
+    // 6. Finally, delete the resources themselves
+    await db.delete(resources).where(eq(resources.guildId, guildId))
 
     return NextResponse.json({
       success: true,
-      message: `All resources for guild ${guild.title} have been deleted`,
+      message: `All ${resourceIds.length} resources for guild ${guild.title} have been deleted`,
       guildId,
-      guildTitle: guild.title
+      guildTitle: guild.title,
+      deletedCount: resourceIds.length
     })
 
   } catch (error) {

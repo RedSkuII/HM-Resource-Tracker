@@ -3,6 +3,7 @@ import { db, guilds } from '@/lib/db'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getAccessibleGuilds } from '@/lib/guild-access'
+import { nanoid } from 'nanoid'
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
