@@ -4,13 +4,7 @@ A comprehensive resource management and tracking portal with Discord authenticat
 
 Originally designed for Dune Awakening guilds, but can be adapted to track any type of resources. Supports **multiple Discord servers** with **multiple in-game guilds per server**. Each in-game guild belongs to only one Discord server, but Discord servers can manage multiple guilds independently.
 
-Built for [https://www.silverorder.org](https://www.silverorder.org) - if you find any references to it, feel free to submit a PR to fix them.
-
 This project is open to the community - if you can build it and it works, pull requests are welcome! 🙏
-
-If you like what I did, feel free to 
-
-[![Buy Me A Coffee](https://img.buymeacoffee.com/button-api/?text=Buy+me+a+coffee&emoji=☕&slug=yetty&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff)](https://www.buymeacoffee.com/yetty)
 
 ![alt text](image.png)
 

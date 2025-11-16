@@ -147,7 +147,7 @@ Step 2: Select In-Game Guild
 -----------------------------
 • Choose which in-game guild (House, Clan) to track
 • This links your Discord server to resource tracking
-• Each Discord server can track a different in-game guild
+• Your Discord server can track multiple in-game guilds (each configured separately)
 
 Step 3: Configure Channels
 ---------------------------
@@ -244,7 +244,7 @@ Example Scenarios:
   - One Discord server tracking 3 different Houses
   - Each House has separate resources and leaderboards
   - Alliance leaders can switch between Houses easily
-  - Example: "Silver Order Alliance" Discord manages House Atreides, 
+  - Example: "Phoenix Alliance" Discord manages House Atreides, 
     House Harkonnen, and House Corrino
 
 • Multi-Faction Community:
@@ -428,10 +428,10 @@ A: Base points are 0.1 per resource. ADD actions receive the configured
    website or Discord bonus (0-200%). SET actions award flat 1 point.
    Status bonuses add +10% for critical, +5% for below target.
 
-Q: Can multiple servers share the same resources?
-A: Yes! Multiple Discord servers can link to the same in-game guild,
-   allowing alliances to share resource tracking while maintaining
-   independent bot configurations.
+Q: Can multiple Discord servers share the same in-game guild?
+A: No. Each in-game guild belongs to exactly ONE Discord server. However,
+   one Discord server can manage multiple in-game guilds (e.g., House A,
+   House B, House C), with separate resources and leaderboards for each.
 
 Q: What happens if I change the bonus percentages?
 A: New bonuses apply to all future actions. Previously awarded points

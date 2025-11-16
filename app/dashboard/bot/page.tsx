@@ -1778,12 +1778,12 @@ export default function BotDashboardPage() {
                     <li>Click <strong>Save Configuration</strong></li>
                   </ol>
 
-                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mt-6 mb-2">Multi-Server Best Practices</h4>
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mt-6 mb-2">Multi-Guild Best Practices</h4>
                   <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 ml-4">
-                    <li>Each Discord server can link to one in-game guild</li>
-                    <li>Multiple Discord servers can link to the same in-game guild (useful for alliances)</li>
-                    <li>Each server can have different bonus percentages and notification settings</li>
-                    <li>Admin roles are server-specific, not shared across servers</li>
+                    <li>Each in-game guild belongs to exactly ONE Discord server</li>
+                    <li>One Discord server can manage multiple in-game guilds</li>
+                    <li>Each guild has separate resources, leaderboards, and activity logs</li>
+                    <li>Bot configuration is per-guild (each guild can have different settings)</li>
                   </ul>
 
                   <h4 className="text-lg font-medium text-gray-900 dark:text-white mt-6 mb-2">Troubleshooting</h4>

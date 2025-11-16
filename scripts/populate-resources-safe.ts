@@ -53,7 +53,7 @@ const refinedResources = [
   { name: 'Iron Ingot', quantity: 1000, icon: ':IronIngot:', status: 'critical', lastUpdatedBy: 'Magdalena ((Pheebs))' },
   { name: 'Silicone Block', quantity: 4687, icon: ':SiliconeBlock:', status: 'at_target', lastUpdatedBy: 'Magdalena ((Pheebs))' },
   { name: 'Cobalt Paste', quantity: 1579, icon: ':ColbaltPaste:', status: 'at_target', lastUpdatedBy: 'Yasvahi Assuan (Nathrai)' },
-  { name: 'Low-grade Lubricant', quantity: 0, icon: ':LowGradeLubricant:', status: 'critical', lastUpdatedBy: 'Mother Y\'thelia (Yetty)' },
+  { name: 'Low-grade Lubricant', quantity: 0, icon: ':LowGradeLubricant:', status: 'critical', lastUpdatedBy: 'System' },
   { name: 'Medium Sized Vehicle Fuel Cell', quantity: 32, icon: ':LargeVehicleFuelCell:', status: 'critical', lastUpdatedBy: 'Magdalena ((Pheebs))' },
   { name: 'Spice Melange', quantity: 0, icon: ':spice:', status: 'critical', lastUpdatedBy: 'Magdalena ((Pheebs))' },
   { name: 'Steel Ingot', quantity: 3113, icon: ':SteelIngot:', status: 'at_target', lastUpdatedBy: 'Magdalena ((Pheebs))' },
@@ -63,7 +63,7 @@ const refinedResources = [
   { name: 'Standard Filter', quantity: 0, icon: ':StandardFilter:', status: 'critical', lastUpdatedBy: 'Magdalena ((Pheebs))' },
   { name: 'Duraluminum Ingot', quantity: 882, icon: ':DuraluminumIngot:', status: 'below_target', lastUpdatedBy: 'Magdalena ((Pheebs))' },
   { name: 'Industrial-grade Lubricant', quantity: 208, icon: ':IndustrialGradeLubricant:', status: 'critical', lastUpdatedBy: 'Magdalena ((Pheebs))' },
-  { name: 'Solaris', quantity: 8350, icon: ':Solaris:', status: 'critical', lastUpdatedBy: 'Mother Y\'thelia (Yetty)' },
+  { name: 'Solaris', quantity: 8350, icon: ':Solaris:', status: 'critical', lastUpdatedBy: 'System' },
   { name: 'Plastanium Ingot', quantity: 0, icon: ':PlastaniumIngot:', status: 'critical', lastUpdatedBy: 'Magdalena ((Pheebs))' },
   { name: 'Spice-infused Fuel Cell', quantity: 0, icon: ':SpiceInfusedFuelCell:', status: 'critical', lastUpdatedBy: 'Magdalena ((Pheebs))' },
   { name: 'Stravidium Fiber', quantity: 0, icon: ':StravidiumFiber:', status: 'critical', lastUpdatedBy: 'Magdalena ((Pheebs))' }
