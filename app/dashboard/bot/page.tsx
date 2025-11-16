@@ -32,19 +32,20 @@ interface InGameGuild {
   allowPublicOrders?: boolean
 }
 
-interface BotConfig {
-  guildId: string
-  inGameGuildId: string | null
-  botChannelId: string[]
-  orderChannelId: string[]
-  adminRoleId: string[]
-  autoUpdateEmbeds: boolean
-  notifyOnWebsiteChanges: boolean
-  orderFulfillmentBonus: number
-  websiteBonusPercentage: number
-  allowPublicOrders: boolean
-  exists: boolean
-}
+// Legacy BotConfig interface - DEPRECATED (now using guild-specific config in InGameGuild interface)
+// interface BotConfig {
+//   guildId: string
+//   inGameGuildId: string | null
+//   botChannelId: string[]
+//   orderChannelId: string[]
+//   adminRoleId: string[]
+//   autoUpdateEmbeds: boolean
+//   notifyOnWebsiteChanges: boolean
+//   orderFulfillmentBonus: number
+//   websiteBonusPercentage: number
+//   allowPublicOrders: boolean
+//   exists: boolean
+// }
 
 interface DiscordChannel {
   id: string
@@ -94,7 +95,8 @@ export default function BotDashboardPage() {
   const [botIsPresent, setBotIsPresent] = useState<boolean>(false)
   const [checkingBotStatus, setCheckingBotStatus] = useState(false)
   
-  const [config, setConfig] = useState<BotConfig | null>(null) // Legacy - will be removed
+  // Legacy config state - DEPRECATED (now using guild-specific config in inGameGuilds)
+  // const [config, setConfig] = useState<BotConfig | null>(null)
   const [discordData, setDiscordData] = useState<DiscordGuildData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -268,8 +270,8 @@ export default function BotDashboardPage() {
         })
         
         // Reset in-game guild selection if current selection is not in the new list
-        if (config?.inGameGuildId && !data.find((g: InGameGuild) => g.id === config.inGameGuildId)) {
-          setConfig(config ? { ...config, inGameGuildId: null } : null)
+        if (selectedInGameGuildId && !data.find((g: InGameGuild) => g.id === selectedInGameGuildId)) {
+          setSelectedInGameGuildId(null)
         }
       } catch (err) {
         console.error('[BOT-DASHBOARD] Fetch in-game guilds error:', err)
@@ -320,35 +322,7 @@ export default function BotDashboardPage() {
     }
   }, [selectedInGameGuildId])
 
-  // Legacy: Fetch guild-specific roles when in-game guild selection changes (OLD SYSTEM)
-  useEffect(() => {
-    if (config?.inGameGuildId) {
-      fetchGuildRoles(config.inGameGuildId)
-    }
-  }, [config?.inGameGuildId])
-
-  // Fetch config when Discord server is selected AND bot is present
-  useEffect(() => {
-    const fetchConfig = async () => {
-      if (!selectedDiscordServerId || !botIsPresent) {
-        setConfig(null)
-        return
-      }
-
-      try {
-        const response = await fetch(`/api/bot/config/${selectedDiscordServerId}`)
-        if (!response.ok) throw new Error('Failed to fetch configuration')
-        const data = await response.json()
-        setConfig(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load configuration')
-      }
-    }
-
-    if (selectedDiscordServerId && botIsPresent) {
-      fetchConfig()
-    }
-  }, [selectedDiscordServerId, botIsPresent])
+  // Legacy fetchConfig - REMOVED (now using fetchGuildConfig which is called when guild selection changes)
 
   // Fetch Discord channels and roles when server is selected AND bot is present
   useEffect(() => {
@@ -416,16 +390,28 @@ export default function BotDashboardPage() {
   }, [showDocumentation])
 
   const handleSaveConfig = async () => {
-    if (!config || !selectedDiscordServerId) return
+    if (!selectedInGameGuildId) return
+
+    const currentGuild = inGameGuilds.find(g => g.id === selectedInGameGuildId)
+    if (!currentGuild) return
 
     setSaving(true)
     setError(null)
 
     try {
-      const response = await fetch(`/api/bot/config/${selectedDiscordServerId}`, {
+      const response = await fetch(`/api/guilds/${selectedInGameGuildId}/config`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config)
+        body: JSON.stringify({
+          botChannelId: currentGuild.botChannelId || [],
+          orderChannelId: currentGuild.orderChannelId || [],
+          adminRoleId: currentGuild.adminRoleId || [],
+          autoUpdateEmbeds: currentGuild.autoUpdateEmbeds ?? true,
+          notifyOnWebsiteChanges: currentGuild.notifyOnWebsiteChanges ?? true,
+          orderFulfillmentBonus: currentGuild.orderFulfillmentBonus ?? 50,
+          websiteBonusPercentage: currentGuild.websiteBonusPercentage ?? 0,
+          allowPublicOrders: currentGuild.allowPublicOrders ?? true
+        })
       })
 
       if (!response.ok) {
@@ -433,8 +419,6 @@ export default function BotDashboardPage() {
         throw new Error(errorData.error || 'Failed to save configuration')
       }
 
-      const data = await response.json()
-      setConfig(data.config)
       alert('Configuration saved successfully!')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save configuration')
@@ -531,13 +515,13 @@ export default function BotDashboardPage() {
   }
 
   const handleDeleteAllResources = async () => {
-    if (!config?.inGameGuildId) return
+    if (!selectedInGameGuildId) return
 
     setDeletingResources(true)
     setError(null)
 
     try {
-      const response = await fetch(`/api/guilds/${config.inGameGuildId}/delete-resources`, {
+      const response = await fetch(`/api/guilds/${selectedInGameGuildId}/delete-resources`, {
         method: 'DELETE',
       })
 
@@ -831,10 +815,12 @@ export default function BotDashboardPage() {
                 {discordData && discordData.channels.length > 0 ? (
                   <select
                     multiple
-                    value={config.orderChannelId || []}
+                    value={inGameGuilds.find(g => g.id === selectedInGameGuildId)?.orderChannelId || []}
                     onChange={(e) => {
                       const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
-                      setConfig({ ...config, orderChannelId: selectedOptions })
+                      setInGameGuilds(prev =>
+                        prev.map(g => g.id === selectedInGameGuildId ? { ...g, orderChannelId: selectedOptions } : g)
+                      )
                     }}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 min-h-[120px]"
                   >
@@ -849,15 +835,21 @@ export default function BotDashboardPage() {
                     Loading channels...
                   </div>
                 )}
-                {config.orderChannelId && config.orderChannelId.length > 0 && (
+                {inGameGuilds.find(g => g.id === selectedInGameGuildId)?.orderChannelId && inGameGuilds.find(g => g.id === selectedInGameGuildId)!.orderChannelId!.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {config.orderChannelId.map(channelId => {
+                    {inGameGuilds.find(g => g.id === selectedInGameGuildId)!.orderChannelId!.map(channelId => {
                       const channel = discordData?.channels.find(c => c.id === channelId)
                       return channel ? (
                         <span key={channelId} className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs rounded">
                           #{channel.name}
                           <button
-                            onClick={() => setConfig({ ...config, orderChannelId: config.orderChannelId.filter(id => id !== channelId) })}
+                            onClick={() => {
+                              const currentGuild = inGameGuilds.find(g => g.id === selectedInGameGuildId)
+                              const newChannelIds = currentGuild?.orderChannelId?.filter(id => id !== channelId) || []
+                              setInGameGuilds(prev =>
+                                prev.map(g => g.id === selectedInGameGuildId ? { ...g, orderChannelId: newChannelIds } : g)
+                              )
+                            }}
                             className="ml-1 hover:text-green-600 dark:hover:text-green-200"
                           >
                             ×
@@ -872,7 +864,7 @@ export default function BotDashboardPage() {
               {/* Discord Order Fulfillment Bonus */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Discord Order Fulfillment Bonus: {config.orderFulfillmentBonus}%
+                  Discord Order Fulfillment Bonus: {inGameGuilds.find(g => g.id === selectedInGameGuildId)?.orderFulfillmentBonus ?? 50}%
                   <span className="text-gray-500 text-xs ml-2">(Bonus points for filling orders via Discord)</span>
                 </label>
                 <input
@@ -880,8 +872,13 @@ export default function BotDashboardPage() {
                   min="0"
                   max="200"
                   step="10"
-                  value={config.orderFulfillmentBonus}
-                  onChange={(e) => setConfig({ ...config, orderFulfillmentBonus: parseInt(e.target.value) })}
+                  value={inGameGuilds.find(g => g.id === selectedInGameGuildId)?.orderFulfillmentBonus ?? 50}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value)
+                    setInGameGuilds(prev =>
+                      prev.map(g => g.id === selectedInGameGuildId ? { ...g, orderFulfillmentBonus: value } : g)
+                    )
+                  }}
                   className="w-full"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -895,7 +892,7 @@ export default function BotDashboardPage() {
               {/* Website Bonus */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Website Addition Bonus: {config.websiteBonusPercentage}%
+                  Website Addition Bonus: {inGameGuilds.find(g => g.id === selectedInGameGuildId)?.websiteBonusPercentage ?? 0}%
                   <span className="text-gray-500 text-xs ml-2">(Bonus points for adding resources via website)</span>
                 </label>
                 <input
@@ -903,8 +900,13 @@ export default function BotDashboardPage() {
                   min="0"
                   max="200"
                   step="10"
-                  value={config.websiteBonusPercentage}
-                  onChange={(e) => setConfig({ ...config, websiteBonusPercentage: parseInt(e.target.value) })}
+                  value={inGameGuilds.find(g => g.id === selectedInGameGuildId)?.websiteBonusPercentage ?? 0}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value)
+                    setInGameGuilds(prev =>
+                      prev.map(g => g.id === selectedInGameGuildId ? { ...g, websiteBonusPercentage: value } : g)
+                    )
+                  }}
                   className="w-full"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -920,8 +922,12 @@ export default function BotDashboardPage() {
                 <label className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={config.autoUpdateEmbeds}
-                    onChange={(e) => setConfig({ ...config, autoUpdateEmbeds: e.target.checked })}
+                    checked={inGameGuilds.find(g => g.id === selectedInGameGuildId)?.autoUpdateEmbeds ?? true}
+                    onChange={(e) => {
+                      setInGameGuilds(prev =>
+                        prev.map(g => g.id === selectedInGameGuildId ? { ...g, autoUpdateEmbeds: e.target.checked } : g)
+                      )
+                    }}
                     className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
@@ -932,8 +938,12 @@ export default function BotDashboardPage() {
                 <label className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={config.notifyOnWebsiteChanges}
-                    onChange={(e) => setConfig({ ...config, notifyOnWebsiteChanges: e.target.checked })}
+                    checked={inGameGuilds.find(g => g.id === selectedInGameGuildId)?.notifyOnWebsiteChanges ?? true}
+                    onChange={(e) => {
+                      setInGameGuilds(prev =>
+                        prev.map(g => g.id === selectedInGameGuildId ? { ...g, notifyOnWebsiteChanges: e.target.checked } : g)
+                      )
+                    }}
                     className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
@@ -944,8 +954,12 @@ export default function BotDashboardPage() {
                 <label className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={config.allowPublicOrders}
-                    onChange={(e) => setConfig({ ...config, allowPublicOrders: e.target.checked })}
+                    checked={inGameGuilds.find(g => g.id === selectedInGameGuildId)?.allowPublicOrders ?? true}
+                    onChange={(e) => {
+                      setInGameGuilds(prev =>
+                        prev.map(g => g.id === selectedInGameGuildId ? { ...g, allowPublicOrders: e.target.checked } : g)
+                      )
+                    }}
                     className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
@@ -968,10 +982,12 @@ export default function BotDashboardPage() {
                 {discordData && discordData.roles.length > 0 ? (
                   <select
                     multiple
-                    value={config.adminRoleId || []}
+                    value={inGameGuilds.find(g => g.id === selectedInGameGuildId)?.adminRoleId || []}
                     onChange={(e) => {
                       const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
-                      setConfig({ ...config, adminRoleId: selectedOptions })
+                      setInGameGuilds(prev =>
+                        prev.map(g => g.id === selectedInGameGuildId ? { ...g, adminRoleId: selectedOptions } : g)
+                      )
                     }}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 min-h-[120px]"
                   >
@@ -986,15 +1002,21 @@ export default function BotDashboardPage() {
                     Loading roles...
                   </div>
                 )}
-                {config.adminRoleId && config.adminRoleId.length > 0 && (
+                {inGameGuilds.find(g => g.id === selectedInGameGuildId)?.adminRoleId && inGameGuilds.find(g => g.id === selectedInGameGuildId)!.adminRoleId!.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {config.adminRoleId.map(roleId => {
+                    {inGameGuilds.find(g => g.id === selectedInGameGuildId)!.adminRoleId!.map(roleId => {
                       const role = discordData?.roles.find(r => r.id === roleId)
                       return role ? (
                         <span key={roleId} className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 text-xs rounded">
                           {role.name}
                           <button
-                            onClick={() => setConfig({ ...config, adminRoleId: config.adminRoleId.filter(id => id !== roleId) })}
+                            onClick={() => {
+                              const currentGuild = inGameGuilds.find(g => g.id === selectedInGameGuildId)
+                              const newRoleIds = currentGuild?.adminRoleId?.filter(id => id !== roleId) || []
+                              setInGameGuilds(prev =>
+                                prev.map(g => g.id === selectedInGameGuildId ? { ...g, adminRoleId: newRoleIds } : g)
+                              )
+                            }}
                             className="ml-1 hover:text-red-600 dark:hover:text-red-200"
                           >
                             ×
@@ -1007,13 +1029,13 @@ export default function BotDashboardPage() {
               </div>
 
               {/* Guild Officer Roles (for selected in-game guild) */}
-              {config.inGameGuildId && (
+              {selectedInGameGuildId && (
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                     Guild Officer Roles
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Configure which Discord roles are <strong>officers</strong> for <strong>{inGameGuilds.find(g => g.id === config.inGameGuildId)?.title || 'this guild'}</strong>.
+                    Configure which Discord roles are <strong>officers</strong> for <strong>{inGameGuilds.find(g => g.id === selectedInGameGuildId)?.title || 'this guild'}</strong>.
                     Officers can edit resources and manage guild operations but <strong>cannot</strong> access bot configuration.
                   </p>
 
@@ -1024,11 +1046,11 @@ export default function BotDashboardPage() {
                     {discordData && discordData.roles.length > 0 ? (
                       <select
                         multiple
-                        value={inGameGuilds.find(g => g.id === config.inGameGuildId)?.officerRoleIds || []}
+                        value={inGameGuilds.find(g => g.id === selectedInGameGuildId)?.officerRoleIds || []}
                         onChange={(e) => {
                           const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
                           setInGameGuilds(prev => 
-                            prev.map(g => g.id === config.inGameGuildId ? { ...g, officerRoleIds: selectedOptions } : g)
+                            prev.map(g => g.id === selectedInGameGuildId ? { ...g, officerRoleIds: selectedOptions } : g)
                           )
                         }}
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 min-h-[120px]"
@@ -1047,19 +1069,19 @@ export default function BotDashboardPage() {
                   </div>
 
                   {/* Selected Officer Roles Display */}
-                  {inGameGuilds.find(g => g.id === config.inGameGuildId)?.officerRoleIds && inGameGuilds.find(g => g.id === config.inGameGuildId)!.officerRoleIds!.length > 0 && (
+                  {inGameGuilds.find(g => g.id === selectedInGameGuildId)?.officerRoleIds && inGameGuilds.find(g => g.id === selectedInGameGuildId)!.officerRoleIds!.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {inGameGuilds.find(g => g.id === config.inGameGuildId)!.officerRoleIds!.map(roleId => {
+                      {inGameGuilds.find(g => g.id === selectedInGameGuildId)!.officerRoleIds!.map(roleId => {
                         const role = discordData?.roles.find(r => r.id === roleId)
                         return role ? (
                           <span key={roleId} className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-xs rounded">
                             {role.name}
                             <button
                               onClick={() => {
-                                const currentGuild = inGameGuilds.find(g => g.id === config.inGameGuildId)
+                                const currentGuild = inGameGuilds.find(g => g.id === selectedInGameGuildId)
                                 const newRoleIds = currentGuild?.officerRoleIds?.filter(id => id !== roleId) || []
                                 setInGameGuilds(prev => 
-                                  prev.map(g => g.id === config.inGameGuildId ? { ...g, officerRoleIds: newRoleIds } : g)
+                                  prev.map(g => g.id === selectedInGameGuildId ? { ...g, officerRoleIds: newRoleIds } : g)
                                 )
                               }}
                               className="ml-1 hover:text-purple-600 dark:hover:text-purple-200"
@@ -1076,27 +1098,27 @@ export default function BotDashboardPage() {
                   <div className="mt-4 flex items-center gap-2">
                     <button
                       onClick={() => {
-                        const currentGuild = inGameGuilds.find(g => g.id === config.inGameGuildId)
+                        const currentGuild = inGameGuilds.find(g => g.id === selectedInGameGuildId)
                         if (currentGuild) {
                           handleUpdateOfficerRoles(currentGuild.id, currentGuild.officerRoleIds || [])
                         }
                       }}
-                      disabled={savingOfficerRoles === config.inGameGuildId}
+                      disabled={savingOfficerRoles === selectedInGameGuildId}
                       className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white text-sm rounded-lg font-medium transition-colors"
                     >
-                      {savingOfficerRoles === config.inGameGuildId ? 'Saving Officer Roles...' : 'Save Officer Roles'}
+                      {savingOfficerRoles === selectedInGameGuildId ? 'Saving Officer Roles...' : 'Save Officer Roles'}
                     </button>
-                    {inGameGuilds.find(g => g.id === config.inGameGuildId)?.officerRoleIds && inGameGuilds.find(g => g.id === config.inGameGuildId)!.officerRoleIds!.length > 0 && (
+                    {inGameGuilds.find(g => g.id === selectedInGameGuildId)?.officerRoleIds && inGameGuilds.find(g => g.id === selectedInGameGuildId)!.officerRoleIds!.length > 0 && (
                       <button
                         onClick={() => {
-                          if (config.inGameGuildId) {
+                          if (selectedInGameGuildId) {
                             setInGameGuilds(prev => 
-                              prev.map(g => g.id === config.inGameGuildId ? { ...g, officerRoleIds: [] } : g)
+                              prev.map(g => g.id === selectedInGameGuildId ? { ...g, officerRoleIds: [] } : g)
                             )
-                            handleUpdateOfficerRoles(config.inGameGuildId, [])
+                            handleUpdateOfficerRoles(selectedInGameGuildId, [])
                           }
                         }}
-                        disabled={savingOfficerRoles === config.inGameGuildId}
+                        disabled={savingOfficerRoles === selectedInGameGuildId}
                         className="px-4 py-2 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white text-sm rounded-lg font-medium transition-colors"
                       >
                         Clear All
@@ -1114,13 +1136,13 @@ export default function BotDashboardPage() {
               )}
 
               {/* Guild Access Roles (for selected in-game guild) */}
-              {config.inGameGuildId && (
+              {selectedInGameGuildId && (
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                     Guild Access Roles
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Configure which Discord roles can access <strong>{inGameGuilds.find(g => g.id === config.inGameGuildId)?.title || 'this guild'}'s</strong> resources.
+                    Configure which Discord roles can access <strong>{inGameGuilds.find(g => g.id === selectedInGameGuildId)?.title || 'this guild'}'s</strong> resources.
                     If no roles are set, all users with resource access can view the guild.
                   </p>
 
@@ -1131,11 +1153,11 @@ export default function BotDashboardPage() {
                     {discordData && discordData.roles.length > 0 ? (
                       <select
                         multiple
-                        value={inGameGuilds.find(g => g.id === config.inGameGuildId)?.roleIds || []}
+                        value={inGameGuilds.find(g => g.id === selectedInGameGuildId)?.roleIds || []}
                         onChange={(e) => {
                           const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
                           setInGameGuilds(prev => 
-                            prev.map(g => g.id === config.inGameGuildId ? { ...g, roleIds: selectedOptions } : g)
+                            prev.map(g => g.id === selectedInGameGuildId ? { ...g, roleIds: selectedOptions } : g)
                           )
                         }}
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 min-h-[120px]"
@@ -1154,19 +1176,19 @@ export default function BotDashboardPage() {
                   </div>
 
                   {/* Selected Roles Display */}
-                  {inGameGuilds.find(g => g.id === config.inGameGuildId)?.roleIds && inGameGuilds.find(g => g.id === config.inGameGuildId)!.roleIds!.length > 0 && (
+                  {inGameGuilds.find(g => g.id === selectedInGameGuildId)?.roleIds && inGameGuilds.find(g => g.id === selectedInGameGuildId)!.roleIds!.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {inGameGuilds.find(g => g.id === config.inGameGuildId)!.roleIds!.map(roleId => {
+                      {inGameGuilds.find(g => g.id === selectedInGameGuildId)!.roleIds!.map(roleId => {
                         const role = discordData?.roles.find(r => r.id === roleId)
                         return role ? (
                           <span key={roleId} className="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 text-xs rounded">
                             {role.name}
                             <button
                               onClick={() => {
-                                const currentGuild = inGameGuilds.find(g => g.id === config.inGameGuildId)
+                                const currentGuild = inGameGuilds.find(g => g.id === selectedInGameGuildId)
                                 const newRoleIds = currentGuild?.roleIds?.filter(id => id !== roleId) || []
                                 setInGameGuilds(prev => 
-                                  prev.map(g => g.id === config.inGameGuildId ? { ...g, roleIds: newRoleIds } : g)
+                                  prev.map(g => g.id === selectedInGameGuildId ? { ...g, roleIds: newRoleIds } : g)
                                 )
                               }}
                               className="ml-1 hover:text-indigo-600 dark:hover:text-indigo-200"
@@ -1183,27 +1205,27 @@ export default function BotDashboardPage() {
                   <div className="mt-4 flex items-center gap-2">
                     <button
                       onClick={() => {
-                        const currentGuild = inGameGuilds.find(g => g.id === config.inGameGuildId)
+                        const currentGuild = inGameGuilds.find(g => g.id === selectedInGameGuildId)
                         if (currentGuild) {
                           handleUpdateGuildRoles(currentGuild.id, currentGuild.roleIds || [])
                         }
                       }}
-                      disabled={savingGuildRoles === config.inGameGuildId}
+                      disabled={savingGuildRoles === selectedInGameGuildId}
                       className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm rounded-lg font-medium transition-colors"
                     >
-                      {savingGuildRoles === config.inGameGuildId ? 'Saving Guild Roles...' : 'Save Guild Roles'}
+                      {savingGuildRoles === selectedInGameGuildId ? 'Saving Guild Roles...' : 'Save Guild Roles'}
                     </button>
-                    {inGameGuilds.find(g => g.id === config.inGameGuildId)?.roleIds && inGameGuilds.find(g => g.id === config.inGameGuildId)!.roleIds!.length > 0 && (
+                    {inGameGuilds.find(g => g.id === selectedInGameGuildId)?.roleIds && inGameGuilds.find(g => g.id === selectedInGameGuildId)!.roleIds!.length > 0 && (
                       <button
                         onClick={() => {
-                          if (config.inGameGuildId) {
+                          if (selectedInGameGuildId) {
                             setInGameGuilds(prev => 
-                              prev.map(g => g.id === config.inGameGuildId ? { ...g, roleIds: [] } : g)
+                              prev.map(g => g.id === selectedInGameGuildId ? { ...g, roleIds: [] } : g)
                             )
-                            handleUpdateGuildRoles(config.inGameGuildId, [])
+                            handleUpdateGuildRoles(selectedInGameGuildId, [])
                           }
                         }}
-                        disabled={savingGuildRoles === config.inGameGuildId}
+                        disabled={savingGuildRoles === selectedInGameGuildId}
                         className="px-4 py-2 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white text-sm rounded-lg font-medium transition-colors"
                       >
                         Clear All
@@ -1221,13 +1243,13 @@ export default function BotDashboardPage() {
               )}
 
               {/* Delete All Resources (Discord Server Owners Only) */}
-              {config.inGameGuildId && discordServers.find(s => s.id === selectedDiscordServerId)?.isOwner && (
+              {selectedInGameGuildId && discordServers.find(s => s.id === selectedDiscordServerId)?.isOwner && (
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                   <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">
                     ⚠️ Danger Zone
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Delete all resources for <strong>{inGameGuilds.find(g => g.id === config.inGameGuildId)?.title || 'this guild'}</strong>. 
+                    Delete all resources for <strong>{inGameGuilds.find(g => g.id === selectedInGameGuildId)?.title || 'this guild'}</strong>. 
                     This action is <strong>irreversible</strong> and will remove all resources, history, and leaderboard data for this guild only.
                   </p>
 
@@ -1256,7 +1278,7 @@ export default function BotDashboardPage() {
                       ⚠️ Confirm Deletion
                     </h3>
                     <p className="text-gray-700 dark:text-gray-300 mb-4">
-                      Are you absolutely sure you want to delete <strong>ALL resources</strong> for <strong>{inGameGuilds.find(g => g.id === config.inGameGuildId)?.title}</strong>?
+                      Are you absolutely sure you want to delete <strong>ALL resources</strong> for <strong>{inGameGuilds.find(g => g.id === selectedInGameGuildId)?.title}</strong>?
                     </p>
                     <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-3 mb-4">
                       <p className="text-sm text-red-800 dark:text-red-200">
