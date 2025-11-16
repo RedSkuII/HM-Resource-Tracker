@@ -122,8 +122,13 @@ export async function DELETE(
 
   } catch (error) {
     console.error('Error deleting guild resources:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to delete guild resources' },
+      { 
+        error: 'Failed to delete guild resources',
+        details: errorMessage,
+        stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
+      },
       { status: 500 }
     )
   }
