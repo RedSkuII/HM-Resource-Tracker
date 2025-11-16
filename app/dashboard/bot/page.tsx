@@ -21,6 +21,15 @@ interface InGameGuild {
   roleIds?: string[]
   officerRoleIds?: string[]
   defaultRoleId?: string | null
+  // Bot configuration (per guild)
+  botChannelId?: string[]
+  orderChannelId?: string[]
+  adminRoleId?: string[]
+  autoUpdateEmbeds?: boolean
+  notifyOnWebsiteChanges?: boolean
+  orderFulfillmentBonus?: number
+  websiteBonusPercentage?: number
+  allowPublicOrders?: boolean
 }
 
 interface BotConfig {
@@ -79,12 +88,13 @@ export default function BotDashboardPage() {
   
   // In-game guilds (House Melange, Whitelist, etc.)
   const [inGameGuilds, setInGameGuilds] = useState<InGameGuild[]>([])
+  const [selectedInGameGuildId, setSelectedInGameGuildId] = useState<string | null>(null)
   
   // Bot presence status
   const [botIsPresent, setBotIsPresent] = useState<boolean>(false)
   const [checkingBotStatus, setCheckingBotStatus] = useState(false)
   
-  const [config, setConfig] = useState<BotConfig | null>(null)
+  const [config, setConfig] = useState<BotConfig | null>(null) // Legacy - will be removed
   const [discordData, setDiscordData] = useState<DiscordGuildData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

@@ -37,6 +37,15 @@ export const guilds = sqliteTable('guilds', {
   guildAccessRoles: text('guild_access_roles'), // JSON array of Discord role IDs that can access this guild's resources
   guildOfficerRoles: text('guild_officer_roles'), // JSON array of Discord role IDs for guild officers (can edit but not configure)
   defaultRoleId: text('default_role_id'), // Discord role ID for view-only access to this guild
+  // Bot configuration (per in-game guild)
+  botChannelId: text('bot_channel_id'), // JSON array of channel IDs where bot posts notifications for THIS guild
+  orderChannelId: text('order_channel_id'), // JSON array of channel IDs where orders are created for THIS guild
+  adminRoleId: text('admin_role_id'), // JSON array of role IDs that can access bot dashboard for THIS guild
+  autoUpdateEmbeds: integer('auto_update_embeds', { mode: 'boolean' }).notNull().default(true),
+  notifyOnWebsiteChanges: integer('notify_on_website_changes', { mode: 'boolean' }).notNull().default(true),
+  orderFulfillmentBonus: integer('order_fulfillment_bonus').notNull().default(50), // Bonus % for Discord order fills (50% = 1.5x)
+  websiteBonusPercentage: integer('website_bonus_percentage').notNull().default(0), // Bonus % for website additions (0% = no bonus)
+  allowPublicOrders: integer('allow_public_orders', { mode: 'boolean' }).notNull().default(true),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 })
