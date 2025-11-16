@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db, resources } from '@/lib/db'
+import { db, resources, resourceHistory, leaderboard } from '@/lib/db'
+import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
 // Standard 95 resources template (Dune: Awakening)
@@ -108,13 +109,36 @@ const STANDARD_RESOURCES = [
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { guildId, guildTitle } = body
+    const { guildId, guildTitle, reset = false } = body
 
     if (!guildId) {
       return NextResponse.json(
         { error: 'Guild ID is required' },
         { status: 400 }
       )
+    }
+
+    // If reset=true, delete all existing data for this guild first
+    if (reset) {
+      console.log(`[INIT] RESET MODE: Deleting all existing data for guild: ${guildTitle || guildId}`)
+      
+      // Delete existing resources
+      const deletedResources = await db.delete(resources)
+        .where(eq(resources.guildId, guildId))
+        .returning()
+      console.log(`[INIT] Deleted ${deletedResources.length} existing resources`)
+      
+      // Delete resource history
+      const deletedHistory = await db.delete(resourceHistory)
+        .where(eq(resourceHistory.guildId, guildId))
+        .returning()
+      console.log(`[INIT] Deleted ${deletedHistory.length} history entries`)
+      
+      // Delete leaderboard entries
+      const deletedLeaderboard = await db.delete(leaderboard)
+        .where(eq(leaderboard.guildId, guildId))
+        .returning()
+      console.log(`[INIT] Deleted ${deletedLeaderboard.length} leaderboard entries`)
     }
 
     console.log(`[INIT] Creating standard resources for guild: ${guildTitle || guildId}`)
