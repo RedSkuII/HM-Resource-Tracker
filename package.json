@@ -12,7 +12,8 @@
     "update-version": "node scripts/update-version.js",
     "populate-resources": "tsx scripts/populate-resources.ts",
     "populate-resources-safe": "tsx scripts/populate-resources-safe.ts",
-    "add-resources-with-images": "tsx scripts/add-resources-with-images.ts"
+    "add-resources-with-images": "tsx scripts/add-resources-with-images.ts",
+    "reset-guild": "tsx scripts/reset-guild-to-defaults.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.4.3",
