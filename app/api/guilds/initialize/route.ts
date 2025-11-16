@@ -123,18 +123,7 @@ export async function POST(request: NextRequest) {
       console.log(`[INIT] RESET MODE: Deleting all existing data for guild: ${guildTitle || guildId}`)
       
       try {
-        // Delete existing resources
-        const deletedResources = await db.delete(resources)
-          .where(eq(resources.guildId, guildId))
-          .returning()
-        console.log(`[INIT] Deleted ${deletedResources.length} existing resources`)
-      } catch (error) {
-        console.error('[INIT] Error deleting resources:', error)
-        throw new Error(`Failed to delete resources: ${error instanceof Error ? error.message : 'Unknown error'}`)
-      }
-      
-      try {
-        // Delete resource history
+        // Delete resource history FIRST (has foreign key to resources)
         const deletedHistory = await db.delete(resourceHistory)
           .where(eq(resourceHistory.guildId, guildId))
           .returning()
@@ -145,7 +134,7 @@ export async function POST(request: NextRequest) {
       }
       
       try {
-        // Delete leaderboard entries
+        // Delete leaderboard entries (has foreign key to resources)
         const deletedLeaderboard = await db.delete(leaderboard)
           .where(eq(leaderboard.guildId, guildId))
           .returning()
@@ -153,6 +142,17 @@ export async function POST(request: NextRequest) {
       } catch (error) {
         console.error('[INIT] Error deleting leaderboard:', error)
         throw new Error(`Failed to delete leaderboard: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+      
+      try {
+        // Delete resources LAST (parent table)
+        const deletedResources = await db.delete(resources)
+          .where(eq(resources.guildId, guildId))
+          .returning()
+        console.log(`[INIT] Deleted ${deletedResources.length} existing resources`)
+      } catch (error) {
+        console.error('[INIT] Error deleting resources:', error)
+        throw new Error(`Failed to delete resources: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
     }
 
