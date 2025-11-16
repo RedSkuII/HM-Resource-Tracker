@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions, getUserIdentifier } from '@/lib/auth'
-import { db, resourceHistory, resources } from '@/lib/db'
-import { eq, gte, desc, and, or } from 'drizzle-orm'
+import { db, resourceHistory, resources, users } from '@/lib/db'
+import { eq, gte, desc, and, or, sql } from 'drizzle-orm'
 import { hasResourceAccess } from '@/lib/discord-roles'
 
 // GET /api/user/activity - Get user's activity history
@@ -45,11 +45,12 @@ export async function GET(request: NextRequest) {
         changeAmount: resourceHistory.changeAmount,
         changeType: resourceHistory.changeType,
         reason: resourceHistory.reason,
-        updatedBy: resourceHistory.updatedBy,
+        updatedBy: sql<string>`COALESCE(${users.customNickname}, ${users.username}, ${resourceHistory.updatedBy})`.as('updatedBy'),
         createdAt: resourceHistory.createdAt,
       })
       .from(resourceHistory)
       .innerJoin(resources, eq(resourceHistory.resourceId, resources.id))
+      .leftJoin(users, eq(resourceHistory.updatedBy, users.discordId))
       .where(
         and(
           // Guild filter if provided
