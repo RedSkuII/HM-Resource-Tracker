@@ -205,35 +205,62 @@ export async function POST(request: NextRequest) {
         
         if (resourceIds.length > 0) {
           // Check each table that might have references
-          const remainingHistory = await db.select().from(resourceHistory).where(inArray(resourceHistory.resourceId, resourceIds))
-          console.log(`[INIT] DEBUG: Found ${remainingHistory.length} remaining resourceHistory records`)
+          try {
+            const remainingHistory = await db.select().from(resourceHistory).where(inArray(resourceHistory.resourceId, resourceIds))
+            console.log(`[INIT] DEBUG: Found ${remainingHistory.length} remaining resourceHistory records`)
+          } catch (e) {
+            console.log('[INIT] DEBUG: Error checking resourceHistory:', e)
+          }
           
-          const remainingLeaderboard = await db.select().from(leaderboard).where(inArray(leaderboard.resourceId, resourceIds))
-          console.log(`[INIT] DEBUG: Found ${remainingLeaderboard.length} remaining leaderboard records`)
+          try {
+            const remainingLeaderboard = await db.select().from(leaderboard).where(inArray(leaderboard.resourceId, resourceIds))
+            console.log(`[INIT] DEBUG: Found ${remainingLeaderboard.length} remaining leaderboard records`)
+          } catch (e) {
+            console.log('[INIT] DEBUG: Error checking leaderboard:', e)
+          }
           
-          const remainingOrders = await db.select().from(discordOrders).where(inArray(discordOrders.resourceId, resourceIds))
-          console.log(`[INIT] DEBUG: Found ${remainingOrders.length} remaining discordOrders records`)
+          try {
+            const remainingOrders = await db.select().from(discordOrders).where(inArray(discordOrders.resourceId, resourceIds))
+            console.log(`[INIT] DEBUG: Found ${remainingOrders.length} remaining discordOrders records`)
+          } catch (e) {
+            console.log('[INIT] DEBUG: Error checking discordOrders:', e)
+          }
           
-          const remainingMappings = await db.select().from(resourceDiscordMapping).where(inArray(resourceDiscordMapping.resourceId, resourceIds))
-          console.log(`[INIT] DEBUG: Found ${remainingMappings.length} remaining resourceDiscordMapping records`)
+          try {
+            const remainingMappings = await db.select().from(resourceDiscordMapping).where(inArray(resourceDiscordMapping.resourceId, resourceIds))
+            console.log(`[INIT] DEBUG: Found ${remainingMappings.length} remaining resourceDiscordMapping records`)
+          } catch (e) {
+            console.log('[INIT] DEBUG: Error checking resourceDiscordMapping:', e)
+          }
           
-          const remainingChanges = await db.select().from(websiteChanges).where(inArray(websiteChanges.resourceId, resourceIds))
-          console.log(`[INIT] DEBUG: Found ${remainingChanges.length} remaining websiteChanges records`)
+          try {
+            const remainingChanges = await db.select().from(websiteChanges).where(inArray(websiteChanges.resourceId, resourceIds))
+            console.log(`[INIT] DEBUG: Found ${remainingChanges.length} remaining websiteChanges records`)
+          } catch (e) {
+            console.log('[INIT] DEBUG: Error checking websiteChanges:', e)
+          }
           
-          const remainingLogs = await db.select().from(botActivityLogs).where(inArray(botActivityLogs.resourceId, resourceIds))
-          console.log(`[INIT] DEBUG: Found ${remainingLogs.length} remaining botActivityLogs records`)
+          try {
+            const remainingLogs = await db.select().from(botActivityLogs).where(inArray(botActivityLogs.resourceId, resourceIds))
+            console.log(`[INIT] DEBUG: Found ${remainingLogs.length} remaining botActivityLogs records`)
+          } catch (e) {
+            console.log('[INIT] DEBUG: Error checking botActivityLogs:', e)
+          }
           
           // Log sample resource IDs for debugging
           console.log(`[INIT] DEBUG: Sample resource IDs to delete:`, resourceIds.slice(0, 3))
         }
         
+        console.log('[INIT] DEBUG: Attempting to delete resources...')
         const deletedResources = await db.delete(resources)
           .where(eq(resources.guildId, guildId))
           .returning()
         console.log(`[INIT] Deleted ${deletedResources.length} existing resources`)
       } catch (error) {
         console.error('[INIT] Error deleting resources:', error)
-        throw new Error(`Failed to delete resources: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+        console.error('[INIT] Full error object:', JSON.stringify(error, null, 2))
+        throw new Error(`Failed to delete resources: ${errorMessage}`)
       }
     }
 
