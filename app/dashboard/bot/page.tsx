@@ -806,58 +806,6 @@ export default function BotDashboardPage() {
                 )}
               </div>
 
-              {/* Admin Role ID */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Admin Roles
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  Select Discord roles that can access this bot configuration dashboard. These users have full control over bot settings.
-                </p>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Bot Admin Roles (hold Ctrl/Cmd to select multiple)
-                </label>
-                {discordData && discordData.roles.length > 0 ? (
-                  <select
-                    multiple
-                    value={config.adminRoleId || []}
-                    onChange={(e) => {
-                      const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
-                      setConfig({ ...config, adminRoleId: selectedOptions })
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 min-h-[120px]"
-                  >
-                    {discordData.roles.map((role) => (
-                      <option key={role.id} value={role.id}>
-                        {role.name}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <div className="text-sm text-gray-500 dark:text-gray-400 italic">
-                    Loading roles...
-                  </div>
-                )}
-                {config.adminRoleId && config.adminRoleId.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {config.adminRoleId.map(roleId => {
-                      const role = discordData?.roles.find(r => r.id === roleId)
-                      return role ? (
-                        <span key={roleId} className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 text-xs rounded">
-                          {role.name}
-                          <button
-                            onClick={() => setConfig({ ...config, adminRoleId: config.adminRoleId.filter(id => id !== roleId) })}
-                            className="ml-1 hover:text-red-600 dark:hover:text-red-200"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ) : null
-                    })}
-                  </div>
-                )}
-              </div>
-
               {/* Discord Order Fulfillment Bonus */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -941,6 +889,58 @@ export default function BotDashboardPage() {
                     Allow public orders
                   </span>
                 </label>
+              </div>
+
+              {/* Admin Role ID */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  Admin Roles
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Select Discord roles that can access this bot configuration dashboard. These users have full control over bot settings.
+                </p>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Bot Admin Roles (hold Ctrl/Cmd to select multiple)
+                </label>
+                {discordData && discordData.roles.length > 0 ? (
+                  <select
+                    multiple
+                    value={config.adminRoleId || []}
+                    onChange={(e) => {
+                      const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
+                      setConfig({ ...config, adminRoleId: selectedOptions })
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 min-h-[120px]"
+                  >
+                    {discordData.roles.map((role) => (
+                      <option key={role.id} value={role.id}>
+                        {role.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="text-sm text-gray-500 dark:text-gray-400 italic">
+                    Loading roles...
+                  </div>
+                )}
+                {config.adminRoleId && config.adminRoleId.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {config.adminRoleId.map(roleId => {
+                      const role = discordData?.roles.find(r => r.id === roleId)
+                      return role ? (
+                        <span key={roleId} className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 text-xs rounded">
+                          {role.name}
+                          <button
+                            onClick={() => setConfig({ ...config, adminRoleId: config.adminRoleId.filter(id => id !== roleId) })}
+                            className="ml-1 hover:text-red-600 dark:hover:text-red-200"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ) : null
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Guild Officer Roles (for selected in-game guild) */}
