@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions, getUserIdentifier } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { resources, resourceHistory, leaderboard, websiteChanges } from '@/lib/db'
-import { eq } from 'drizzle-orm'
+import { resources, resourceHistory, leaderboard, websiteChanges, users } from '@/lib/db'
+import { eq, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { hasResourceAccess, hasResourceAdminAccess } from '@/lib/discord-roles'
 import { awardPoints } from '@/lib/leaderboard'
@@ -38,15 +38,37 @@ export async function GET(
   }
 
   try {
-    // Get the resource
-    const resource = await db.select().from(resources).where(eq(resources.id, params.id)).limit(1)
+    // Get the resource with username lookup
+    const resourceData = await db
+      .select({
+        id: resources.id,
+        guildId: resources.guildId,
+        name: resources.name,
+        quantity: resources.quantity,
+        description: resources.description,
+        category: resources.category,
+        icon: resources.icon,
+        imageUrl: resources.imageUrl,
+        status: resources.status,
+        targetQuantity: resources.targetQuantity,
+        multiplier: resources.multiplier,
+        lastUpdatedBy: sql<string>`COALESCE(${users.customNickname}, ${users.username}, ${resources.lastUpdatedBy})`.as('lastUpdatedBy'),
+        createdAt: resources.createdAt,
+        updatedAt: resources.updatedAt,
+      })
+      .from(resources)
+      .leftJoin(users, eq(resources.lastUpdatedBy, users.discordId))
+      .where(eq(resources.id, params.id))
+      .limit(1)
     
-    if (resource.length === 0) {
+    if (resourceData.length === 0) {
       return NextResponse.json({ error: 'Resource not found' }, { status: 404 })
     }
 
+    const resource = resourceData[0]
+
     // Verify user has access to the resource's guild
-    if (resource[0].guildId) {
+    if (resource.guildId) {
       const discordToken = (session as any).accessToken
       if (discordToken) {
         const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
@@ -56,7 +78,7 @@ export async function GET(
           const servers = await discordResponse.json()
           const userDiscordServers = servers.map((server: any) => server.id)
           const { guilds } = await import('@/lib/db')
-          const guild = await db.select().from(guilds).where(eq(guilds.id, resource[0].guildId!)).limit(1)
+          const guild = await db.select().from(guilds).where(eq(guilds.id, resource.guildId!)).limit(1)
           if (guild.length === 0 || !guild[0].discordGuildId || !userDiscordServers.includes(guild[0].discordGuildId)) {
             return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
           }
@@ -64,7 +86,7 @@ export async function GET(
       }
     }
 
-    return NextResponse.json(resource[0], {
+    return NextResponse.json(resource, {
       headers: {
         'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
         'Pragma': 'no-cache',

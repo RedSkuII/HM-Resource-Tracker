@@ -986,7 +986,7 @@ export default function ResourceDetailPage() {
                     key={entry.userId} 
                     className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg hover:from-green-100 hover:to-blue-100 dark:hover:from-green-900/30 dark:hover:to-blue-900/30 transition-all cursor-pointer"
                     onClick={() => router.push(`/dashboard/contributions/${entry.userId}`)}
-                    title={`Click to view ${entry.userId}'s detailed contributions`}
+                    title={`Click to view ${entry.userName || entry.userId}'s detailed contributions`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
@@ -998,7 +998,7 @@ export default function ResourceDetailPage() {
                         #{index + 1}
                       </div>
                       <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {entry.userId}
+                        {entry.userName || entry.userId}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         ({entry.totalActions} actions)
