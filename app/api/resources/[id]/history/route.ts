@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { db, resourceHistory } from '@/lib/db'
-import { eq, gte, desc, and } from 'drizzle-orm'
+import { db, resourceHistory, users } from '@/lib/db'
+import { eq, gte, desc, and, sql } from 'drizzle-orm'
 import { hasResourceAccess } from '@/lib/discord-roles'
 import { cache, CACHE_KEYS } from '@/lib/cache'
 
@@ -37,10 +37,22 @@ export async function GET(
     const daysAgo = new Date()
     daysAgo.setDate(daysAgo.getDate() - days)
 
-    // Fetch history from database
+    // Fetch history from database with user information
     const history = await db
-      .select()
+      .select({
+        id: resourceHistory.id,
+        resourceId: resourceHistory.resourceId,
+        guildId: resourceHistory.guildId,
+        previousQuantity: resourceHistory.previousQuantity,
+        newQuantity: resourceHistory.newQuantity,
+        changeAmount: resourceHistory.changeAmount,
+        changeType: resourceHistory.changeType,
+        updatedBy: sql<string>`COALESCE(${users.customNickname}, ${users.username}, ${resourceHistory.updatedBy})`.as('updatedBy'),
+        reason: resourceHistory.reason,
+        createdAt: resourceHistory.createdAt,
+      })
       .from(resourceHistory)
+      .leftJoin(users, eq(resourceHistory.updatedBy, users.discordId))
       .where(
         and(
           eq(resourceHistory.resourceId, resourceId),
