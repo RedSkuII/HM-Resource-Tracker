@@ -143,6 +143,36 @@ export default function BotDashboardPage() {
     }
   }
 
+  // Fetch guild-specific bot configuration (channels, bonuses, etc.)
+  const fetchGuildConfig = async (guildId: string) => {
+    try {
+      const response = await fetch(`/api/guilds/${guildId}/config`)
+      if (!response.ok) {
+        console.warn(`[BOT-DASHBOARD] No config found for guild ${guildId}, using defaults`)
+        return
+      }
+      
+      const data = await response.json()
+      
+      // Update the guild with configuration data
+      setInGameGuilds(prev => 
+        prev.map(g => g.id === guildId ? { 
+          ...g,
+          botChannelId: data.botChannelId || [],
+          orderChannelId: data.orderChannelId || [],
+          adminRoleId: data.adminRoleId || [],
+          autoUpdateEmbeds: data.autoUpdateEmbeds ?? true,
+          notifyOnWebsiteChanges: data.notifyOnWebsiteChanges ?? true,
+          orderFulfillmentBonus: data.orderFulfillmentBonus ?? 50,
+          websiteBonusPercentage: data.websiteBonusPercentage ?? 0,
+          allowPublicOrders: data.allowPublicOrders ?? true,
+        } : g)
+      )
+    } catch (err) {
+      console.error(`[BOT-DASHBOARD] Error fetching config for guild ${guildId}:`, err)
+    }
+  }
+
   // Bot invite URL
   const getBotInviteUrl = () => {
     if (!selectedDiscordServerId) return '#'
@@ -282,7 +312,15 @@ export default function BotDashboardPage() {
     }
   }, [selectedDiscordServerId])
 
-  // Fetch guild-specific roles when in-game guild selection changes
+  // Fetch guild-specific configuration when in-game guild selection changes
+  useEffect(() => {
+    if (selectedInGameGuildId) {
+      fetchGuildRoles(selectedInGameGuildId)
+      fetchGuildConfig(selectedInGameGuildId)
+    }
+  }, [selectedInGameGuildId])
+
+  // Legacy: Fetch guild-specific roles when in-game guild selection changes (OLD SYSTEM)
   useEffect(() => {
     if (config?.inGameGuildId) {
       fetchGuildRoles(config.inGameGuildId)
@@ -647,10 +685,9 @@ export default function BotDashboardPage() {
                 <span className="text-gray-500 text-xs ml-2">(Which guild to track)</span>
               </label>
               <select
-                value={config?.inGameGuildId || ''}
-                onChange={(e) => setConfig(config ? { ...config, inGameGuildId: e.target.value || null } : null)}
+                value={selectedInGameGuildId || ''}
+                onChange={(e) => setSelectedInGameGuildId(e.target.value || null)}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                disabled={!config}
               >
                 <option value="">Select a guild...</option>
                 {inGameGuilds.map((guild) => (
@@ -713,10 +750,10 @@ export default function BotDashboardPage() {
         )}
 
         {/* Configuration Panel */}
-        {config && botIsPresent && !checkingBotStatus && (
+        {selectedInGameGuildId && botIsPresent && !checkingBotStatus && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Configuration
+              Configuration for {inGameGuilds.find(g => g.id === selectedInGameGuildId)?.title || 'Guild'}
             </h2>
 
             <div className="space-y-4">
@@ -734,10 +771,12 @@ export default function BotDashboardPage() {
                 {discordData && discordData.channels.length > 0 ? (
                   <select
                     multiple
-                    value={config.botChannelId || []}
+                    value={inGameGuilds.find(g => g.id === selectedInGameGuildId)?.botChannelId || []}
                     onChange={(e) => {
                       const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
-                      setConfig({ ...config, botChannelId: selectedOptions })
+                      setInGameGuilds(prev =>
+                        prev.map(g => g.id === selectedInGameGuildId ? { ...g, botChannelId: selectedOptions } : g)
+                      )
                     }}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 min-h-[120px]"
                   >
@@ -752,15 +791,21 @@ export default function BotDashboardPage() {
                     Loading channels...
                   </div>
                 )}
-                {config.botChannelId && config.botChannelId.length > 0 && (
+                {inGameGuilds.find(g => g.id === selectedInGameGuildId)?.botChannelId && inGameGuilds.find(g => g.id === selectedInGameGuildId)!.botChannelId!.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {config.botChannelId.map(channelId => {
+                    {inGameGuilds.find(g => g.id === selectedInGameGuildId)!.botChannelId!.map(channelId => {
                       const channel = discordData?.channels.find(c => c.id === channelId)
                       return channel ? (
                         <span key={channelId} className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs rounded">
                           #{channel.name}
                           <button
-                            onClick={() => setConfig({ ...config, botChannelId: config.botChannelId.filter(id => id !== channelId) })}
+                            onClick={() => {
+                              const currentGuild = inGameGuilds.find(g => g.id === selectedInGameGuildId)
+                              const newChannelIds = currentGuild?.botChannelId?.filter(id => id !== channelId) || []
+                              setInGameGuilds(prev =>
+                                prev.map(g => g.id === selectedInGameGuildId ? { ...g, botChannelId: newChannelIds } : g)
+                              )
+                            }}
                             className="ml-1 hover:text-blue-600 dark:hover:text-blue-200"
                           >
                             ×
