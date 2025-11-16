@@ -19,6 +19,7 @@ interface InGameGuild {
   maxMembers: number
   leaderId: string | null
   roleIds?: string[]
+  officerRoleIds?: string[]
   defaultRoleId?: string | null
 }
 
@@ -96,6 +97,7 @@ export default function BotDashboardPage() {
   
   // Guild roles management
   const [savingGuildRoles, setSavingGuildRoles] = useState<string | null>(null)
+  const [savingOfficerRoles, setSavingOfficerRoles] = useState<string | null>(null)
   const [savingDefaultRole, setSavingDefaultRole] = useState<string | null>(null)
   const [expandedGuild, setExpandedGuild] = useState<string | null>(null)
   
@@ -383,6 +385,35 @@ export default function BotDashboardPage() {
     }
   }
 
+  const handleUpdateOfficerRoles = async (guildId: string, roleIds: string[]) => {
+    setSavingOfficerRoles(guildId)
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/guilds/${guildId}/officer-roles`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roleIds })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to update officer roles')
+      }
+
+      // Update local state
+      setInGameGuilds(prev => 
+        prev.map(g => g.id === guildId ? { ...g, officerRoleIds: roleIds } : g)
+      )
+
+      alert(`Guild officer roles updated successfully!`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update officer roles')
+    } finally {
+      setSavingOfficerRoles(null)
+    }
+  }
+
   const handleUpdateDefaultRole = async (guildId: string, defaultRoleId: string | null) => {
     setSavingDefaultRole(guildId)
     setError(null)
@@ -420,9 +451,19 @@ export default function BotDashboardPage() {
       }
       
       const data = await response.json()
-      // Update the guild with its role IDs and default role ID
+      
+      // Also fetch officer roles
+      const officerResponse = await fetch(`/api/guilds/${guildId}/officer-roles`)
+      const officerData = officerResponse.ok ? await officerResponse.json() : { roleIds: [] }
+      
+      // Update the guild with all role data
       setInGameGuilds(prev => 
-        prev.map(g => g.id === guildId ? { ...g, roleIds: data.roleIds, defaultRoleId: data.defaultRoleId || null } : g)
+        prev.map(g => g.id === guildId ? { 
+          ...g, 
+          roleIds: data.roleIds, 
+          officerRoleIds: officerData.roleIds || [],
+          defaultRoleId: data.defaultRoleId || null 
+        } : g)
       )
     } catch (err) {
       console.error(`[BOT-DASHBOARD] Error fetching roles for guild ${guildId}:`, err)
@@ -957,6 +998,113 @@ export default function BotDashboardPage() {
                   <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                     <p className="text-xs text-blue-800 dark:text-blue-200">
                       <strong>💡 Tip:</strong> Users must have at least ONE of the selected roles to access this guild's resources. Leave empty to allow all users with resource access.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Guild Officer Roles (for selected in-game guild) */}
+              {config.inGameGuildId && (
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Guild Officer Roles
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Configure which Discord roles are <strong>officers</strong> for <strong>{inGameGuilds.find(g => g.id === config.inGameGuildId)?.title || 'this guild'}</strong>.
+                    Officers can edit resources and manage guild operations but <strong>cannot</strong> access bot configuration.
+                  </p>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Officer Discord Roles (hold Ctrl/Cmd to select multiple)
+                    </label>
+                    {discordData && discordData.roles.length > 0 ? (
+                      <select
+                        multiple
+                        value={inGameGuilds.find(g => g.id === config.inGameGuildId)?.officerRoleIds || []}
+                        onChange={(e) => {
+                          const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
+                          setInGameGuilds(prev => 
+                            prev.map(g => g.id === config.inGameGuildId ? { ...g, officerRoleIds: selectedOptions } : g)
+                          )
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 min-h-[120px]"
+                      >
+                        {discordData.roles.map((role) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="text-sm text-gray-500 dark:text-gray-400 italic">
+                        Loading roles...
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Selected Officer Roles Display */}
+                  {inGameGuilds.find(g => g.id === config.inGameGuildId)?.officerRoleIds && inGameGuilds.find(g => g.id === config.inGameGuildId)!.officerRoleIds!.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {inGameGuilds.find(g => g.id === config.inGameGuildId)!.officerRoleIds!.map(roleId => {
+                        const role = discordData?.roles.find(r => r.id === roleId)
+                        return role ? (
+                          <span key={roleId} className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-xs rounded">
+                            {role.name}
+                            <button
+                              onClick={() => {
+                                const currentGuild = inGameGuilds.find(g => g.id === config.inGameGuildId)
+                                const newRoleIds = currentGuild?.officerRoleIds?.filter(id => id !== roleId) || []
+                                setInGameGuilds(prev => 
+                                  prev.map(g => g.id === config.inGameGuildId ? { ...g, officerRoleIds: newRoleIds } : g)
+                                )
+                              }}
+                              className="ml-1 hover:text-purple-600 dark:hover:text-purple-200"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ) : null
+                      })}
+                    </div>
+                  )}
+
+                  {/* Save Officer Roles Button */}
+                  <div className="mt-4 flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        const currentGuild = inGameGuilds.find(g => g.id === config.inGameGuildId)
+                        if (currentGuild) {
+                          handleUpdateOfficerRoles(currentGuild.id, currentGuild.officerRoleIds || [])
+                        }
+                      }}
+                      disabled={savingOfficerRoles === config.inGameGuildId}
+                      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white text-sm rounded-lg font-medium transition-colors"
+                    >
+                      {savingOfficerRoles === config.inGameGuildId ? 'Saving Officer Roles...' : 'Save Officer Roles'}
+                    </button>
+                    {inGameGuilds.find(g => g.id === config.inGameGuildId)?.officerRoleIds && inGameGuilds.find(g => g.id === config.inGameGuildId)!.officerRoleIds!.length > 0 && (
+                      <button
+                        onClick={() => {
+                          if (config.inGameGuildId) {
+                            setInGameGuilds(prev => 
+                              prev.map(g => g.id === config.inGameGuildId ? { ...g, officerRoleIds: [] } : g)
+                            )
+                            handleUpdateOfficerRoles(config.inGameGuildId, [])
+                          }
+                        }}
+                        disabled={savingOfficerRoles === config.inGameGuildId}
+                        className="px-4 py-2 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white text-sm rounded-lg font-medium transition-colors"
+                      >
+                        Clear All
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Info Box */}
+                  <div className="mt-3 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                    <p className="text-xs text-purple-800 dark:text-purple-200">
+                      <strong>🎖️ Permission Hierarchy:</strong> Officers can manage resources and guild operations but cannot configure bot settings. Only Discord admins and Bot Admin Roles can access the dashboard.
                     </p>
                   </div>
                 </div>
