@@ -105,6 +105,34 @@ export default function BotDashboardPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deletingResources, setDeletingResources] = useState(false)
   
+  // Fetch guild-specific roles (access roles and officer roles)
+  const fetchGuildRoles = async (guildId: string) => {
+    try {
+      const response = await fetch(`/api/guilds/${guildId}/roles`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch guild roles')
+      }
+      
+      const data = await response.json()
+      
+      // Also fetch officer roles
+      const officerResponse = await fetch(`/api/guilds/${guildId}/officer-roles`)
+      const officerData = officerResponse.ok ? await officerResponse.json() : { roleIds: [] }
+      
+      // Update the guild with all role data
+      setInGameGuilds(prev => 
+        prev.map(g => g.id === guildId ? { 
+          ...g, 
+          roleIds: data.roleIds, 
+          officerRoleIds: officerData.roleIds || [],
+          defaultRoleId: data.defaultRoleId || null 
+        } : g)
+      )
+    } catch (err) {
+      console.error(`[BOT-DASHBOARD] Error fetching roles for guild ${guildId}:`, err)
+    }
+  }
+
   // Bot invite URL
   const getBotInviteUrl = () => {
     if (!selectedDiscordServerId) return '#'
@@ -243,6 +271,13 @@ export default function BotDashboardPage() {
       checkBotPresence()
     }
   }, [selectedDiscordServerId])
+
+  // Fetch guild-specific roles when in-game guild selection changes
+  useEffect(() => {
+    if (config?.inGameGuildId) {
+      fetchGuildRoles(config.inGameGuildId)
+    }
+  }, [config?.inGameGuildId])
 
   // Fetch config when Discord server is selected AND bot is present
   useEffect(() => {
@@ -472,33 +507,6 @@ export default function BotDashboardPage() {
       alert(`❌ Error: ${errorMessage}`)
     } finally {
       setDeletingResources(false)
-    }
-  }
-
-  const fetchGuildRoles = async (guildId: string) => {
-    try {
-      const response = await fetch(`/api/guilds/${guildId}/roles`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch guild roles')
-      }
-      
-      const data = await response.json()
-      
-      // Also fetch officer roles
-      const officerResponse = await fetch(`/api/guilds/${guildId}/officer-roles`)
-      const officerData = officerResponse.ok ? await officerResponse.json() : { roleIds: [] }
-      
-      // Update the guild with all role data
-      setInGameGuilds(prev => 
-        prev.map(g => g.id === guildId ? { 
-          ...g, 
-          roleIds: data.roleIds, 
-          officerRoleIds: officerData.roleIds || [],
-          defaultRoleId: data.defaultRoleId || null 
-        } : g)
-      )
-    } catch (err) {
-      console.error(`[BOT-DASHBOARD] Error fetching roles for guild ${guildId}:`, err)
     }
   }
 
