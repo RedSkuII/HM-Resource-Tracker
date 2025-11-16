@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db, resources, resourceHistory, leaderboard, discordOrders, resourceDiscordMapping, websiteChanges } from '@/lib/db'
-import { eq, inArray } from 'drizzle-orm'
+import { db, resources, resourceHistory, leaderboard, discordOrders, resourceDiscordMapping, websiteChanges, botActivityLogs } from '@/lib/db'
+import { eq, inArray, isNotNull } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
 // Standard 95 resources template (Dune: Awakening)
@@ -139,6 +139,17 @@ export async function POST(request: NextRequest) {
         } catch (error) {
           console.error('[INIT] Error deleting website changes:', error)
           throw new Error(`Failed to delete website changes: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
+        
+        try {
+          // Delete bot activity logs that reference these resources
+          const deletedLogs = await db.delete(botActivityLogs)
+            .where(inArray(botActivityLogs.resourceId, resourceIds))
+            .returning()
+          console.log(`[INIT] Deleted ${deletedLogs.length} bot activity logs`)
+        } catch (error) {
+          console.error('[INIT] Error deleting bot activity logs:', error)
+          throw new Error(`Failed to delete bot activity logs: ${error instanceof Error ? error.message : 'Unknown error'}`)
         }
       }
       
