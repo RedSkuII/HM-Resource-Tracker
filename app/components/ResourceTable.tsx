@@ -249,6 +249,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
     category: '',
     description: '',
     imageUrl: '',
+    targetQuantity: 0,
     multiplier: 1.0
   })
 
@@ -596,6 +597,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       category: resource.category || 'Raw',
       description: resource.description || '',
       imageUrl: resource.imageUrl || '',
+      targetQuantity: resource.targetQuantity || 0,
       multiplier: resource.multiplier || 1.0
     })
   }
@@ -629,7 +631,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
           )
         )
         setEditingResource(null)
-        setEditResourceForm({ name: '', category: '', description: '', imageUrl: '', multiplier: 1.0 })
+        setEditResourceForm({ name: '', category: '', description: '', imageUrl: '', targetQuantity: 0, multiplier: 1.0 })
       } else {
         console.error('Failed to update resource metadata')
       }
@@ -1831,6 +1833,14 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                 onClick={(e) => e.stopPropagation()}
                               />
+                              <input
+                                type="number"
+                                value={editResourceForm.targetQuantity || ''}
+                                onChange={(e) => setEditResourceForm(prev => ({ ...prev, targetQuantity: parseInt(e.target.value) || 0 }))}
+                                placeholder="Target Quantity"
+                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                onClick={(e) => e.stopPropagation()}
+                              />
                               <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                                 <input
                                   type="number"
@@ -2141,6 +2151,13 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 value={editResourceForm.imageUrl}
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, imageUrl: e.target.value }))}
                                 placeholder="Image URL"
+                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                              />
+                              <input
+                                type="number"
+                                value={editResourceForm.targetQuantity || ''}
+                                onChange={(e) => setEditResourceForm(prev => ({ ...prev, targetQuantity: parseInt(e.target.value) || 0 }))}
+                                placeholder="Target Quantity"
                                 className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                               />
                               <div className="flex items-center gap-1">
