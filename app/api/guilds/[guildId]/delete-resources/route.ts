@@ -54,7 +54,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Failed to verify Discord ownership' }, { status: 500 })
     }
 
-    const discordServers = await discordServersResponse.json()
+    const { servers: discordServers } = await discordServersResponse.json()
     const discordServer = discordServers.find((s: any) => s.id === discordGuildId)
 
     if (!discordServer || !discordServer.isOwner) {
