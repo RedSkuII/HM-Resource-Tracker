@@ -117,6 +117,10 @@ export default function BotDashboardPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deletingResources, setDeletingResources] = useState(false)
   
+  // Delete guild confirmation
+  const [showDeleteGuildConfirm, setShowDeleteGuildConfirm] = useState(false)
+  const [deletingGuild, setDeletingGuild] = useState(false)
+  
   // Fetch guild-specific roles (access roles and officer roles)
   const fetchGuildRoles = async (guildId: string) => {
     try {
@@ -539,6 +543,37 @@ export default function BotDashboardPage() {
       alert(`❌ Error: ${errorMessage}`)
     } finally {
       setDeletingResources(false)
+    }
+  }
+
+  const handleDeleteGuild = async () => {
+    if (!selectedInGameGuildId) return
+
+    setDeletingGuild(true)
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/guilds/${selectedInGameGuildId}/delete-guild`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete guild')
+      }
+
+      const data = await response.json()
+      alert(`✅ Guild "${data.guildTitle}" has been permanently deleted!\n\nDeleted ${data.deletedResourceCount} resources and all associated data.`)
+      setShowDeleteGuildConfirm(false)
+      
+      // Refresh the page to update guild list
+      window.location.reload()
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete guild'
+      setError(errorMessage)
+      alert(`❌ Error: ${errorMessage}`)
+    } finally {
+      setDeletingGuild(false)
     }
   }
 
@@ -1253,13 +1288,23 @@ export default function BotDashboardPage() {
                     This action is <strong>irreversible</strong> and will remove all resources, history, and leaderboard data for this guild only.
                   </p>
 
-                  <button
-                    onClick={() => setShowDeleteConfirm(true)}
-                    disabled={deletingResources}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white text-sm rounded-lg font-medium transition-colors"
-                  >
-                    🗑️ Delete All Resources for This Guild
-                  </button>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowDeleteConfirm(true)}
+                      disabled={deletingResources}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white text-sm rounded-lg font-medium transition-colors"
+                    >
+                      🗑️ Delete All Resources for This Guild
+                    </button>
+
+                    <button
+                      onClick={() => setShowDeleteGuildConfirm(true)}
+                      disabled={deletingGuild}
+                      className="px-4 py-2 bg-red-800 hover:bg-red-900 disabled:bg-red-500 text-white text-sm rounded-lg font-medium transition-colors border-2 border-red-600"
+                    >
+                      💥 Delete Entire Guild
+                    </button>
+                  </div>
 
                   <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                     <p className="text-xs text-red-800 dark:text-red-200">
@@ -1304,6 +1349,54 @@ export default function BotDashboardPage() {
                       <button
                         onClick={() => setShowDeleteConfirm(false)}
                         disabled={deletingResources}
+                        className="flex-1 px-4 py-2 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Delete Guild Confirmation Modal */}
+              {showDeleteGuildConfirm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                    <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4">
+                      💥 Confirm Guild Deletion
+                    </h3>
+                    <p className="text-gray-700 dark:text-gray-300 mb-4">
+                      Are you absolutely sure you want to <strong>PERMANENTLY DELETE</strong> the entire guild <strong>{inGameGuilds.find(g => g.id === selectedInGameGuildId)?.title}</strong>?
+                    </p>
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-3 mb-4">
+                      <p className="text-sm text-red-800 dark:text-red-200 font-bold mb-2">
+                        ⚠️ THIS WILL PERMANENTLY DELETE:
+                      </p>
+                      <ul className="text-sm text-red-800 dark:text-red-200 list-disc list-inside space-y-1">
+                        <li>The guild itself</li>
+                        <li>All resources for this guild</li>
+                        <li>All resource history entries</li>
+                        <li>All leaderboard points</li>
+                        <li>All Discord orders</li>
+                        <li>All bot activity logs</li>
+                        <li>All Discord embeds</li>
+                        <li>All configuration data</li>
+                      </ul>
+                      <p className="text-sm text-red-800 dark:text-red-200 mt-3 font-bold">
+                        🚨 THIS ACTION CANNOT BE UNDONE! 🚨
+                      </p>
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleDeleteGuild}
+                        disabled={deletingGuild}
+                        className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-lg font-medium transition-colors"
+                      >
+                        {deletingGuild ? 'Deleting Guild...' : 'Yes, Delete Entire Guild'}
+                      </button>
+                      <button
+                        onClick={() => setShowDeleteGuildConfirm(false)}
+                        disabled={deletingGuild}
                         className="flex-1 px-4 py-2 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
                       >
                         Cancel
