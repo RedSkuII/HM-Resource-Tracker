@@ -160,6 +160,7 @@ export async function PUT(
     await db.insert(resourceHistory).values({
       id: nanoid(),
       resourceId: params.id,
+      guildId: resource.guildId,
       previousQuantity,
       newQuantity: quantity,
       changeAmount,
