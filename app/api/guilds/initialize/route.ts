@@ -199,6 +199,34 @@ export async function POST(request: NextRequest) {
       
       try {
         // Delete resources LAST (parent table)
+        
+        // DEBUG: Check what might still be referencing these resources
+        console.log('[INIT] DEBUG: Checking for remaining references before deleting resources...')
+        
+        if (resourceIds.length > 0) {
+          // Check each table that might have references
+          const remainingHistory = await db.select().from(resourceHistory).where(inArray(resourceHistory.resourceId, resourceIds))
+          console.log(`[INIT] DEBUG: Found ${remainingHistory.length} remaining resourceHistory records`)
+          
+          const remainingLeaderboard = await db.select().from(leaderboard).where(inArray(leaderboard.resourceId, resourceIds))
+          console.log(`[INIT] DEBUG: Found ${remainingLeaderboard.length} remaining leaderboard records`)
+          
+          const remainingOrders = await db.select().from(discordOrders).where(inArray(discordOrders.resourceId, resourceIds))
+          console.log(`[INIT] DEBUG: Found ${remainingOrders.length} remaining discordOrders records`)
+          
+          const remainingMappings = await db.select().from(resourceDiscordMapping).where(inArray(resourceDiscordMapping.resourceId, resourceIds))
+          console.log(`[INIT] DEBUG: Found ${remainingMappings.length} remaining resourceDiscordMapping records`)
+          
+          const remainingChanges = await db.select().from(websiteChanges).where(inArray(websiteChanges.resourceId, resourceIds))
+          console.log(`[INIT] DEBUG: Found ${remainingChanges.length} remaining websiteChanges records`)
+          
+          const remainingLogs = await db.select().from(botActivityLogs).where(inArray(botActivityLogs.resourceId, resourceIds))
+          console.log(`[INIT] DEBUG: Found ${remainingLogs.length} remaining botActivityLogs records`)
+          
+          // Log sample resource IDs for debugging
+          console.log(`[INIT] DEBUG: Sample resource IDs to delete:`, resourceIds.slice(0, 3))
+        }
+        
         const deletedResources = await db.delete(resources)
           .where(eq(resources.guildId, guildId))
           .returning()
