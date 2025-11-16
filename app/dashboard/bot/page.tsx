@@ -101,6 +101,10 @@ export default function BotDashboardPage() {
   const [savingDefaultRole, setSavingDefaultRole] = useState<string | null>(null)
   const [expandedGuild, setExpandedGuild] = useState<string | null>(null)
   
+  // Delete resources confirmation
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deletingResources, setDeletingResources] = useState(false)
+  
   // Bot invite URL
   const getBotInviteUrl = () => {
     if (!selectedDiscordServerId) return '#'
@@ -440,6 +444,34 @@ export default function BotDashboardPage() {
       setError(err instanceof Error ? err.message : 'Failed to update default role')
     } finally {
       setSavingDefaultRole(null)
+    }
+  }
+
+  const handleDeleteAllResources = async () => {
+    if (!config?.inGameGuildId) return
+
+    setDeletingResources(true)
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/guilds/${config.inGameGuildId}/delete-resources`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete resources')
+      }
+
+      const data = await response.json()
+      alert(`✅ All resources for "${data.guildTitle}" have been successfully deleted!`)
+      setShowDeleteConfirm(false)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete resources'
+      setError(errorMessage)
+      alert(`❌ Error: ${errorMessage}`)
+    } finally {
+      setDeletingResources(false)
     }
   }
 
@@ -1121,6 +1153,77 @@ export default function BotDashboardPage() {
                     <p className="text-xs text-blue-800 dark:text-blue-200">
                       <strong>💡 Tip:</strong> Users must have at least ONE of the selected roles to access this guild's resources. Leave empty to allow all users with resource access.
                     </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Delete All Resources (Discord Server Owners Only) */}
+              {config.inGameGuildId && discordServers.find(s => s.id === selectedDiscordServerId)?.isOwner && (
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">
+                    ⚠️ Danger Zone
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Delete all resources for <strong>{inGameGuilds.find(g => g.id === config.inGameGuildId)?.title || 'this guild'}</strong>. 
+                    This action is <strong>irreversible</strong> and will remove all resources, history, and leaderboard data for this guild only.
+                  </p>
+
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    disabled={deletingResources}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white text-sm rounded-lg font-medium transition-colors"
+                  >
+                    🗑️ Delete All Resources for This Guild
+                  </button>
+
+                  <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <p className="text-xs text-red-800 dark:text-red-200">
+                      <strong>⚠️ Discord Server Owner Only:</strong> This button is only visible to Discord server owners. 
+                      It will delete all resources for the selected in-game guild. Other guilds on this Discord server will not be affected.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Delete Confirmation Modal */}
+              {showDeleteConfirm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                    <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4">
+                      ⚠️ Confirm Deletion
+                    </h3>
+                    <p className="text-gray-700 dark:text-gray-300 mb-4">
+                      Are you absolutely sure you want to delete <strong>ALL resources</strong> for <strong>{inGameGuilds.find(g => g.id === config.inGameGuildId)?.title}</strong>?
+                    </p>
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-3 mb-4">
+                      <p className="text-sm text-red-800 dark:text-red-200">
+                        <strong>This will permanently delete:</strong>
+                      </p>
+                      <ul className="text-sm text-red-800 dark:text-red-200 list-disc list-inside mt-2">
+                        <li>All resources for this guild</li>
+                        <li>All resource history entries</li>
+                        <li>All leaderboard points for this guild</li>
+                      </ul>
+                      <p className="text-sm text-red-800 dark:text-red-200 mt-2">
+                        <strong>This action cannot be undone!</strong>
+                      </p>
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleDeleteAllResources}
+                        disabled={deletingResources}
+                        className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-lg font-medium transition-colors"
+                      >
+                        {deletingResources ? 'Deleting...' : 'Yes, Delete Everything'}
+                      </button>
+                      <button
+                        onClick={() => setShowDeleteConfirm(false)}
+                        disabled={deletingResources}
+                        className="flex-1 px-4 py-2 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
