@@ -428,7 +428,11 @@ export async function PUT(request: NextRequest) {
       .filter(result => result !== null)
       .reduce((total, result) => total + (result?.finalPoints || 0), 0)
 
-    const updatedResources = await db.select().from(resources)
+    // Fetch only the updated resources, not all resources
+    const { inArray } = await import('drizzle-orm')
+    const updatedResources = await db.select().from(resources).where(
+      inArray(resources.id, resourceIds)
+    )
     
     return NextResponse.json({
       resources: updatedResources,

@@ -811,11 +811,22 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
 
       if (response.ok) {
         const responseData = await response.json()
-        setResources(responseData.resources.map((resource: any) => ({
-          ...resource,
-          updatedAt: new Date(resource.updatedAt).toISOString(),
-          createdAt: new Date(resource.createdAt).toISOString(),
-        })))
+        
+        // Update only the resources that were changed, not all resources
+        const updatedResourcesMap = new Map<string, Resource>(
+          responseData.resources.map((r: any) => [r.id, {
+            ...r,
+            updatedAt: new Date(r.updatedAt).toISOString(),
+            createdAt: new Date(r.createdAt).toISOString(),
+          } as Resource])
+        )
+        
+        setResources(prevResources => 
+          prevResources.map((resource): Resource => {
+            const updated = updatedResourcesMap.get(resource.id)
+            return updated || resource
+          })
+        )
         
         // Show congratulations popup if points were earned
         if (responseData.totalPointsEarned > 0) {
