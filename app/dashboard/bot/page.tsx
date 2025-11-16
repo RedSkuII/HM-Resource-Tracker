@@ -793,7 +793,7 @@ export default function BotDashboardPage() {
                       const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
                       setConfig({ ...config, adminRoleId: selectedOptions })
                     }}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 min-h-[120px]"
                   >
                     {discordData.roles.map((role) => (
                       <option key={role.id} value={role.id}>
@@ -811,11 +811,11 @@ export default function BotDashboardPage() {
                     {config.adminRoleId.map(roleId => {
                       const role = discordData?.roles.find(r => r.id === roleId)
                       return role ? (
-                        <span key={roleId} className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-xs rounded">
+                        <span key={roleId} className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 text-xs rounded">
                           {role.name}
                           <button
                             onClick={() => setConfig({ ...config, adminRoleId: config.adminRoleId.filter(id => id !== roleId) })}
-                            className="ml-1 hover:text-purple-600 dark:hover:text-purple-200"
+                            className="ml-1 hover:text-red-600 dark:hover:text-red-200"
                           >
                             ×
                           </button>
