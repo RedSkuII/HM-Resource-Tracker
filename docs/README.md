@@ -7,6 +7,7 @@ Welcome to the comprehensive documentation for Resource Tracker - a flexible res
 ### Getting Started
 - **[Main README](../README.md)** - Quick start guide and free deployment
 - **[Environment Configuration](../ENVIRONMENT.md)** - Complete setup guide
+- **[Permissions & Roles Reference](../PERMISSIONS_AND_ROLES.md)** - Complete permission system guide
 - **[Contributing Guidelines](../CONTRIBUTING.md)** - How to contribute
 
 ### Architecture & Development  
@@ -26,6 +27,7 @@ Welcome to the comprehensive documentation for Resource Tracker - a flexible res
 - [Free Deployment Guide](../README.md#🆓-deploy-for-free-recommended)
 - [Discord Setup](../README.md#step-2-set-up-discord-oauth-application)
 - [Environment Variables](../ENVIRONMENT.md)
+- [Permissions & Roles Guide](../PERMISSIONS_AND_ROLES.md)
 - [Security Checklist](./security-guide.md#security-checklist)
 
 ### For Developers

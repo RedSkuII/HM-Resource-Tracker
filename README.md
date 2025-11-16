@@ -14,12 +14,13 @@ If you like what I did, feel free to
 
 ![alt text](image.png)
 
-## � Table of Contents
+## 📋 Table of Contents
 
 - [Quick Start](#-quick-start)
 - [Features](#features)
 - [Free Deployment Guide](#-deploy-for-free-recommended)
 - [Discord Bot Configuration](#-discord-bot-configuration-guide)
+- [Permissions & Roles](#-permissions--roles-reference)
 - [Local Development](#️-local-development-setup)
 - [Customization](#customization)
 - [Tech Stack](#tech-stack)
@@ -225,6 +226,42 @@ Your Resource Tracker is now running for free! Visit your Vercel URL and sign in
 - **Vercel**: 100GB bandwidth, unlimited projects
 - **Turso**: 500 databases, 1B row reads, 1M row writes/month
 - **Discord**: Unlimited OAuth usage
+
+---
+
+## 🔐 Permissions & Roles Reference
+
+Resource Tracker uses a sophisticated permission system with both global and guild-specific access control.
+
+### Quick Permission Guide
+
+**For Website Access:**
+- Configure `DISCORD_ROLES_CONFIG` environment variable with Discord role IDs
+- Set `canAccessResources: true` for basic access
+- Set `isAdmin: true` for full administrative access
+- Set `canEditTargets: true` for target quantity editing
+
+**For Guild-Specific Access:**
+- Each in-game guild can have its own access requirements
+- Configure via Bot Dashboard or Discord bot commands
+- Users can have different permissions for different guilds
+
+**For Discord Bot Commands:**
+- Discord Server Administrators can use setup commands
+- Bot Admins (configured via `/setup-admins`) access all guilds
+- Guild Officers can edit their assigned guilds
+- Guild Members can view their assigned guilds
+
+### Detailed Documentation
+
+See **[PERMISSIONS_AND_ROLES.md](./PERMISSIONS_AND_ROLES.md)** for complete documentation including:
+- Permission hierarchy and precedence
+- All permission flags and their effects
+- Guild-specific access control
+- Bot dashboard settings explained
+- Complete command reference with permission requirements
+- API endpoint permission matrix
+- Troubleshooting guide
 
 ---
 
