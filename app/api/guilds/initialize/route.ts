@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db, resources, resourceHistory, leaderboard } from '@/lib/db'
+import { db, resources, resourceHistory, leaderboard, discordOrders, resourceDiscordMapping } from '@/lib/db'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
@@ -142,6 +142,28 @@ export async function POST(request: NextRequest) {
       } catch (error) {
         console.error('[INIT] Error deleting leaderboard:', error)
         throw new Error(`Failed to delete leaderboard: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+      
+      try {
+        // Delete Discord orders (has foreign key to resources)
+        const deletedOrders = await db.delete(discordOrders)
+          .where(eq(discordOrders.guildId, guildId))
+          .returning()
+        console.log(`[INIT] Deleted ${deletedOrders.length} Discord orders`)
+      } catch (error) {
+        console.error('[INIT] Error deleting Discord orders:', error)
+        throw new Error(`Failed to delete Discord orders: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+      
+      try {
+        // Delete resource Discord mapping (has foreign key to resources)
+        const deletedMappings = await db.delete(resourceDiscordMapping)
+          .where(eq(resourceDiscordMapping.guildId, guildId))
+          .returning()
+        console.log(`[INIT] Deleted ${deletedMappings.length} Discord resource mappings`)
+      } catch (error) {
+        console.error('[INIT] Error deleting Discord mappings:', error)
+        throw new Error(`Failed to delete Discord mappings: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
       
       try {
