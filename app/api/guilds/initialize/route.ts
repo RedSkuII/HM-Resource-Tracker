@@ -122,23 +122,38 @@ export async function POST(request: NextRequest) {
     if (reset) {
       console.log(`[INIT] RESET MODE: Deleting all existing data for guild: ${guildTitle || guildId}`)
       
-      // Delete existing resources
-      const deletedResources = await db.delete(resources)
-        .where(eq(resources.guildId, guildId))
-        .returning()
-      console.log(`[INIT] Deleted ${deletedResources.length} existing resources`)
+      try {
+        // Delete existing resources
+        const deletedResources = await db.delete(resources)
+          .where(eq(resources.guildId, guildId))
+          .returning()
+        console.log(`[INIT] Deleted ${deletedResources.length} existing resources`)
+      } catch (error) {
+        console.error('[INIT] Error deleting resources:', error)
+        throw new Error(`Failed to delete resources: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
       
-      // Delete resource history
-      const deletedHistory = await db.delete(resourceHistory)
-        .where(eq(resourceHistory.guildId, guildId))
-        .returning()
-      console.log(`[INIT] Deleted ${deletedHistory.length} history entries`)
+      try {
+        // Delete resource history
+        const deletedHistory = await db.delete(resourceHistory)
+          .where(eq(resourceHistory.guildId, guildId))
+          .returning()
+        console.log(`[INIT] Deleted ${deletedHistory.length} history entries`)
+      } catch (error) {
+        console.error('[INIT] Error deleting resource history:', error)
+        throw new Error(`Failed to delete resource history: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
       
-      // Delete leaderboard entries
-      const deletedLeaderboard = await db.delete(leaderboard)
-        .where(eq(leaderboard.guildId, guildId))
-        .returning()
-      console.log(`[INIT] Deleted ${deletedLeaderboard.length} leaderboard entries`)
+      try {
+        // Delete leaderboard entries
+        const deletedLeaderboard = await db.delete(leaderboard)
+          .where(eq(leaderboard.guildId, guildId))
+          .returning()
+        console.log(`[INIT] Deleted ${deletedLeaderboard.length} leaderboard entries`)
+      } catch (error) {
+        console.error('[INIT] Error deleting leaderboard:', error)
+        throw new Error(`Failed to delete leaderboard: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
     }
 
     console.log(`[INIT] Creating standard resources for guild: ${guildTitle || guildId}`)
@@ -176,8 +191,15 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('[INIT] Error creating standard resources:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : ''
+    console.error('[INIT] Error details:', errorMessage, errorStack)
     return NextResponse.json(
-      { error: 'Failed to initialize guild resources' },
+      { 
+        error: 'Failed to initialize guild resources',
+        details: errorMessage,
+        stack: errorStack
+      },
       { status: 500 }
     )
   }
