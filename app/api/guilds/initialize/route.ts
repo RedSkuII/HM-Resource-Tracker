@@ -151,50 +151,50 @@ export async function POST(request: NextRequest) {
           console.error('[INIT] Error deleting bot activity logs:', error)
           throw new Error(`Failed to delete bot activity logs: ${error instanceof Error ? error.message : 'Unknown error'}`)
         }
-      }
-      
-      try {
-        // Delete resource history FIRST (has foreign key to resources)
-        const deletedHistory = await db.delete(resourceHistory)
-          .where(eq(resourceHistory.guildId, guildId))
-          .returning()
-        console.log(`[INIT] Deleted ${deletedHistory.length} history entries`)
-      } catch (error) {
-        console.error('[INIT] Error deleting resource history:', error)
-        throw new Error(`Failed to delete resource history: ${error instanceof Error ? error.message : 'Unknown error'}`)
-      }
-      
-      try {
-        // Delete leaderboard entries (has foreign key to resources)
-        const deletedLeaderboard = await db.delete(leaderboard)
-          .where(eq(leaderboard.guildId, guildId))
-          .returning()
-        console.log(`[INIT] Deleted ${deletedLeaderboard.length} leaderboard entries`)
-      } catch (error) {
-        console.error('[INIT] Error deleting leaderboard:', error)
-        throw new Error(`Failed to delete leaderboard: ${error instanceof Error ? error.message : 'Unknown error'}`)
-      }
-      
-      try {
-        // Delete Discord orders (has foreign key to resources)
-        const deletedOrders = await db.delete(discordOrders)
-          .where(eq(discordOrders.guildId, guildId))
-          .returning()
-        console.log(`[INIT] Deleted ${deletedOrders.length} Discord orders`)
-      } catch (error) {
-        console.error('[INIT] Error deleting Discord orders:', error)
-        throw new Error(`Failed to delete Discord orders: ${error instanceof Error ? error.message : 'Unknown error'}`)
-      }
-      
-      try {
-        // Delete resource Discord mapping (has foreign key to resources)
-        const deletedMappings = await db.delete(resourceDiscordMapping)
-          .where(eq(resourceDiscordMapping.guildId, guildId))
-          .returning()
-        console.log(`[INIT] Deleted ${deletedMappings.length} Discord resource mappings`)
-      } catch (error) {
-        console.error('[INIT] Error deleting Discord mappings:', error)
-        throw new Error(`Failed to delete Discord mappings: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        
+        try {
+          // Delete resource history by resourceId (handles records without guildId)
+          const deletedHistory = await db.delete(resourceHistory)
+            .where(inArray(resourceHistory.resourceId, resourceIds))
+            .returning()
+          console.log(`[INIT] Deleted ${deletedHistory.length} history entries`)
+        } catch (error) {
+          console.error('[INIT] Error deleting resource history:', error)
+          throw new Error(`Failed to delete resource history: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
+        
+        try {
+          // Delete leaderboard entries by resourceId (handles records without guildId)
+          const deletedLeaderboard = await db.delete(leaderboard)
+            .where(inArray(leaderboard.resourceId, resourceIds))
+            .returning()
+          console.log(`[INIT] Deleted ${deletedLeaderboard.length} leaderboard entries`)
+        } catch (error) {
+          console.error('[INIT] Error deleting leaderboard:', error)
+          throw new Error(`Failed to delete leaderboard: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
+        
+        try {
+          // Delete Discord orders (has guildId)
+          const deletedOrders = await db.delete(discordOrders)
+            .where(eq(discordOrders.guildId, guildId))
+            .returning()
+          console.log(`[INIT] Deleted ${deletedOrders.length} Discord orders`)
+        } catch (error) {
+          console.error('[INIT] Error deleting Discord orders:', error)
+          throw new Error(`Failed to delete Discord orders: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
+        
+        try {
+          // Delete resource Discord mapping (has guildId)
+          const deletedMappings = await db.delete(resourceDiscordMapping)
+            .where(eq(resourceDiscordMapping.guildId, guildId))
+            .returning()
+          console.log(`[INIT] Deleted ${deletedMappings.length} Discord resource mappings`)
+        } catch (error) {
+          console.error('[INIT] Error deleting Discord mappings:', error)
+          throw new Error(`Failed to delete Discord mappings: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
       }
       
       try {
