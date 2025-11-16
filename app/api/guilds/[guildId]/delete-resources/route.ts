@@ -44,7 +44,7 @@ export async function DELETE(
     }
 
     // Fetch Discord servers to check ownership
-    const discordServersResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/discord/servers`, {
+    const discordServersResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/discord/user-servers`, {
       headers: {
         cookie: request.headers.get('cookie') || '',
       },
