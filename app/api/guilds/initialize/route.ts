@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db, resources, resourceHistory, leaderboard, discordOrders, resourceDiscordMapping } from '@/lib/db'
-import { eq } from 'drizzle-orm'
+import { db, resources, resourceHistory, leaderboard, discordOrders, resourceDiscordMapping, websiteChanges } from '@/lib/db'
+import { eq, inArray } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
 // Standard 95 resources template (Dune: Awakening)
@@ -121,6 +121,26 @@ export async function POST(request: NextRequest) {
     // If reset=true, delete all existing data for this guild first
     if (reset) {
       console.log(`[INIT] RESET MODE: Deleting all existing data for guild: ${guildTitle || guildId}`)
+      
+      // First, get all resource IDs for this guild (needed for tables without guildId)
+      const guildResources = await db.select({ id: resources.id })
+        .from(resources)
+        .where(eq(resources.guildId, guildId))
+      const resourceIds = guildResources.map(r => r.id)
+      console.log(`[INIT] Found ${resourceIds.length} resources to delete`)
+      
+      // Delete website changes that reference these resources (no guildId field)
+      if (resourceIds.length > 0) {
+        try {
+          const deletedChanges = await db.delete(websiteChanges)
+            .where(inArray(websiteChanges.resourceId, resourceIds))
+            .returning()
+          console.log(`[INIT] Deleted ${deletedChanges.length} website changes`)
+        } catch (error) {
+          console.error('[INIT] Error deleting website changes:', error)
+          throw new Error(`Failed to delete website changes: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
+      }
       
       try {
         // Delete resource history FIRST (has foreign key to resources)
