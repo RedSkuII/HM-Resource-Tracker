@@ -270,11 +270,11 @@ export function getDisplayName(user: {
 
 // Helper function to get user identifier for database tracking
 export function getUserIdentifier(session: Session): string {
-  // Use Discord ID as the primary identifier for consistency
-  // This prevents duplicate entries when nicknames change
-  if (session.user.id) return session.user.id
-  if (session.user.email) return session.user.email
+  // Priority: Discord nickname > Discord username > Discord ID (last resort)
+  // Always show human-readable names instead of numeric IDs
   if (session.user.discordNickname) return session.user.discordNickname
   if (session.user.name) return session.user.name
-  return 'unknown'
+  if (session.user.email) return session.user.email
+  if (session.user.id) return session.user.id
+  return 'Unknown User'
 } 
