@@ -121,6 +121,10 @@ export default function BotDashboardPage() {
   const [showDeleteGuildConfirm, setShowDeleteGuildConfirm] = useState(false)
   const [deletingGuild, setDeletingGuild] = useState(false)
   
+  // Reset to defaults confirmation
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const [resettingResources, setResettingResources] = useState(false)
+  
   // Fetch guild-specific roles (access roles and officer roles)
   const fetchGuildRoles = async (guildId: string) => {
     try {
@@ -574,6 +578,47 @@ export default function BotDashboardPage() {
       alert(`❌ Error: ${errorMessage}`)
     } finally {
       setDeletingGuild(false)
+    }
+  }
+
+  const handleResetToDefaults = async () => {
+    if (!selectedInGameGuildId) return
+
+    setResettingResources(true)
+    setError(null)
+
+    try {
+      const guildTitle = inGameGuilds.find(g => g.id === selectedInGameGuildId)?.title || selectedInGameGuildId
+
+      const response = await fetch('/api/guilds/initialize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          guildId: selectedInGameGuildId,
+          guildTitle: guildTitle,
+          reset: true
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to reset resources')
+      }
+
+      const data = await response.json()
+      alert(`✅ Guild "${guildTitle}" has been reset to default resources!\n\n${data.resourcesCreated} default resources created with zero quantities.\nAll history and leaderboard data has been cleared.`)
+      setShowResetConfirm(false)
+      
+      // Refresh the page to show updated resources
+      window.location.reload()
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to reset resources'
+      setError(errorMessage)
+      alert(`❌ Error: ${errorMessage}`)
+    } finally {
+      setResettingResources(false)
     }
   }
 
@@ -1298,6 +1343,14 @@ export default function BotDashboardPage() {
                     </button>
 
                     <button
+                      onClick={() => setShowResetConfirm(true)}
+                      disabled={resettingResources}
+                      className="px-4 py-2 bg-gray-900 hover:bg-black disabled:bg-gray-600 text-white text-sm rounded-lg font-medium transition-colors border border-gray-700"
+                    >
+                      🔄 Reset to Default Resources
+                    </button>
+
+                    <button
                       onClick={() => setShowDeleteGuildConfirm(true)}
                       disabled={deletingGuild}
                       className="px-4 py-2 bg-red-800 hover:bg-red-900 disabled:bg-red-500 text-white text-sm rounded-lg font-medium transition-colors border-2 border-red-600"
@@ -1397,6 +1450,53 @@ export default function BotDashboardPage() {
                       <button
                         onClick={() => setShowDeleteGuildConfirm(false)}
                         disabled={deletingGuild}
+                        className="flex-1 px-4 py-2 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Reset to Defaults Confirmation Modal */}
+              {showResetConfirm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                    <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-4">
+                      🔄 Confirm Reset to Defaults
+                    </h3>
+                    <p className="text-gray-700 dark:text-gray-300 mb-4">
+                      Are you sure you want to reset <strong>{inGameGuilds.find(g => g.id === selectedInGameGuildId)?.title}</strong> to default resources?
+                    </p>
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded p-3 mb-4">
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200 font-bold mb-2">
+                        ⚠️ THIS WILL:
+                      </p>
+                      <ul className="text-sm text-yellow-800 dark:text-yellow-200 list-disc list-inside space-y-1">
+                        <li>Delete all current resources</li>
+                        <li>Delete all resource history entries</li>
+                        <li>Delete all leaderboard points</li>
+                        <li>Create 95 default resources (all at quantity 0)</li>
+                      </ul>
+                      <p className="text-sm text-green-700 dark:text-green-300 mt-3 font-bold">
+                        ✅ The guild itself will remain intact
+                      </p>
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-2">
+                        <strong>This action cannot be undone!</strong>
+                      </p>
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleResetToDefaults}
+                        disabled={resettingResources}
+                        className="flex-1 px-4 py-2 bg-gray-900 hover:bg-black disabled:bg-gray-600 text-white rounded-lg font-medium transition-colors"
+                      >
+                        {resettingResources ? 'Resetting...' : 'Yes, Reset to Defaults'}
+                      </button>
+                      <button
+                        onClick={() => setShowResetConfirm(false)}
+                        disabled={resettingResources}
                         className="flex-1 px-4 py-2 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
                       >
                         Cancel
