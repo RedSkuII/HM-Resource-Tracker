@@ -142,11 +142,13 @@ export const authOptions: NextAuthOptions = {
             token.ownedServerIds = ownedServerIds
             token.allServerIds = allServerIds
             
-            // For each server, fetch member details to get roles
-            for (const guild of guilds) {
+            // Only fetch member details for the configured Discord server (if set)
+            // This prevents timeout issues from fetching too many servers
+            if (process.env.DISCORD_GUILD_ID) {
+              const guildId = process.env.DISCORD_GUILD_ID
               try {
                 const memberResponse = await fetch(
-                  `https://discord.com/api/v10/users/@me/guilds/${guild.id}/member`,
+                  `https://discord.com/api/v10/users/@me/guilds/${guildId}/member`,
                   {
                     headers: {
                       Authorization: `Bearer ${token.accessToken}`,
@@ -156,44 +158,44 @@ export const authOptions: NextAuthOptions = {
                 
                 if (memberResponse.ok) {
                   const member = await memberResponse.json()
-                  serverRolesMap[guild.id] = member.roles || []
+                  serverRolesMap[guildId] = member.roles || []
+                  token.userRoles = member.roles || []
+                  token.isInGuild = true
+                  token.discordNickname = member.nick || null
                   
-                  // Store nickname from first server (backwards compatibility)
-                  if (!token.discordNickname && member.nick) {
-                    token.discordNickname = member.nick
-                    
-                    // Update user's custom nickname in database
-                    if (token.sub) {
-                      try {
-                        const { db, users } = await import('./db')
-                        const { eq } = await import('drizzle-orm')
-                        
-                        await db.update(users)
-                          .set({ customNickname: member.nick })
-                          .where(eq(users.discordId, token.sub))
-                      } catch (error) {
-                        console.error('Error updating user nickname:', error)
-                      }
+                  // Update user's custom nickname in database
+                  if (member.nick && token.sub) {
+                    try {
+                      const { db, users } = await import('./db')
+                      const { eq } = await import('drizzle-orm')
+                      
+                      await db.update(users)
+                        .set({ customNickname: member.nick })
+                        .where(eq(users.discordId, token.sub))
+                    } catch (error) {
+                      console.error('Error updating user nickname:', error)
                     }
                   }
+                } else {
+                  // User not in the configured Discord server
+                  token.userRoles = []
+                  token.isInGuild = false
+                  token.discordNickname = null
                 }
               } catch (error) {
-                console.error(`Error fetching member data for server ${guild.id}:`, error)
+                console.error(`Error fetching member data for Discord server:`, error)
+                token.userRoles = []
+                token.isInGuild = false
               }
+            } else {
+              // No DISCORD_GUILD_ID set - allow access based on server ownership
+              token.userRoles = []
+              token.isInGuild = allServerIds.length > 0
             }
           }
           
           // Store server roles map in token
           token.serverRolesMap = serverRolesMap
-          token.isInGuild = allServerIds.length > 0
-          
-          // Legacy support: if DISCORD_GUILD_ID is set, store those specific roles
-          if (process.env.DISCORD_GUILD_ID && serverRolesMap[process.env.DISCORD_GUILD_ID]) {
-            token.userRoles = serverRolesMap[process.env.DISCORD_GUILD_ID]
-          } else {
-            // No specific guild ID - user can access based on server ownership/membership
-            token.userRoles = []
-          }
           
           // Log server data in development only
           if (process.env.NODE_ENV === 'development') {
