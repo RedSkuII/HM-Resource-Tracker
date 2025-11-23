@@ -22,6 +22,8 @@ declare module "next-auth" {
       discordNickname?: string | null
       customNickname?: string | null
       ownedServerIds: string[]
+      allServerIds: string[]
+      serverRolesMap: Record<string, string[]>
       permissions: UserPermissions
     }
   }
@@ -33,6 +35,8 @@ declare module "next-auth" {
     rolesFetched?: boolean
     discordNickname?: string | null
     ownedServerIds?: string[]
+    allServerIds?: string[]
+    serverRolesMap?: Record<string, string[]>
     permissions?: UserPermissions
   }
 } 

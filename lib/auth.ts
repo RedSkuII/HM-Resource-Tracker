@@ -117,9 +117,7 @@ export const authOptions: NextAuthOptions = {
       // Fetch Discord roles and nickname on login or when explicitly triggered
       if (token.accessToken && (!token.rolesFetched || trigger === 'update')) {
         try {
-          const guildId = process.env.DISCORD_GUILD_ID!
-          
-          // Fetch user's Discord servers to check ownership
+          // Fetch user's Discord servers to check ownership and membership
           const guildsResponse = await fetch('https://discord.com/api/users/@me/guilds', {
             headers: {
               Authorization: `Bearer ${token.accessToken}`,
@@ -127,69 +125,92 @@ export const authOptions: NextAuthOptions = {
           })
           
           let ownedServerIds: string[] = []
+          let allServerIds: string[] = []
+          let serverRolesMap: Record<string, string[]> = {}
+          
           if (guildsResponse.ok) {
             const guilds = await guildsResponse.json()
+            
+            // Store all servers user is in
+            allServerIds = guilds.map((guild: any) => guild.id)
+            
             // Filter servers where user is the owner
             ownedServerIds = guilds
               .filter((guild: any) => guild.owner === true)
               .map((guild: any) => guild.id)
             
             token.ownedServerIds = ownedServerIds
-          }
-          
-          const response = await fetch(
-            `https://discord.com/api/v10/users/@me/guilds/${guildId}/member`,
-            {
-              headers: {
-                Authorization: `Bearer ${token.accessToken}`,
-              },
-            }
-          )
-          
-          if (response.ok) {
-            const member = await response.json()
-            token.userRoles = member.roles || []
-            token.isInGuild = true
-            // Prioritize nickname over username
-            token.discordNickname = member.nick || null
+            token.allServerIds = allServerIds
             
-            // Update user's custom nickname in database if they have a guild nickname
-            if (member.nick && token.sub) {
+            // For each server, fetch member details to get roles
+            for (const guild of guilds) {
               try {
-                const { db, users } = await import('./db')
-                const { eq } = await import('drizzle-orm')
+                const memberResponse = await fetch(
+                  `https://discord.com/api/v10/users/@me/guilds/${guild.id}/member`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${token.accessToken}`,
+                    },
+                  }
+                )
                 
-                await db.update(users)
-                  .set({ customNickname: member.nick })
-                  .where(eq(users.discordId, token.sub))
-                
-                console.log(`Updated nickname for user ${token.sub}: ${member.nick}`)
+                if (memberResponse.ok) {
+                  const member = await memberResponse.json()
+                  serverRolesMap[guild.id] = member.roles || []
+                  
+                  // Store nickname from first server (backwards compatibility)
+                  if (!token.discordNickname && member.nick) {
+                    token.discordNickname = member.nick
+                    
+                    // Update user's custom nickname in database
+                    if (token.sub) {
+                      try {
+                        const { db, users } = await import('./db')
+                        const { eq } = await import('drizzle-orm')
+                        
+                        await db.update(users)
+                          .set({ customNickname: member.nick })
+                          .where(eq(users.discordId, token.sub))
+                      } catch (error) {
+                        console.error('Error updating user nickname:', error)
+                      }
+                    }
+                  }
+                }
               } catch (error) {
-                console.error('Error updating user nickname:', error)
+                console.error(`Error fetching member data for server ${guild.id}:`, error)
               }
             }
-            
-            // Log member data in development only
-            if (process.env.NODE_ENV === 'development') {
-              console.log('Discord member data:', { 
-                nick: member.nick, 
-                username: member.user?.username,
-                global_name: member.user?.global_name,
-                ownedServers: ownedServerIds.length
-              })
-            }
+          }
+          
+          // Store server roles map in token
+          token.serverRolesMap = serverRolesMap
+          token.isInGuild = allServerIds.length > 0
+          
+          // Legacy support: if DISCORD_GUILD_ID is set, store those specific roles
+          if (process.env.DISCORD_GUILD_ID && serverRolesMap[process.env.DISCORD_GUILD_ID]) {
+            token.userRoles = serverRolesMap[process.env.DISCORD_GUILD_ID]
           } else {
-            console.warn('Failed to fetch Discord member data:', response.status, response.statusText)
+            // No specific guild ID - user can access based on server ownership/membership
             token.userRoles = []
-            token.isInGuild = false
-            token.discordNickname = null
+          }
+          
+          // Log server data in development only
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Discord auth data:', {
+              servers: allServerIds.length,
+              ownedServers: ownedServerIds.length,
+              nickname: token.discordNickname
+            })
           }
         } catch (error) {
-          console.error('Error fetching Discord roles and nickname:', error)
+          console.error('Error fetching Discord data:', error)
           token.userRoles = []
           token.isInGuild = false
           token.discordNickname = null
           token.ownedServerIds = []
+          token.allServerIds = []
+          token.serverRolesMap = {}
         }
         
         // Mark roles as fetched to prevent future API calls (unless explicitly triggered)
@@ -222,6 +243,8 @@ export const authOptions: NextAuthOptions = {
         isInGuild: Boolean(token.isInGuild),
         discordNickname: token.discordNickname as string | null,
         ownedServerIds: (token.ownedServerIds || []) as string[],
+        allServerIds: (token.allServerIds || []) as string[],
+        serverRolesMap: (token.serverRolesMap || {}) as Record<string, string[]>,
         // Include pre-computed permissions to avoid client-side env var issues
         permissions: token.permissions as UserPermissions || {
           hasResourceAccess: false,
