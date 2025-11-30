@@ -16,7 +16,6 @@ interface UserPermissions {
 const scopes = ['identify', 'guilds', 'guilds.members.read'].join(' ')
 
 export const authOptions: NextAuthOptions = {
-  trustHost: true, // Critical for Vercel deployments
   providers: [
     DiscordProvider({
       clientId: process.env.DISCORD_CLIENT_ID!,
