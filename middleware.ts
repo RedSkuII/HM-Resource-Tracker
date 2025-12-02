@@ -27,13 +27,20 @@ export default withAuth(
           return false
         }
         
-        // Check if user owns any Discord servers
-        const ownedServerIds = (token.ownedServerIds as string[]) || []
-        const isServerOwner = ownedServerIds.length > 0
+        // Use pre-computed permissions from JWT token
+        // These are calculated in auth.ts during login and include:
+        // - Discord role checks
+        // - Server ownership checks
+        // - Guild roster membership (if needed)
+        const permissions = token.permissions as any
         
-        // Check if user has required roles or is a server owner
-        const userRoles = (token.userRoles as string[]) || []
-        return hasResourceAccess(userRoles, isServerOwner)
+        if (!permissions) {
+          // Fallback: check basic Discord membership
+          return token.isInGuild === true
+        }
+        
+        // Check if user has resource access permission
+        return permissions.hasResourceAccess === true
       },
     },
   }
