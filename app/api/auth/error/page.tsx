@@ -9,26 +9,48 @@ export default function AuthErrorPage() {
 
   const getErrorMessage = (errorCode: string | null) => {
     switch (errorCode) {
+      case 'OAuthCallbackError':
+        // Check if it's a rate limit error from the URL params
+        const errorDesc = searchParams.get('error_description') || ''
+        if (errorDesc.includes('rate limit') || errorDesc.includes('too many')) {
+          return {
+            title: 'Too Many Login Attempts',
+            message: 'Discord is temporarily blocking login requests due to too many attempts.',
+            details: 'You have tried to log in too many times in a short period. This is a Discord rate limit, not a problem with your account.',
+            action: 'Please wait 2-5 minutes before trying again. Clear your browser cookies and try in a private/incognito window.',
+            warning: true
+          }
+        }
+        return {
+          title: 'Authentication Error',
+          message: 'There was a problem with Discord authentication.',
+          details: 'This might be due to denying permissions or a temporary issue.',
+          action: 'Please try logging in again.',
+          warning: false
+        }
       case 'access_denied':
         return {
           title: 'Authorization Denied',
           message: 'You clicked "Cancel" or "Deny" when Discord asked for permissions.',
           details: 'This app needs to verify your Discord server membership and roles to work properly.',
-          action: 'Please try logging in again and click "Authorize" when Discord asks for permissions.'
+          action: 'Please try logging in again and click "Authorize" when Discord asks for permissions.',
+          warning: false
         }
       case 'OAuthCallback':
         return {
           title: 'Authentication Error',
           message: 'There was a problem with Discord authentication.',
           details: 'This might be due to denying permissions or a temporary issue.',
-          action: 'Please try logging in again.'
+          action: 'Please try logging in again.',
+          warning: false
         }
       default:
         return {
           title: 'Authentication Error',
           message: 'An error occurred during sign in.',
           details: errorCode || 'Unknown error',
-          action: 'Please try again or contact support if the problem persists.'
+          action: 'Please try again or contact support if the problem persists.',
+          warning: false
         }
     }
   }
@@ -68,6 +90,35 @@ export default function AuthErrorPage() {
             <strong>Next step:</strong> {errorInfo.action}
           </p>
         </div>
+
+        {errorInfo.warning && (
+          <div className="bg-orange-500/10 border border-orange-400/30 rounded-lg p-4 mb-6">
+            <div className="flex items-start">
+              <svg 
+                className="w-5 h-5 text-orange-400 mt-0.5 mr-2 flex-shrink-0" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
+                />
+              </svg>
+              <div className="text-sm text-orange-100">
+                <p className="font-medium mb-2">What to do:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Wait 2-5 minutes for Discord's rate limit to reset</li>
+                  <li>Clear your browser cookies for this site</li>
+                  <li>Try logging in using an incognito/private window</li>
+                  <li>Avoid clicking the login button multiple times</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
 
         {error === 'access_denied' && (
           <div className="bg-yellow-500/10 border border-yellow-400/30 rounded-lg p-4 mb-6">
