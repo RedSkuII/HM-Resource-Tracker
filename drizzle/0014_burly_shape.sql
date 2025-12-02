@@ -1,0 +1,1 @@
+ALTER TABLE guilds ADD `discord_role_id` text;
