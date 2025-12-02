@@ -27,9 +27,13 @@ export default withAuth(
           return false
         }
         
-        // Check if user has required roles
+        // Check if user owns any Discord servers
+        const ownedServerIds = (token.ownedServerIds as string[]) || []
+        const isServerOwner = ownedServerIds.length > 0
+        
+        // Check if user has required roles or is a server owner
         const userRoles = (token.userRoles as string[]) || []
-        return hasResourceAccess(userRoles)
+        return hasResourceAccess(userRoles, isServerOwner)
       },
     },
   }
