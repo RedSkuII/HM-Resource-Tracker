@@ -3,7 +3,6 @@ import { db, guilds } from '@/lib/db'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getAccessibleGuilds } from '@/lib/guild-access'
-import { nanoid } from 'nanoid'
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
@@ -50,6 +49,7 @@ export async function GET(request: NextRequest) {
     
     // Get user roles and global access permission
     const userRoles = session.user.roles || []
+    const userDiscordId = session.user.id
     const hasGlobalAccess = session.user.permissions?.hasResourceAdminAccess || false
     
     // Fetch in-game guilds, filtered by Discord server ID or user's accessible servers
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
       }
       
       // Get accessible guild IDs based on role requirements
-      const accessibleGuildIds = await getAccessibleGuilds(discordServerId, userRoles, hasGlobalAccess)
+      const accessibleGuildIds = await getAccessibleGuilds(discordServerId, userRoles, userDiscordId, hasGlobalAccess)
       
       if (accessibleGuildIds.length === 0) {
         console.log('[GUILDS API] User has no accessible guilds in Discord server:', discordServerId)
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
       // Filter by role-based access
       const accessibleGuildIds = new Set<string>()
       for (const discordId of userDiscordServers) {
-        const guildsForServer = await getAccessibleGuilds(discordId, userRoles, hasGlobalAccess)
+        const guildsForServer = await getAccessibleGuilds(discordId, userRoles, userDiscordId, hasGlobalAccess)
         guildsForServer.forEach(guildId => accessibleGuildIds.add(guildId))
       }
       

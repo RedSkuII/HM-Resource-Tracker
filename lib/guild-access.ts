@@ -72,45 +72,74 @@ export async function canAccessGuild(
 /**
  * Get all guilds that a user has access to
  * @param discordGuildId - The Discord server ID
- * @param userRoles - Array of user's Discord role IDs
+ * @param userRoles - Array of user's Discord role IDs  
+ * @param userDiscordId - The user's Discord ID (for leader check)
  * @param hasGlobalAccess - Whether user has global resource access
  * @returns Promise<string[]> - Array of accessible guild IDs
  */
 export async function getAccessibleGuilds(
   discordGuildId: string,
   userRoles: string[],
+  userDiscordId: string,
   hasGlobalAccess: boolean = false
 ): Promise<string[]> {
   try {
+    const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
+    const isSuperAdmin = superAdminUserId && userDiscordId === superAdminUserId
+    
     // Fetch all guilds for this Discord server
     const allGuilds = await db
       .select()
       .from(guilds)
       .where(eq(guilds.discordGuildId, discordGuildId))
 
-    // Admins see all guilds
-    if (hasGlobalAccess) {
+    // Super admin sees all guilds
+    if (isSuperAdmin) {
       return allGuilds.map(g => g.id)
     }
 
-    // Filter guilds based on role requirements
+    // Filter guilds based on EXPLICIT access only
     const accessibleGuilds = allGuilds.filter(guild => {
-      // No role restrictions = accessible to all
-      if (!guild.guildAccessRoles) {
+      // Check 1: Is user the guild leader?
+      if (guild.leaderId === userDiscordId) {
         return true
       }
 
-      const requiredRoles: string[] = JSON.parse(guild.guildAccessRoles)
-      
-      // Empty role list = accessible to all
-      if (requiredRoles.length === 0) {
+      // Check 2: Does user have an access role?
+      if (guild.guildAccessRoles) {
+        try {
+          const accessRoles: string[] = JSON.parse(guild.guildAccessRoles)
+          if (accessRoles.length > 0 && accessRoles.some(roleId => userRoles.includes(roleId))) {
+            return true
+          }
+        } catch (e) {
+          console.error('[GUILD-ACCESS] Error parsing guildAccessRoles:', e)
+        }
+      }
+
+      // Check 3: Does user have an officer role?
+      if (guild.guildOfficerRoles) {
+        try {
+          const officerRoles: string[] = JSON.parse(guild.guildOfficerRoles)
+          if (officerRoles.length > 0 && officerRoles.some(roleId => userRoles.includes(roleId))) {
+            return true
+          }
+        } catch (e) {
+          console.error('[GUILD-ACCESS] Error parsing guildOfficerRoles:', e)
+        }
+      }
+
+      // Check 4: Does user have the default role?
+      if (guild.defaultRoleId && userRoles.includes(guild.defaultRoleId)) {
         return true
       }
 
-      // Check if user has at least one required role
-      return requiredRoles.some(roleId => userRoles.includes(roleId))
+      // No explicit access granted
+      return false
     })
 
+    console.log(`[GUILD-ACCESS] User ${userDiscordId} has access to ${accessibleGuilds.length}/${allGuilds.length} guilds in server ${discordGuildId}`)
+    
     return accessibleGuilds.map(g => g.id)
 
   } catch (error) {
