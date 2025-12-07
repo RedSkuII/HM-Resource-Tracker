@@ -21,6 +21,7 @@ export function DiscordServerSections({
 }: DiscordServerSectionsProps) {
   const [guildsMap, setGuildsMap] = useState<Record<string, Guild[]>>({})
   const [serverNames, setServerNames] = useState<Record<string, string>>({})
+  const [roleNames, setRoleNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(0)
   const serversPerPage = 3
@@ -74,6 +75,21 @@ export function DiscordServerSections({
           setServerNames(names)
         } else {
           console.error('[DiscordServerSections] Failed to fetch server names:', serversResponse.status)
+        }
+
+        // Fetch Discord role names
+        const rolesResponse = await fetch('/api/discord/server-roles', {
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        })
+
+        if (rolesResponse.ok) {
+          const rolesData = await rolesResponse.json()
+          console.log('[DiscordServerSections] Role names data:', rolesData)
+          setRoleNames(rolesData.roleNames || {})
+        } else {
+          console.error('[DiscordServerSections] Failed to fetch role names:', rolesResponse.status)
         }
       } catch (error) {
         console.error('Error fetching Discord server data:', error)
@@ -154,15 +170,18 @@ export function DiscordServerSections({
                   </h4>
                   {roles.length > 0 ? (
                     <div className="space-y-2 max-h-64 overflow-y-auto">
-                      {roles.map((roleId) => (
-                        <div
-                          key={roleId}
-                          className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 mr-2 mb-2"
-                          title={`Role ID: ${roleId}`}
-                        >
-                          Role {roleId.substring(0, 8)}...
-                        </div>
-                      ))}
+                      {roles.map((roleId) => {
+                        const roleName = roleNames[roleId] || `Role ${roleId.substring(0, 8)}...`
+                        return (
+                          <div
+                            key={roleId}
+                            className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 mr-2 mb-2"
+                            title={`Role ID: ${roleId}`}
+                          >
+                            {roleName}
+                          </div>
+                        )
+                      })}
                     </div>
                   ) : (
                     <p className="text-sm text-gray-500 dark:text-gray-400 italic">
