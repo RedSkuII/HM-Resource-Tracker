@@ -90,13 +90,22 @@ export async function GET(request: NextRequest) {
       const accessibleGuildIds = new Set<string>()
       for (const discordId of userDiscordServers) {
         const isDiscordServerOwner = ownedServerIds.includes(discordId)
-        const guildsForServer = await getAccessibleGuilds(discordId, userRoles, userDiscordId, isDiscordServerOwner, hasGlobalAccess)
+        const serverRoles = session.user.serverRolesMap?.[discordId] || []
+        console.log(`[GUILDS API] Checking access for server ${discordId}:`, {
+          isOwner: isDiscordServerOwner,
+          roles: serverRoles,
+          userDiscordId
+        })
+        const guildsForServer = await getAccessibleGuilds(discordId, serverRoles, userDiscordId, isDiscordServerOwner, hasGlobalAccess)
+        console.log(`[GUILDS API] Server ${discordId} accessible guilds:`, guildsForServer)
         guildsForServer.forEach(guildId => accessibleGuildIds.add(guildId))
       }
       
       // Filter the results to only accessible guilds
       allGuilds = allServerGuilds.filter(g => accessibleGuildIds.has(g.id))
+      console.log('[GUILDS API] Total guilds in user servers:', allServerGuilds.length)
       console.log('[GUILDS API] Found accessible guilds:', allGuilds.length)
+      console.log('[GUILDS API] Accessible guild IDs:', Array.from(accessibleGuildIds))
     }
 
     return NextResponse.json(

@@ -28,6 +28,10 @@ export function DiscordServerSections({
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('[DiscordServerSections] Fetching data...')
+        console.log('[DiscordServerSections] allServerIds:', allServerIds)
+        console.log('[DiscordServerSections] serverRolesMap:', serverRolesMap)
+        
         // Fetch in-game guilds for all servers
         const guildsResponse = await fetch('/api/guilds', {
           headers: {
@@ -37,6 +41,7 @@ export function DiscordServerSections({
         
         if (guildsResponse.ok) {
           const guilds: Guild[] = await guildsResponse.json()
+          console.log('[DiscordServerSections] Fetched guilds:', guilds)
           
           // Group guilds by Discord server ID
           const grouped = guilds.reduce((acc, guild) => {
@@ -47,6 +52,7 @@ export function DiscordServerSections({
             return acc
           }, {} as Record<string, Guild[]>)
           
+          console.log('[DiscordServerSections] Grouped guilds:', grouped)
           setGuildsMap(grouped)
         }
 

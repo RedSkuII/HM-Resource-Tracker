@@ -126,10 +126,9 @@ export const authOptions: NextAuthOptions = {
             token.ownedServerIds = ownedServerIds
             token.allServerIds = allServerIds
             
-            // Only fetch member details for the configured Discord server (if set)
-            // This prevents timeout issues from fetching too many servers
-            if (process.env.DISCORD_GUILD_ID) {
-              const guildId = process.env.DISCORD_GUILD_ID
+            // Fetch member details for ALL Discord servers (not just DISCORD_GUILD_ID)
+            // This is needed to populate serverRolesMap for dashboard display
+            for (const guildId of allServerIds) {
               try {
                 const memberResponse = await fetch(
                   `https://discord.com/api/v10/users/@me/guilds/${guildId}/member`,
@@ -143,33 +142,44 @@ export const authOptions: NextAuthOptions = {
                 if (memberResponse.ok) {
                   const member = await memberResponse.json()
                   serverRolesMap[guildId] = member.roles || []
-                  token.userRoles = member.roles || []
-                  token.isInGuild = true
-                  token.discordNickname = member.nick || null
                   
-                  // Update user's custom nickname in database
-                  if (member.nick && token.sub) {
-                    try {
-                      const { db, users } = await import('./db')
-                      const { eq } = await import('drizzle-orm')
-                      
-                      await db.update(users)
-                        .set({ customNickname: member.nick })
-                        .where(eq(users.discordId, token.sub))
-                    } catch (error) {
-                      console.error('Error updating user nickname:', error)
+                  // For the main configured server, also set legacy fields
+                  if (process.env.DISCORD_GUILD_ID && guildId === process.env.DISCORD_GUILD_ID) {
+                    token.userRoles = member.roles || []
+                    token.isInGuild = true
+                    token.discordNickname = member.nick || null
+                  
+                    // Update user's custom nickname in database
+                    if (member.nick && token.sub) {
+                      try {
+                        const { db, users } = await import('./db')
+                        const { eq } = await import('drizzle-orm')
+                        
+                        await db.update(users)
+                          .set({ customNickname: member.nick })
+                          .where(eq(users.discordId, token.sub))
+                      } catch (error) {
+                        console.error('Error updating user nickname:', error)
+                      }
                     }
                   }
-                } else {
-                  // User not in the configured Discord server
-                  token.userRoles = []
-                  token.isInGuild = false
-                  token.discordNickname = null
                 }
               } catch (error) {
-                console.error(`Error fetching member data for Discord server:`, error)
+                console.error(`Error fetching member data for Discord server ${guildId}:`, error)
+                // Continue to next server on error
+              }
+            }
+            
+            // Set legacy fields based on DISCORD_GUILD_ID or first server
+            if (process.env.DISCORD_GUILD_ID) {
+              const mainGuildId = process.env.DISCORD_GUILD_ID
+              if (serverRolesMap[mainGuildId]) {
+                token.userRoles = serverRolesMap[mainGuildId]
+                token.isInGuild = true
+              } else {
                 token.userRoles = []
                 token.isInGuild = false
+                token.discordNickname = null
               }
             } else {
               // No DISCORD_GUILD_ID set - allow access based on server ownership
