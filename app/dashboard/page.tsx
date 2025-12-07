@@ -129,7 +129,6 @@ export default async function Dashboard() {
               allServerIds={session.user.allServerIds || []}
               ownedServerIds={session.user.ownedServerIds || []}
               serverRolesMap={session.user.serverRolesMap || {}}
-              accessToken={(session as any).accessToken || ''}
             />
           </div>
 

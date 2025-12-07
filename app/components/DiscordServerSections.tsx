@@ -8,30 +8,19 @@ interface Guild {
   discordGuildId: string
 }
 
-interface DiscordServer {
-  id: string
-  name: string
-  icon: string | null
-  owner: boolean
-  permissions: string
-}
-
 interface DiscordServerSectionsProps {
   allServerIds: string[]
   ownedServerIds: string[]
   serverRolesMap: Record<string, string[]>
-  accessToken: string
 }
 
 export function DiscordServerSections({ 
   allServerIds, 
   ownedServerIds, 
   serverRolesMap,
-  accessToken 
 }: DiscordServerSectionsProps) {
-  const [discordServers, setDiscordServers] = useState<DiscordServer[]>([])
   const [guildsMap, setGuildsMap] = useState<Record<string, Guild[]>>({})
-  const [roleNamesMap, setRoleNamesMap] = useState<Record<string, Record<string, string>>>({})
+  const [serverNames, setServerNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(0)
   const serversPerPage = 3
@@ -39,43 +28,6 @@ export function DiscordServerSections({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch Discord server details
-        const serversResponse = await fetch('https://discord.com/api/users/@me/guilds', {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          },
-        })
-        
-        if (serversResponse.ok) {
-          const allServers = await serversResponse.json()
-          // Filter to only servers the user is actually in
-          const userServers = allServers.filter((s: any) => allServerIds.includes(s.id))
-          setDiscordServers(userServers)
-          
-          // Fetch role names for each server
-          const roleNames: Record<string, Record<string, string>> = {}
-          for (const serverId of allServerIds) {
-            try {
-              const rolesResponse = await fetch(`/api/discord/guild/${serverId}/roles`, {
-                headers: {
-                  'Cache-Control': 'no-cache',
-                },
-              })
-              
-              if (rolesResponse.ok) {
-                const rolesData = await rolesResponse.json()
-                roleNames[serverId] = rolesData.roles.reduce((acc: Record<string, string>, role: any) => {
-                  acc[role.id] = role.name
-                  return acc
-                }, {})
-              }
-            } catch (error) {
-              console.error(`Error fetching roles for server ${serverId}:`, error)
-            }
-          }
-          setRoleNamesMap(roleNames)
-        }
-
         // Fetch in-game guilds for all servers
         const guildsResponse = await fetch('/api/guilds', {
           headers: {
@@ -97,6 +49,22 @@ export function DiscordServerSections({
           
           setGuildsMap(grouped)
         }
+
+        // Fetch Discord server names from database
+        const serversResponse = await fetch('/api/discord/servers', {
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        })
+
+        if (serversResponse.ok) {
+          const serversData = await serversResponse.json()
+          const names = serversData.servers.reduce((acc: Record<string, string>, server: any) => {
+            acc[server.id] = server.name
+            return acc
+          }, {})
+          setServerNames(names)
+        }
       } catch (error) {
         console.error('Error fetching Discord server data:', error)
       } finally {
@@ -105,7 +73,7 @@ export function DiscordServerSections({
     }
 
     fetchData()
-  }, [allServerIds, accessToken])
+  }, [allServerIds])
 
   if (loading) {
     return (
@@ -116,48 +84,41 @@ export function DiscordServerSections({
     )
   }
 
-  const totalPages = Math.ceil(discordServers.length / serversPerPage)
-  const paginatedServers = discordServers.slice(
+  const totalPages = Math.ceil(allServerIds.length / serversPerPage)
+  const paginatedServerIds = allServerIds.slice(
     currentPage * serversPerPage,
     (currentPage + 1) * serversPerPage
   )
 
   return (
     <div className="space-y-6">
-      {paginatedServers.length === 0 ? (
+      {paginatedServerIds.length === 0 ? (
         <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <p className="text-gray-500 dark:text-gray-400">No Discord servers found</p>
         </div>
       ) : (
-        paginatedServers.map((server) => {
-          const roles = serverRolesMap[server.id] || []
-          const guilds = guildsMap[server.id] || []
-          const isOwned = ownedServerIds.includes(server.id)
+        paginatedServerIds.map((serverId) => {
+          const roles = serverRolesMap[serverId] || []
+          const guilds = guildsMap[serverId] || []
+          const isOwned = ownedServerIds.includes(serverId)
+          const serverName = serverNames[serverId] || `Server ${serverId.substring(0, 8)}...`
 
           return (
             <div
-              key={server.id}
+              key={serverId}
               className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden"
             >
               {/* Server Header */}
               <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  {server.icon ? (
-                    <img
-                      src={`https://cdn.discordapp.com/icons/${server.id}/${server.icon}.png`}
-                      alt={server.name}
-                      className="w-12 h-12 rounded-full"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-indigo-800 flex items-center justify-center text-white font-bold text-lg">
-                      {server.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                  <div className="w-12 h-12 rounded-full bg-indigo-800 flex items-center justify-center text-white font-bold text-lg">
+                    {serverName.charAt(0).toUpperCase()}
+                  </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white">{server.name}</h3>
+                    <h3 className="text-lg font-bold text-white">{serverName}</h3>
                     <p className="text-xs text-indigo-200">
                       {isOwned && '👑 Owner • '}
-                      Discord Server ID: {server.id}
+                      Discord Server ID: {serverId}
                     </p>
                   </div>
                 </div>
@@ -174,18 +135,15 @@ export function DiscordServerSections({
                   </h4>
                   {roles.length > 0 ? (
                     <div className="space-y-2 max-h-64 overflow-y-auto">
-                      {roles.map((roleId) => {
-                        const roleName = roleNamesMap[server.id]?.[roleId] || roleId
-                        return (
-                          <div
-                            key={roleId}
-                            className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 mr-2 mb-2"
-                            title={`Role ID: ${roleId}`}
-                          >
-                            {roleName}
-                          </div>
-                        )
-                      })}
+                      {roles.map((roleId) => (
+                        <div
+                          key={roleId}
+                          className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 mr-2 mb-2"
+                          title={`Role ID: ${roleId}`}
+                        >
+                          Role {roleId.substring(0, 8)}...
+                        </div>
+                      ))}
                     </div>
                   ) : (
                     <p className="text-sm text-gray-500 dark:text-gray-400 italic">
