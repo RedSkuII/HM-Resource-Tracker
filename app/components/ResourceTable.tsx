@@ -1777,6 +1777,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 value={activeInput.value}
                                 onChange={(e) => setActiveInput(prev => ({ ...prev, value: e.target.value }))}
                                 placeholder={activeInput.type === 'relative' ? 'e.g. +5 or -3' : 'e.g. 25'}
+                                title={activeInput.type === 'relative' ? 'Enter a positive number to add (e.g., +50) or negative to remove (e.g., -20). Press Enter to apply.' : 'Enter the exact total quantity you want to set. Press Enter to apply.'}
                                 className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                 autoFocus
                                 onKeyDown={(e) => {
@@ -1796,6 +1797,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                     handleInputSubmitAndSave()
                                   }}
                                   disabled={!activeInput.value}
+                                  title={activeInput.type === 'relative' ? 'Apply the quantity change and save immediately' : 'Set the quantity to this exact value and save immediately'}
                                   className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   {activeInput.type === 'relative' ? 'Apply' : 'Set'}
@@ -1805,6 +1807,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                     e.stopPropagation()
                                     setActiveInput({ resourceId: null, type: null, value: '' })
                                   }}
+                                  title="Cancel and discard the quantity change"
                                   className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   Cancel
@@ -1819,12 +1822,14 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 value={editResourceForm.name}
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, name: e.target.value }))}
                                 placeholder="Name"
+                                title="Enter the resource name (e.g., 'Iron Ore', 'Advanced Machinery')"
                                 className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                 onClick={(e) => e.stopPropagation()}
                               />
                               <select
                                 value={editResourceForm.category}
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, category: e.target.value }))}
+                                title="Select the resource category type (Raw materials, Components, Refined goods, etc.)"
                                 className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                 onClick={(e) => e.stopPropagation()}
                               >
@@ -1837,6 +1842,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 value={editResourceForm.description}
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, description: e.target.value }))}
                                 placeholder="Description"
+                                title="Optional description of the resource (e.g., 'A vehicle module crafting component')"
                                 className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                 onClick={(e) => e.stopPropagation()}
                               />
@@ -1845,6 +1851,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 value={editResourceForm.imageUrl}
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, imageUrl: e.target.value }))}
                                 placeholder="Image URL"
+                                title="URL to the resource image (must be a valid image link)"
                                 className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                 onClick={(e) => e.stopPropagation()}
                               />
@@ -1853,6 +1860,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 value={editResourceForm.targetQuantity || ''}
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, targetQuantity: parseInt(e.target.value) || 0 }))}
                                 placeholder="Target Quantity"
+                                title="Set the goal quantity to maintain for this resource. Status indicators (Critical/Below Target/At Target) are calculated based on this value."
                                 className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                 onClick={(e) => e.stopPropagation()}
                               />
@@ -1867,6 +1875,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                     setEditResourceForm(prev => ({ ...prev, multiplier: 1 + (bonusPercentage / 100) }))
                                   }}
                                   placeholder="0"
+                                  title="Point multiplier percentage: 0% = standard points, +100% = double points, -100% = no points earned. Use to incentivize high-priority resources."
                                   className="flex-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                 />
                                 <span className="text-xs text-gray-500 dark:text-gray-400">%</span>
@@ -1878,6 +1887,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                     saveResourceMetadata(resource.id)
                                   }}
                                   disabled={saving || !editResourceForm.name}
+                                  title={!editResourceForm.name ? 'Resource name is required' : 'Save changes to this resource metadata'}
                                   className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   {saving ? 'Saving...' : 'Save'}
@@ -1887,6 +1897,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                     e.stopPropagation()
                                     setEditingResource(null)
                                   }}
+                                  title="Cancel editing and discard changes"
                                   className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   Cancel
@@ -1902,6 +1913,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                     e.stopPropagation()
                                     activateInput(resource.id, 'relative')
                                   }}
+                                  title="Add or remove quantity (e.g., +50 to add 50, -20 to remove 20). Earn points based on amount added."
                                   className="flex-1 bg-blue-100 dark:bg-blue-900/50 hover:bg-blue-200 dark:hover:bg-blue-900/70 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   Add/Remove
@@ -1911,6 +1923,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                     e.stopPropagation()
                                     activateInput(resource.id, 'absolute')
                                   }}
+                                  title="Set the total quantity to an exact value (e.g., 1000 sets quantity to exactly 1000). Earns flat 1 point regardless of amount."
                                   className="flex-1 bg-purple-100 dark:bg-purple-900/50 hover:bg-purple-200 dark:hover:bg-purple-900/70 text-purple-700 dark:text-purple-300 px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   Set
@@ -1925,6 +1938,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                       e.stopPropagation()
                                       startEditResource(resource)
                                     }}
+                                    title="Edit resource metadata: name, category, description, image URL, target quantity, and point multiplier (Admin only)"
                                     className="flex-1 bg-yellow-100 dark:bg-yellow-900/50 hover:bg-yellow-200 dark:hover:bg-yellow-900/70 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded text-xs font-medium transition-colors"
                                   >
                                     Edit
@@ -1938,6 +1952,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                         showDialog: true
                                       })
                                     }}
+                                    title="Permanently delete this resource and all its history. This action cannot be undone! (Admin only)"
                                     className="flex-1 bg-red-100 dark:bg-red-900/50 hover:bg-red-200 dark:hover:bg-red-900/70 text-red-700 dark:text-red-300 px-2 py-1 rounded text-xs font-medium transition-colors"
                                   >
                                     Delete
@@ -2119,6 +2134,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 value={activeInput.value}
                                 onChange={(e) => setActiveInput(prev => ({ ...prev, value: e.target.value }))}
                                 placeholder={activeInput.type === 'relative' ? '+5 or -3' : '25'}
+                                title={activeInput.type === 'relative' ? 'Enter a positive number to add (e.g., +50) or negative to remove (e.g., -20). Press Enter to stage the change.' : 'Enter the exact total quantity you want to set. Press Enter to stage the change.'}
                                 className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                 autoFocus
                                 onKeyDown={(e) => {
@@ -2133,12 +2149,14 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 <button
                                   onClick={handleInputSubmit}
                                   disabled={!activeInput.value}
+                                  title={activeInput.type === 'relative' ? 'Stage this quantity change (click Save to apply)' : 'Stage this quantity change (click Save to apply)'}
                                   className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   {activeInput.type === 'relative' ? 'Apply' : 'Set'}
                                 </button>
                                 <button
                                   onClick={() => setActiveInput({ resourceId: null, type: null, value: '' })}
+                                  title="Cancel and discard the quantity change"
                                   className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   Cancel
@@ -2153,11 +2171,13 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 value={editResourceForm.name}
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, name: e.target.value }))}
                                 placeholder="Name"
+                                title="Enter the resource name (e.g., 'Iron Ore', 'Advanced Machinery')"
                                 className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                               />
                               <select
                                 value={editResourceForm.category}
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, category: e.target.value }))}
+                                title="Select the resource category type (Raw materials, Components, Refined goods, etc.)"
                                 className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                               >
                                 {CATEGORY_OPTIONS.map(cat => (
@@ -2169,6 +2189,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 value={editResourceForm.description}
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, description: e.target.value }))}
                                 placeholder="Description"
+                                title="Optional description of the resource (e.g., 'A vehicle module crafting component')"
                                 className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                               />
                               <input
@@ -2176,6 +2197,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 value={editResourceForm.imageUrl}
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, imageUrl: e.target.value }))}
                                 placeholder="Image URL"
+                                title="URL to the resource image (must be a valid image link)"
                                 className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                               />
                               <input
@@ -2183,6 +2205,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 value={editResourceForm.targetQuantity || ''}
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, targetQuantity: parseInt(e.target.value) || 0 }))}
                                 placeholder="Target Quantity"
+                                title="Set the goal quantity to maintain for this resource. Status indicators (Critical/Below Target/At Target) are calculated based on this value."
                                 className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                               />
                               <div className="flex items-center gap-1">
@@ -2196,6 +2219,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                     setEditResourceForm(prev => ({ ...prev, multiplier: 1 + (bonusPercentage / 100) }))
                                   }}
                                   placeholder="0"
+                                  title="Point multiplier percentage: 0% = standard points, +100% = double points, -100% = no points earned. Use to incentivize high-priority resources."
                                   className="flex-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                 />
                                 <span className="text-xs text-gray-500 dark:text-gray-400">%</span>
@@ -2204,12 +2228,14 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 <button
                                   onClick={() => saveResourceMetadata(resource.id)}
                                   disabled={saving || !editResourceForm.name}
+                                  title={!editResourceForm.name ? 'Resource name is required' : 'Save changes to this resource metadata'}
                                   className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   {saving ? 'Saving...' : 'Save'}
                                 </button>
                                 <button
                                   onClick={() => setEditingResource(null)}
+                                  title="Cancel editing and discard changes"
                                   className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   Cancel
@@ -2222,12 +2248,14 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                               <div className="flex gap-1">
                                 <button
                                   onClick={() => activateInput(resource.id, 'relative')}
+                                  title="Add or remove quantity (e.g., +50 to add 50, -20 to remove 20). Earn points based on amount added."
                                   className="flex-1 bg-blue-100 dark:bg-blue-900/50 hover:bg-blue-200 dark:hover:bg-blue-900/70 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   Add/Remove
                                 </button>
                                 <button
                                   onClick={() => activateInput(resource.id, 'absolute')}
+                                  title="Set the total quantity to an exact value (e.g., 1000 sets quantity to exactly 1000). Earns flat 1 point regardless of amount."
                                   className="flex-1 bg-purple-100 dark:bg-purple-900/50 hover:bg-purple-200 dark:hover:bg-purple-900/70 text-purple-700 dark:text-purple-300 px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   Set
@@ -2239,6 +2267,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 <div className="flex gap-1">
                                   <button
                                     onClick={() => startEditResource(resource)}
+                                    title="Edit resource metadata: name, category, description, image URL, target quantity, and point multiplier (Admin only)"
                                     className="flex-1 bg-yellow-100 dark:bg-yellow-900/50 hover:bg-yellow-200 dark:hover:bg-yellow-900/70 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded text-xs font-medium transition-colors"
                                   >
                                     Edit
@@ -2249,6 +2278,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                       resourceName: resource.name,
                                       showDialog: true
                                     })}
+                                    title="Permanently delete this resource and all its history. This action cannot be undone! (Admin only)"
                                     className="flex-1 bg-red-100 dark:bg-red-900/50 hover:bg-red-200 dark:hover:bg-red-900/70 text-red-700 dark:text-red-300 px-2 py-1 rounded text-xs font-medium transition-colors"
                                   >
                                     Delete
