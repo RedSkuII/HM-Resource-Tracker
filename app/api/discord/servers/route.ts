@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     const userServerIds = session.user.allServerIds || []
+    const accessToken = (session as any).accessToken
     
     if (userServerIds.length === 0) {
       return NextResponse.json({ servers: [] })
@@ -30,12 +31,33 @@ export async function GET(request: NextRequest) {
       .where(inArray(guilds.discordGuildId, userServerIds))
       .all()
 
-    // Create a map of server ID to a generic name (we'll use actual names from Discord API if needed)
     const uniqueServerIds = [...new Set(allGuilds.map(g => g.discordGuildId))]
+    
+    // Fetch actual Discord server names from Discord API
+    const serverNames: Record<string, string> = {}
+    
+    if (accessToken) {
+      try {
+        const response = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        })
+        
+        if (response.ok) {
+          const discordGuilds = await response.json()
+          for (const guild of discordGuilds) {
+            serverNames[guild.id] = guild.name
+          }
+        }
+      } catch (error) {
+        console.error('[DISCORD SERVERS] Error fetching guild names from Discord:', error)
+      }
+    }
     
     const servers = uniqueServerIds.map(serverId => ({
       id: serverId,
-      name: `Discord Server ${serverId.substring(0, 8)}...`, // Fallback name
+      name: serverNames[serverId] || `Discord Server ${serverId.substring(0, 8)}...`,
     }))
 
     return NextResponse.json({ servers })
