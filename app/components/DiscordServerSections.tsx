@@ -73,7 +73,7 @@ export function DiscordServerSections({
     }
 
     fetchData()
-  }, [allServerIds])
+  }, [])
 
   if (loading) {
     return (
@@ -84,17 +84,26 @@ export function DiscordServerSections({
     )
   }
 
-  const totalPages = Math.ceil(allServerIds.length / serversPerPage)
-  const paginatedServerIds = allServerIds.slice(
+  // Only show servers that have guilds configured (i.e., servers that use the bot)
+  const serversWithBot = Object.keys(guildsMap).filter(serverId => allServerIds.includes(serverId))
+  
+  const totalPages = Math.ceil(serversWithBot.length / serversPerPage)
+  const paginatedServerIds = serversWithBot.slice(
     currentPage * serversPerPage,
     (currentPage + 1) * serversPerPage
   )
 
   return (
     <div className="space-y-6">
-      {paginatedServerIds.length === 0 ? (
+      {serversWithBot.length === 0 ? (
         <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <p className="text-gray-500 dark:text-gray-400">No Discord servers found</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            No Discord servers found with the bot installed. Make sure the bot is added to your server and guilds are configured.
+          </p>
+        </div>
+      ) : paginatedServerIds.length === 0 ? (
+        <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <p className="text-gray-500 dark:text-gray-400">No servers on this page</p>
         </div>
       ) : (
         paginatedServerIds.map((serverId) => {
@@ -193,7 +202,7 @@ export function DiscordServerSections({
       )}
 
       {/* Pagination Controls */}
-      {totalPages > 1 && (
+      {serversWithBot.length > serversPerPage && (
         <div className="flex items-center justify-center gap-2 mt-6">
           <button
             onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
