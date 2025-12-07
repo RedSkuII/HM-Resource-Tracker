@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { RefreshRolesButton } from '../components/RefreshRolesButton'
 import { ClientNavigation } from '../components/ClientNavigation'
 import { NicknameSettings } from '../components/NicknameSettings'
-import { DiscordRolesSection } from '../components/DiscordRoleDisplay'
+import { DiscordServerSections } from '../components/DiscordServerSections'
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions)
@@ -64,7 +64,7 @@ export default async function Dashboard() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* User Info Card */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Profile</h2>
@@ -90,7 +90,10 @@ export default async function Dashboard() {
 
             {/* Community Status Card */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Community Status</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Community Status</h2>
+                <RefreshRolesButton />
+              </div>
               <div className="space-y-3">
                 <div className="flex items-center">
                   <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
@@ -100,23 +103,34 @@ export default async function Dashboard() {
                     {session.user.isInGuild ? 'Community Member' : 'Not in Community'}
                   </span>
                 </div>
-                {session.user.roles && session.user.roles.length > 0 && (
+                <div>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Discord Servers:</span>
+                  <span className="text-sm text-blue-600 dark:text-blue-400 ml-1">{session.user.allServerIds?.length || 0} server(s)</span>
+                </div>
+                {session.user.ownedServerIds && session.user.ownedServerIds.length > 0 && (
                   <div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Roles:</span>
-                    <span className="text-sm text-blue-600 dark:text-blue-400 ml-1">{session.user.roles.length} role(s)</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Owned Servers:</span>
+                    <span className="text-sm text-purple-600 dark:text-purple-400 ml-1">{session.user.ownedServerIds.length} server(s)</span>
                   </div>
                 )}
               </div>
             </div>
+          </div>
 
-            {/* Roles Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Your Roles</h2>
-                <RefreshRolesButton />
-              </div>
-              <DiscordRolesSection roles={session.user.roles || []} />
+          {/* Discord Servers & Guilds Section */}
+          <div className="mt-8">
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Your Discord Servers</h2>
+              <p className="text-gray-600 dark:text-gray-400">
+                View your Discord roles and in-game guilds for each server you're a member of
+              </p>
             </div>
+            <DiscordServerSections
+              allServerIds={session.user.allServerIds || []}
+              ownedServerIds={session.user.ownedServerIds || []}
+              serverRolesMap={session.user.serverRolesMap || {}}
+              accessToken={(session as any).accessToken || ''}
+            />
           </div>
 
           {/* Nickname Settings - Simplified */}
