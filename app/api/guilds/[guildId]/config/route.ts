@@ -19,14 +19,10 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user has bot admin access
-    if (!hasBotAdminAccess(session.user.roles)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
-    }
-
     const { guildId } = params
+    const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
 
-    // Fetch guild configuration
+    // Fetch guild to get its Discord server ID
     const [guild] = await db
       .select()
       .from(guilds)
@@ -35,6 +31,54 @@ export async function GET(
 
     if (!guild) {
       return NextResponse.json({ error: 'Guild not found' }, { status: 404 })
+    }
+
+    // Check if user is the super admin (global access)
+    const isSuperAdmin = superAdminUserId && session.user.id === superAdminUserId
+    
+    if (!isSuperAdmin) {
+      // Non-super admins can ONLY access guilds from servers they own/administrate
+      const discordServerId = guild.discordGuildId
+      
+      if (!discordServerId) {
+        return NextResponse.json({ error: 'Guild has no associated Discord server' }, { status: 400 })
+      }
+      
+      // Check if user is owner/admin of this guild's Discord server
+      let isServerOwnerOrAdmin = false
+      
+      if ((session as any).accessToken) {
+        try {
+          const guildsResponse = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+            headers: {
+              'Authorization': `Bearer ${(session as any).accessToken}`,
+            },
+          })
+          
+          if (guildsResponse.ok) {
+            const userGuilds = await guildsResponse.json()
+            const targetGuild = userGuilds.find((g: any) => g.id === discordServerId)
+            
+            if (targetGuild) {
+              const ADMINISTRATOR = 0x0000000000000008
+              isServerOwnerOrAdmin = targetGuild.owner || (BigInt(targetGuild.permissions) & BigInt(ADMINISTRATOR)) === BigInt(ADMINISTRATOR)
+            }
+          }
+        } catch (err) {
+          console.error('[GUILD-CONFIG] Error checking server ownership:', err)
+        }
+      }
+      
+      if (!isServerOwnerOrAdmin) {
+        console.log('[GUILD-CONFIG] Access denied - not owner/admin of guild\'s Discord server:', {
+          guildId,
+          discordServerId,
+          userId: session.user.id
+        })
+        return NextResponse.json({ 
+          error: 'You must be an owner or administrator of this guild\'s Discord server.' 
+        }, { status: 403 })
+      }
     }
 
     // Parse JSON arrays
@@ -104,12 +148,68 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user has bot admin access
-    if (!hasBotAdminAccess(session.user.roles)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+    const { guildId } = params
+    const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
+
+    // Fetch guild to get its Discord server ID
+    const [guild] = await db
+      .select()
+      .from(guilds)
+      .where(eq(guilds.id, guildId))
+      .limit(1)
+
+    if (!guild) {
+      return NextResponse.json({ error: 'Guild not found' }, { status: 404 })
     }
 
-    const { guildId } = params
+    // Check if user is the super admin (global access)
+    const isSuperAdmin = superAdminUserId && session.user.id === superAdminUserId
+    
+    if (!isSuperAdmin) {
+      // Non-super admins can ONLY modify guilds from servers they own/administrate
+      const discordServerId = guild.discordGuildId
+      
+      if (!discordServerId) {
+        return NextResponse.json({ error: 'Guild has no associated Discord server' }, { status: 400 })
+      }
+      
+      // Check if user is owner/admin of this guild's Discord server
+      let isServerOwnerOrAdmin = false
+      
+      if ((session as any).accessToken) {
+        try {
+          const guildsResponse = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+            headers: {
+              'Authorization': `Bearer ${(session as any).accessToken}`,
+            },
+          })
+          
+          if (guildsResponse.ok) {
+            const userGuilds = await guildsResponse.json()
+            const targetGuild = userGuilds.find((g: any) => g.id === discordServerId)
+            
+            if (targetGuild) {
+              const ADMINISTRATOR = 0x0000000000000008
+              isServerOwnerOrAdmin = targetGuild.owner || (BigInt(targetGuild.permissions) & BigInt(ADMINISTRATOR)) === BigInt(ADMINISTRATOR)
+            }
+          }
+        } catch (err) {
+          console.error('[GUILD-CONFIG] Error checking server ownership:', err)
+        }
+      }
+      
+      if (!isServerOwnerOrAdmin) {
+        console.log('[GUILD-CONFIG] PUT access denied - not owner/admin of guild\'s Discord server:', {
+          guildId,
+          discordServerId,
+          userId: session.user.id
+        })
+        return NextResponse.json({ 
+          error: 'You must be an owner or administrator of this guild\'s Discord server.' 
+        }, { status: 403 })
+      }
+    }
+
     const body = await request.json()
 
     console.log('[GUILD-CONFIG] PUT request received:', { guildId, body })

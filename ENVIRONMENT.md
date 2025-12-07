@@ -20,6 +20,9 @@ This document describes all environment variables that can be configured to cust
 ### Role Configuration
 - `DISCORD_ROLES_CONFIG` - JSON array of Discord role configurations (see Role Configuration section)
 
+### Super Admin Access
+- `SUPER_ADMIN_USER_ID` - Your personal Discord user ID for unrestricted global access (everyone else is scoped to their servers)
+
 ## Optional Variables
 
 ### Organization Branding

@@ -17,17 +17,57 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user has bot admin access
-    const roles = Array.isArray(session.user.roles) ? session.user.roles : []
-    if (!hasBotAdminAccess(roles)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
-    }
-
     const { guildId } = params
     const botToken = process.env.DISCORD_BOT_TOKEN
+    const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
 
     if (!botToken) {
       return NextResponse.json({ error: 'Discord bot token not configured' }, { status: 500 })
+    }
+
+    // Check if user is the super admin (global access to everything)
+    const isSuperAdmin = superAdminUserId && session.user.id === superAdminUserId
+    
+    if (isSuperAdmin) {
+      console.log('[DISCORD-GUILD] Super admin access granted:', session.user.id)
+    } else {
+      // Non-super admins can ONLY access servers they own or administrate
+      let isServerOwnerOrAdmin = false
+      
+      if ((session as any).accessToken) {
+        try {
+          const guildsResponse = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+            headers: {
+              'Authorization': `Bearer ${(session as any).accessToken}`,
+            },
+          })
+          
+          if (guildsResponse.ok) {
+            const userGuilds = await guildsResponse.json()
+            const targetGuild = userGuilds.find((g: any) => g.id === guildId)
+            
+            // Check if user is owner OR has administrator permission
+            if (targetGuild) {
+              const ADMINISTRATOR = 0x0000000000000008
+              isServerOwnerOrAdmin = targetGuild.owner || (BigInt(targetGuild.permissions) & BigInt(ADMINISTRATOR)) === BigInt(ADMINISTRATOR)
+            }
+          }
+        } catch (err) {
+          console.error('[DISCORD-GUILD] Error checking server ownership:', err)
+        }
+      }
+      
+      // Non-super admins MUST be owner/admin of THIS specific server
+      if (!isServerOwnerOrAdmin) {
+        console.log('[DISCORD-GUILD] Access denied - not owner/admin of this server:', { 
+          guildId, 
+          userId: session.user.id,
+          userName: session.user.name
+        })
+        return NextResponse.json({ 
+          error: 'You must be an owner or administrator of this Discord server to access its configuration.' 
+        }, { status: 403 })
+      }
     }
 
     // Fetch channels
