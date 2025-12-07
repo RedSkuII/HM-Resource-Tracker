@@ -1702,35 +1702,50 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                         
                         {/* Status Badge */}
                         <div className="flex items-center justify-between">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(status)} ${statusChange ? 'animate-pulse' : ''}`}>
+                          <span 
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(status)} ${statusChange ? 'animate-pulse' : ''}`}
+                            title={`Resource status: ${getStatusText(status)}. ${status === 'critical' ? 'Less than 50% of target - needs immediate attention!' : status === 'below_target' ? '50-99% of target - needs restocking soon' : status === 'at_target' ? '100-149% of target - on track' : 'Over 150% of target - well stocked'}`}
+                          >
                             {getStatusText(status)}
                           </span>
                           
                           {/* Points Bonus Badge */}
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          <span 
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             resource.multiplier === 0 ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' :
                             (resource.multiplier || 1.0) >= 3.0 ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200' :
                             (resource.multiplier || 1.0) >= 2.0 ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200' :
                             (resource.multiplier || 1.0) >= 1.0 ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200' :
                             'bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200'
-                          }`}>
+                          }`}
+                            title={`Points multiplier: ${resource.multiplier === 0 ? 'No points earned for this resource' : resource.multiplier === 1.0 ? 'Standard points (no bonus)' : (resource.multiplier || 1.0) > 1.0 ? `Earn ${Math.round(((resource.multiplier || 1.0) - 1) * 100)}% bonus points when adding to this resource` : `Earn ${Math.round(((resource.multiplier || 1.0) - 1) * 100)}% fewer points for this resource`}`}
+                          >
                             {resource.multiplier === 0 ? '-100%' : Math.round(((resource.multiplier || 1.0) - 1) * 100) + '%'}
                           </span>
                         </div>
                         
                         {/* Quantity Display */}
                         <div className="text-center">
-                          <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                          <div 
+                            className="text-lg font-bold text-gray-900 dark:text-gray-100"
+                            title={`Current quantity: ${formatNumber(resource.quantity)}${resource.targetQuantity ? ` (${Math.round((resource.quantity / (resource.targetQuantity || 1)) * 100)}% of target)` : ''}`}
+                          >
                             {formatNumber(resource.quantity)}
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                          <div 
+                            className="text-xs text-gray-500 dark:text-gray-400"
+                            title={resource.targetQuantity ? `Goal quantity to maintain for this resource` : 'No target quantity has been set for this resource'}
+                          >
                             {resource.targetQuantity ? `Target: ${formatNumber(resource.targetQuantity)}` : 'No target set'}
                           </div>
                         </div>
 
                         {/* Last Updated Info */}
                         <div className="text-center pt-2 border-t border-gray-100 dark:border-gray-700">
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                          <div 
+                            className="text-xs text-gray-500 dark:text-gray-400"
+                            title={`Last person to update this resource's quantity`}
+                          >
                             Updated by <span className="font-medium text-gray-600 dark:text-gray-300">{resource.lastUpdatedBy}</span>
                           </div>
                           <div className="flex items-center justify-center gap-1">
@@ -1962,27 +1977,27 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" title="Resource name and image">
                     Resource
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" title="Resource type category (Raw, Components, Refined, etc.)">
                     Category
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" title="Point bonus/penalty when contributing this resource">
                     Multiplier
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" title="Current stock level status based on target quantity">
                     Status
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" title="Current quantity in stock">
                     Quantity
                   </th>
                   {isTargetAdmin && (
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" title="Goal quantity to maintain (admin only)">
                       Target
                     </th>
                   )}
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" title="Add/Remove quantity or Set absolute value">
                     Actions
                   </th>
                 </tr>
@@ -2042,22 +2057,31 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                         </span>
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        <span 
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           resource.multiplier === 0 ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' :
                           (resource.multiplier || 1.0) >= 3.0 ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200' :
                           (resource.multiplier || 1.0) >= 2.0 ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200' :
                           (resource.multiplier || 1.0) >= 1.0 ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200' :
                           'bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200'
-                        }`}>
+                        }`}
+                          title={`Points multiplier: ${resource.multiplier === 0 ? 'No points earned for this resource' : resource.multiplier === 1.0 ? 'Standard points (no bonus)' : (resource.multiplier || 1.0) > 1.0 ? `Earn ${Math.round(((resource.multiplier || 1.0) - 1) * 100)}% bonus points when adding to this resource` : `Earn ${Math.round(((resource.multiplier || 1.0) - 1) * 100)}% fewer points for this resource`}`}
+                        >
                           {resource.multiplier === 0 ? '-100%' : Math.round(((resource.multiplier || 1.0) - 1) * 100) + '%'}
                         </span>
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusTableColor(status)} ${statusChange ? 'animate-pulse' : ''}`}>
+                        <span 
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusTableColor(status)} ${statusChange ? 'animate-pulse' : ''}`}
+                          title={`Resource status: ${getStatusText(status)}. ${status === 'critical' ? 'Less than 50% of target - needs immediate attention!' : status === 'below_target' ? '50-99% of target - needs restocking soon' : status === 'at_target' ? '100-149% of target - on track' : 'Over 150% of target - well stocked'}`}
+                        >
                           {getStatusText(status)}
                         </span>
                       </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                      <td 
+                        className="px-3 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"
+                        title={`Current quantity: ${formatNumber(resource.quantity)}${resource.targetQuantity ? ` (${Math.round((resource.quantity / (resource.targetQuantity || 1)) * 100)}% of target)` : ''}`}
+                      >
                         {formatNumber(resource.quantity)}
                       </td>
                       {isTargetAdmin && (
@@ -2070,6 +2094,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                               onChange={(e) => handleTargetQuantityChange(resource.id, parseInt(e.target.value) || 0)}
                               className="w-20 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                               placeholder="Target"
+                              title="Set the target quantity goal for this resource. Status indicators are calculated based on this target."
                             />
                             {isEdited && (
                               <button
