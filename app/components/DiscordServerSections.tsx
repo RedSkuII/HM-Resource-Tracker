@@ -73,23 +73,14 @@ export function DiscordServerSections({
           }, {})
           console.log('[DiscordServerSections] Processed server names:', names)
           setServerNames(names)
+          
+          // Also get role names from the same response
+          if (serversData.roleNames) {
+            console.log('[DiscordServerSections] Role names from server response:', serversData.roleNames)
+            setRoleNames(serversData.roleNames)
+          }
         } else {
           console.error('[DiscordServerSections] Failed to fetch server names:', serversResponse.status)
-        }
-
-        // Fetch Discord role names
-        const rolesResponse = await fetch('/api/discord/server-roles', {
-          headers: {
-            'Cache-Control': 'no-cache',
-          },
-        })
-
-        if (rolesResponse.ok) {
-          const rolesData = await rolesResponse.json()
-          console.log('[DiscordServerSections] Role names data:', rolesData)
-          setRoleNames(rolesData.roleNames || {})
-        } else {
-          console.error('[DiscordServerSections] Failed to fetch role names:', rolesResponse.status)
         }
       } catch (error) {
         console.error('Error fetching Discord server data:', error)
