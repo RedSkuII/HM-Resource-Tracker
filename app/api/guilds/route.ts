@@ -62,8 +62,29 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Access denied to this Discord server' }, { status: 403 })
       }
       
+      // Check if user is owner/admin of this Discord server
+      let isDiscordServerOwner = false
+      try {
+        const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+          headers: {
+            'Authorization': `Bearer ${discordToken}`,
+          },
+        })
+        
+        if (discordResponse.ok) {
+          const servers = await discordResponse.json()
+          const targetServer = servers.find((s: any) => s.id === discordServerId)
+          if (targetServer) {
+            const ADMINISTRATOR = 0x0000000000000008
+            isDiscordServerOwner = targetServer.owner || (BigInt(targetServer.permissions) & BigInt(ADMINISTRATOR)) === BigInt(ADMINISTRATOR)
+          }
+        }
+      } catch (err) {
+        console.error('[GUILDS API] Error checking Discord server ownership:', err)
+      }
+      
       // Get accessible guild IDs based on role requirements
-      const accessibleGuildIds = await getAccessibleGuilds(discordServerId, userRoles, userDiscordId, hasGlobalAccess)
+      const accessibleGuildIds = await getAccessibleGuilds(discordServerId, userRoles, userDiscordId, isDiscordServerOwner, hasGlobalAccess)
       
       if (accessibleGuildIds.length === 0) {
         console.log('[GUILDS API] User has no accessible guilds in Discord server:', discordServerId)
@@ -92,10 +113,33 @@ export async function GET(request: NextRequest) {
       // Get all guilds for user's Discord servers
       const allServerGuilds = await db.select().from(guilds).where(inArray(guilds.discordGuildId, userDiscordServers)).all()
       
+      // Get Discord server ownership info for all servers
+      const serverOwnershipMap = new Map<string, boolean>()
+      try {
+        const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+          headers: {
+            'Authorization': `Bearer ${discordToken}`,
+          },
+        })
+        
+        if (discordResponse.ok) {
+          const servers = await discordResponse.json()
+          const ADMINISTRATOR = 0x0000000000000008
+          
+          for (const server of servers) {
+            const isOwnerOrAdmin = server.owner || (BigInt(server.permissions) & BigInt(ADMINISTRATOR)) === BigInt(ADMINISTRATOR)
+            serverOwnershipMap.set(server.id, isOwnerOrAdmin)
+          }
+        }
+      } catch (err) {
+        console.error('[GUILDS API] Error checking Discord server ownership:', err)
+      }
+      
       // Filter by role-based access
       const accessibleGuildIds = new Set<string>()
       for (const discordId of userDiscordServers) {
-        const guildsForServer = await getAccessibleGuilds(discordId, userRoles, userDiscordId, hasGlobalAccess)
+        const isDiscordServerOwner = serverOwnershipMap.get(discordId) || false
+        const guildsForServer = await getAccessibleGuilds(discordId, userRoles, userDiscordId, isDiscordServerOwner, hasGlobalAccess)
         guildsForServer.forEach(guildId => accessibleGuildIds.add(guildId))
       }
       

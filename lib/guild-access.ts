@@ -74,6 +74,7 @@ export async function canAccessGuild(
  * @param discordGuildId - The Discord server ID
  * @param userRoles - Array of user's Discord role IDs  
  * @param userDiscordId - The user's Discord ID (for leader check)
+ * @param isDiscordServerOwner - Whether the user owns/administrates this Discord server
  * @param hasGlobalAccess - Whether user has global resource access
  * @returns Promise<string[]> - Array of accessible guild IDs
  */
@@ -81,6 +82,7 @@ export async function getAccessibleGuilds(
   discordGuildId: string,
   userRoles: string[],
   userDiscordId: string,
+  isDiscordServerOwner: boolean = false,
   hasGlobalAccess: boolean = false
 ): Promise<string[]> {
   try {
@@ -95,6 +97,13 @@ export async function getAccessibleGuilds(
 
     // Super admin sees all guilds
     if (isSuperAdmin) {
+      console.log(`[GUILD-ACCESS] Super admin access: showing all ${allGuilds.length} guilds`)
+      return allGuilds.map(g => g.id)
+    }
+
+    // Discord server owners/admins see all guilds on their server
+    if (isDiscordServerOwner) {
+      console.log(`[GUILD-ACCESS] Discord server owner/admin access: showing all ${allGuilds.length} guilds`)
       return allGuilds.map(g => g.id)
     }
 
