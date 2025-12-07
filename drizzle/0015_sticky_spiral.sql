@@ -1,0 +1,1 @@
+ALTER TABLE guilds ADD `discord_category_id` text;
