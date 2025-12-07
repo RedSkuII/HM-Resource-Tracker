@@ -21,6 +21,16 @@ export default async function Dashboard() {
 
   const displayName = getDisplayName(session.user)
 
+  // Debug logging for troubleshooting
+  console.log('[DASHBOARD] Session user data:', {
+    id: session.user.id,
+    name: session.user.name,
+    allServerIds: session.user.allServerIds,
+    ownedServerIds: session.user.ownedServerIds,
+    serverRolesMapKeys: Object.keys(session.user.serverRolesMap || {}),
+    serverRolesMap: session.user.serverRolesMap,
+  })
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <ClientNavigation title={process.env.NEXT_PUBLIC_ORG_NAME || 'Resource Tracker'} showDashboardLink={false} />

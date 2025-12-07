@@ -109,8 +109,19 @@ export async function getAccessibleGuilds(
 
     // Filter guilds based on EXPLICIT access only
     const accessibleGuilds = allGuilds.filter(guild => {
+      console.log(`[GUILD-ACCESS] Checking guild "${guild.title}" (${guild.id}):`, {
+        leaderId: guild.leaderId,
+        userDiscordId,
+        isLeader: guild.leaderId === userDiscordId,
+        guildAccessRoles: guild.guildAccessRoles,
+        guildOfficerRoles: guild.guildOfficerRoles,
+        defaultRoleId: guild.defaultRoleId,
+        userRoles
+      })
+      
       // Check 1: Is user the guild leader?
       if (guild.leaderId === userDiscordId) {
+        console.log(`[GUILD-ACCESS] ✓ User is leader of "${guild.title}"`)
         return true
       }
 
@@ -119,6 +130,7 @@ export async function getAccessibleGuilds(
         try {
           const accessRoles: string[] = JSON.parse(guild.guildAccessRoles)
           if (accessRoles.length > 0 && accessRoles.some(roleId => userRoles.includes(roleId))) {
+            console.log(`[GUILD-ACCESS] ✓ User has access role for "${guild.title}"`)
             return true
           }
         } catch (e) {
@@ -131,6 +143,7 @@ export async function getAccessibleGuilds(
         try {
           const officerRoles: string[] = JSON.parse(guild.guildOfficerRoles)
           if (officerRoles.length > 0 && officerRoles.some(roleId => userRoles.includes(roleId))) {
+            console.log(`[GUILD-ACCESS] ✓ User has officer role for "${guild.title}"`)
             return true
           }
         } catch (e) {
@@ -140,10 +153,12 @@ export async function getAccessibleGuilds(
 
       // Check 4: Does user have the default role?
       if (guild.defaultRoleId && userRoles.includes(guild.defaultRoleId)) {
+        console.log(`[GUILD-ACCESS] ✓ User has default role for "${guild.title}"`)
         return true
       }
 
       // No explicit access granted
+      console.log(`[GUILD-ACCESS] ✗ User has NO access to "${guild.title}"`)
       return false
     })
 
