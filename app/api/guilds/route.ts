@@ -19,7 +19,15 @@ export async function GET(request: NextRequest) {
 
     // Use Discord servers from session (already fetched during login) to avoid rate limits
     const userDiscordServers = session.user.allServerIds || []
-    console.log('[GUILDS API] User Discord servers from session:', userDiscordServers.length)
+    console.log('[GUILDS API] User Discord servers from session:', userDiscordServers.length, userDiscordServers)
+    console.log('[GUILDS API] Session user data:', {
+      id: session.user.id,
+      name: session.user.name,
+      hasAllServerIds: !!session.user.allServerIds,
+      hasOwnedServerIds: !!session.user.ownedServerIds,
+      allServerIdsCount: session.user.allServerIds?.length || 0,
+      ownedServerIdsCount: session.user.ownedServerIds?.length || 0
+    })
 
     const { searchParams } = new URL(request.url)
     const discordServerId = searchParams.get('discordServerId')
