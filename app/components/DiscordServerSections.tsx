@@ -65,11 +65,15 @@ export function DiscordServerSections({
 
         if (serversResponse.ok) {
           const serversData = await serversResponse.json()
+          console.log('[DiscordServerSections] Server names data:', serversData)
           const names = serversData.servers.reduce((acc: Record<string, string>, server: any) => {
             acc[server.id] = server.name
             return acc
           }, {})
+          console.log('[DiscordServerSections] Processed server names:', names)
           setServerNames(names)
+        } else {
+          console.error('[DiscordServerSections] Failed to fetch server names:', serversResponse.status)
         }
       } catch (error) {
         console.error('Error fetching Discord server data:', error)
