@@ -12,16 +12,18 @@ interface DiscordServerSectionsProps {
   allServerIds: string[]
   ownedServerIds: string[]
   serverRolesMap: Record<string, string[]>
+  serverNames: Record<string, string>
+  roleNames: Record<string, string>
 }
 
 export function DiscordServerSections({ 
   allServerIds, 
   ownedServerIds, 
   serverRolesMap,
+  serverNames,
+  roleNames,
 }: DiscordServerSectionsProps) {
   const [guildsMap, setGuildsMap] = useState<Record<string, Guild[]>>({})
-  const [serverNames, setServerNames] = useState<Record<string, string>>({})
-  const [roleNames, setRoleNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(0)
   const serversPerPage = 3
@@ -32,6 +34,8 @@ export function DiscordServerSections({
         console.log('[DiscordServerSections] Fetching data...')
         console.log('[DiscordServerSections] allServerIds:', allServerIds)
         console.log('[DiscordServerSections] serverRolesMap:', serverRolesMap)
+        console.log('[DiscordServerSections] serverNames (from session):', serverNames)
+        console.log('[DiscordServerSections] roleNames (from session):', roleNames)
         
         // Fetch in-game guilds for all servers
         const guildsResponse = await fetch('/api/guilds', {
@@ -55,32 +59,6 @@ export function DiscordServerSections({
           
           console.log('[DiscordServerSections] Grouped guilds:', grouped)
           setGuildsMap(grouped)
-        }
-
-        // Fetch Discord server names from database
-        const serversResponse = await fetch('/api/discord/servers', {
-          headers: {
-            'Cache-Control': 'no-cache',
-          },
-        })
-
-        if (serversResponse.ok) {
-          const serversData = await serversResponse.json()
-          console.log('[DiscordServerSections] Server names data:', serversData)
-          const names = serversData.servers.reduce((acc: Record<string, string>, server: any) => {
-            acc[server.id] = server.name
-            return acc
-          }, {})
-          console.log('[DiscordServerSections] Processed server names:', names)
-          setServerNames(names)
-          
-          // Also get role names from the same response
-          if (serversData.roleNames) {
-            console.log('[DiscordServerSections] Role names from server response:', serversData.roleNames)
-            setRoleNames(serversData.roleNames)
-          }
-        } else {
-          console.error('[DiscordServerSections] Failed to fetch server names:', serversResponse.status)
         }
       } catch (error) {
         console.error('Error fetching Discord server data:', error)

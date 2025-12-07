@@ -24,6 +24,8 @@ declare module "next-auth" {
       ownedServerIds: string[]
       allServerIds: string[]
       serverRolesMap: Record<string, string[]>
+      serverNames: Record<string, string>
+      roleNames: Record<string, string>
       permissions: UserPermissions
     }
   }
@@ -37,6 +39,8 @@ declare module "next-auth" {
     ownedServerIds?: string[]
     allServerIds?: string[]
     serverRolesMap?: Record<string, string[]>
+    serverNames?: Record<string, string>
+    roleNames?: Record<string, string>
     permissions?: UserPermissions
   }
 } 

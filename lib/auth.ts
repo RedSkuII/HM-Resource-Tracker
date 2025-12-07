@@ -123,8 +123,15 @@ export const authOptions: NextAuthOptions = {
               .filter((guild: any) => guild.owner === true)
               .map((guild: any) => guild.id)
             
+            // Store server names from the guild list
+            const serverNames: Record<string, string> = {}
+            guilds.forEach((guild: any) => {
+              serverNames[guild.id] = guild.name
+            })
+            
             token.ownedServerIds = ownedServerIds
             token.allServerIds = allServerIds
+            token.serverNames = serverNames
             
             // Fetch member details only for Discord servers that have guilds in the database
             // This avoids rate limiting from fetching too many servers
@@ -190,6 +197,37 @@ export const authOptions: NextAuthOptions = {
               console.error('[AUTH] Error querying guilds database:', dbError)
             }
             
+            // Fetch role names using bot token (to avoid user rate limits)
+            const roleNames: Record<string, string> = {}
+            if (process.env.DISCORD_BOT_TOKEN) {
+              for (const [serverId, roleIds] of Object.entries(serverRolesMap)) {
+                try {
+                  const guildResponse = await fetch(`https://discord.com/api/v10/guilds/${serverId}`, {
+                    headers: {
+                      Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
+                    },
+                  })
+                  
+                  if (guildResponse.ok) {
+                    const guildData = await guildResponse.json()
+                    const roles = guildData.roles || []
+                    
+                    for (const roleId of roleIds) {
+                      const role = roles.find((r: any) => r.id === roleId)
+                      if (role) {
+                        roleNames[roleId] = role.name
+                      }
+                    }
+                  }
+                } catch (roleError) {
+                  console.log(`[AUTH] Could not fetch roles for server ${serverId}`)
+                }
+              }
+              console.log(`[AUTH] Cached ${Object.keys(roleNames).length} role names in session`)
+            }
+            
+            token.roleNames = roleNames
+            
             // Set legacy fields based on DISCORD_GUILD_ID or first server
             if (process.env.DISCORD_GUILD_ID) {
               const mainGuildId = process.env.DISCORD_GUILD_ID
@@ -227,6 +265,8 @@ export const authOptions: NextAuthOptions = {
           token.ownedServerIds = []
           token.allServerIds = []
           token.serverRolesMap = {}
+          token.serverNames = {}
+          token.roleNames = {}
         }
         
         // Mark roles as fetched to prevent future API calls (unless explicitly triggered)
@@ -261,6 +301,8 @@ export const authOptions: NextAuthOptions = {
         ownedServerIds: (token.ownedServerIds || []) as string[],
         allServerIds: (token.allServerIds || []) as string[],
         serverRolesMap: (token.serverRolesMap || {}) as Record<string, string[]>,
+        serverNames: (token.serverNames || {}) as Record<string, string>,
+        roleNames: (token.roleNames || {}) as Record<string, string>,
         // Include pre-computed permissions to avoid client-side env var issues
         permissions: token.permissions as UserPermissions || {
           hasResourceAccess: false,
