@@ -1,53 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { db, guilds } from '@/lib/db'
-import { eq } from 'drizzle-orm'
 
 /**
- * PUT /api/guilds/[guildId]/roles
- * Update the Discord role requirements for accessing a specific in-game guild
+ * DEPRECATED: PUT /api/guilds/[guildId]/roles
+ * 
+ * This endpoint is no longer used.
+ * Guild access is now managed automatically via Discord roles created by the bot:
+ * - /add-guild creates Member, Officer, and Leader roles
+ * - /add-guildie, /set-officer, /set-leader assign these roles
+ * - Website uses discord_role_id, discord_officer_role_id, discord_leader_role_id for access
  */
 export async function PUT(
   request: NextRequest,
   { params }: { params: { guildId: string } }
 ) {
-  try {
-    const session = await getServerSession(authOptions)
+  return NextResponse.json(
+    { 
+      error: 'This endpoint is deprecated. Guild roles are now managed automatically by the bot.',
+      message: 'Use /add-guild to create a guild, then /add-guildie, /set-officer, /set-leader to manage members.'
+    },
+    { status: 410 } // 410 Gone - Resource permanently removed
+  )
+}
 
-    // Check if user is authenticated and has admin access
-    if (!session || !session.user.permissions?.hasResourceAdminAccess) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
-      )
-    }
-
-    const { guildId } = params
-    const body = await request.json()
-    const { roleIds } = body
-
-    // Validate input
-    if (!Array.isArray(roleIds)) {
-      return NextResponse.json(
-        { error: 'roleIds must be an array of Discord role IDs' },
-        { status: 400 }
-      )
-    }
-
-    // Check if guild exists
-    const existingGuild = await db
-      .select()
-      .from(guilds)
-      .where(eq(guilds.id, guildId))
-      .limit(1)
-
-    if (existingGuild.length === 0) {
-      return NextResponse.json(
-        { error: 'Guild not found' },
-        { status: 404 }
-      )
-    }
+/**
+ * DEPRECATED: GET /api/guilds/[guildId]/roles
+ */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { guildId: string } }
+) {
+  return NextResponse.json(
+    { 
+      error: 'This endpoint is deprecated. Guild roles are now managed automatically by the bot.',
+      message: 'Guild members are managed via Discord bot commands.'
+    },
+    { status: 410 }
+  )
+}
 
     // Update the guild access roles
     const rolesJson = roleIds.length > 0 ? JSON.stringify(roleIds) : null

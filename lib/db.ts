@@ -38,6 +38,8 @@ export const guilds = sqliteTable('guilds', {
   guildOfficerRoles: text('guild_officer_roles'), // JSON array of Discord role IDs for guild officers (can edit but not configure)
   defaultRoleId: text('default_role_id'), // Discord role ID for view-only access to this guild
   discordRoleId: text('discord_role_id'), // Auto-created Discord role ID for roster members (cosmetic)
+  discordOfficerRoleId: text('discord_officer_role_id'), // Auto-created Discord role ID for guild officers
+  discordLeaderRoleId: text('discord_leader_role_id'), // Auto-created Discord role ID for guild leader
   discordCategoryId: text('discord_category_id'), // Auto-created Discord category ID for guild channels
   // Bot configuration (per in-game guild)
   botChannelId: text('bot_channel_id'), // JSON array of channel IDs where bot posts notifications for THIS guild

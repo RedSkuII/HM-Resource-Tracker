@@ -49,12 +49,13 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user has bot admin access
-    if (!hasBotAdminAccess(session.user.roles)) {
+    const { guildId } = params
+
+    // Check if user has bot admin access OR owns this Discord server
+    const isOwner = session.user.ownedServerIds?.includes(guildId) || false
+    if (!hasBotAdminAccess(session.user.roles, isOwner)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
-
-    const { guildId } = params
 
     // Fetch configuration from database
     const configs = await db
@@ -180,12 +181,14 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user has bot admin access
-    if (!hasBotAdminAccess(session.user.roles)) {
+    const { guildId } = params
+
+    // Check if user has bot admin access OR owns this Discord server
+    const isOwner = session.user.ownedServerIds?.includes(guildId) || false
+    if (!hasBotAdminAccess(session.user.roles, isOwner)) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
-    const { guildId } = params
     body = await request.json()
 
     console.log('[BOT-CONFIG] PUT request received:', { guildId, body })
