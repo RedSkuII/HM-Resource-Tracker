@@ -783,7 +783,7 @@ export default function BotDashboardPage() {
                 Bot Not Added to This Server
               </h3>
               <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-                The Resource Tracker bot is not currently in this Discord server. Add the bot to start configuring resource tracking and order management.
+                The Guildgamesh bot is not currently in this Discord server. Add the bot to start configuring resource tracking and order management.
               </p>
             </div>
             

@@ -1,6 +1,26 @@
 {
-  "currentVersion": "3.0.0",
+  "currentVersion": "3.1.0",
   "releases": [
+    {
+      "version": "3.1.0",
+      "date": "2025-12-08",
+      "title": "Guildgamesh Rebrand & Channel Improvements",
+      "type": "minor",
+      "changes": [
+        {
+          "type": "improvement",
+          "description": "Rebranded to Guildgamesh - new name, new domain (guildgamesh.vercel.app)"
+        },
+        {
+          "type": "improvement",
+          "description": "Reordered auto-created guild channels: announcements, officer chat, main chat"
+        },
+        {
+          "type": "improvement",
+          "description": "Removed redundant manual role management - now fully automatic via Discord roles"
+        }
+      ]
+    },
     {
       "version": "3.0.0",
       "date": "2025-11-14",

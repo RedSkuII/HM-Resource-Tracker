@@ -16,9 +16,9 @@ export default async function Home() {
     <main className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 dark:from-gray-900 dark:to-blue-900 text-white transition-colors duration-300">
       <div className="container mx-auto px-4 py-16">
         <header className="text-center mb-16">
-          <h1 className="text-5xl font-bold mb-4">{process.env.NEXT_PUBLIC_APP_NAME || 'Resource Tracker'}</h1>
+          <h1 className="text-5xl font-bold mb-4">{process.env.NEXT_PUBLIC_APP_NAME || 'Guildgamesh Resource Tracker'}</h1>
           <p className="text-xl text-blue-200 dark:text-blue-300">
-            Resource management and tracking portal for {process.env.NEXT_PUBLIC_ORGANIZATION_NAME || 'your organization'}
+            Resource management and tracking portal for {process.env.NEXT_PUBLIC_ORGANIZATION_NAME || 'gaming guilds'}
           </p>
         </header>
 

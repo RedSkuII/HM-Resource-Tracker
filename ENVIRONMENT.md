@@ -1,6 +1,6 @@
 # Environment Variables Configuration
 
-This document describes all environment variables that can be configured to customize the Resource Tracker application.
+This document describes all environment variables that can be configured to customize the Guildgamesh Resource Tracker application.
 
 ## Required Variables
 
@@ -101,8 +101,8 @@ DISCORD_GUILD_ID=your_discord_server_id
 DISCORD_ROLES_CONFIG=[{"id":"123456789","name":"Admin","level":100,"isAdmin":true,"canEditTargets":true,"canAccessResources":true},{"id":"987654321","name":"Member","level":1,"isAdmin":false,"canEditTargets":false,"canAccessResources":true}]
 
 # Organization Branding
-NEXT_PUBLIC_ORG_NAME=Guild Resource Tracker
-NEXT_PUBLIC_ORG_DESCRIPTION=A resource management portal for our community
+NEXT_PUBLIC_ORG_NAME=Guildgamesh
+NEXT_PUBLIC_ORG_DESCRIPTION=Resource management portal for gaming guilds
 
 # NextAuth
 NEXTAUTH_URL=http://localhost:3000
