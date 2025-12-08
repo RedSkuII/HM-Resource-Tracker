@@ -10,6 +10,9 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: process.env.NEXT_PUBLIC_ORG_NAME || 'Guildgamesh Resource Tracker',
   description: 'Resource management and Discord integration portal for gaming guilds',
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({
