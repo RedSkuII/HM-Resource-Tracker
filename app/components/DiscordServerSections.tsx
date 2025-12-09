@@ -91,13 +91,13 @@ export function DiscordServerSections({
   return (
     <div className="space-y-6">
       {serversWithBot.length === 0 ? (
-        <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="text-center py-8 bg-white dark:bg-navy-900 rounded-lg border border-sand-200 dark:border-primary-900/30 shadow-lg">
           <p className="text-gray-500 dark:text-gray-400">
             No Discord servers found with the bot installed. Make sure the bot is added to your server and guilds are configured.
           </p>
         </div>
       ) : paginatedServerIds.length === 0 ? (
-        <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="text-center py-8 bg-white dark:bg-navy-900 rounded-lg border border-sand-200 dark:border-primary-900/30 shadow-lg">
           <p className="text-gray-500 dark:text-gray-400">No servers on this page</p>
         </div>
       ) : (
@@ -110,7 +110,7 @@ export function DiscordServerSections({
           return (
             <div
               key={serverId}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden"
+              className="bg-white dark:bg-gradient-to-br dark:from-navy-900 dark:to-navy-950 rounded-lg shadow-xl border border-sand-200 dark:border-primary-900/30 overflow-hidden"
             >
               {/* Server Header */}
               <div className="bg-guildgamesh-gradient p-4 flex items-center justify-between">
@@ -172,7 +172,7 @@ export function DiscordServerSections({
                       {guilds.map((guild) => (
                         <div
                           key={guild.id}
-                          className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          className="flex items-center justify-between p-2 rounded-lg bg-sand-50 dark:bg-navy-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors border border-sand-100 dark:border-primary-800/20"
                         >
                           <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                             {guild.title}
@@ -205,7 +205,7 @@ export function DiscordServerSections({
           <button
             onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
             disabled={currentPage === 0}
-            className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="px-4 py-2 rounded-lg bg-sand-100 dark:bg-navy-800 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors border border-sand-200 dark:border-primary-800/30"
             title="Previous page"
           >
             ← Previous
@@ -216,7 +216,7 @@ export function DiscordServerSections({
           <button
             onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
             disabled={currentPage >= totalPages - 1}
-            className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="px-4 py-2 rounded-lg bg-sand-100 dark:bg-navy-800 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors border border-sand-200 dark:border-primary-800/30"
             title="Next page"
           >
             Next →

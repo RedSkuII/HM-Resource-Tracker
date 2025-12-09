@@ -2,7 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Guildgamesh custom gradient backgrounds */
+/* Guildgamesh Desert Theme - Global Styles */
+@layer base {
+  body {
+    @apply bg-sand-50 text-gray-900;
+  }
+  
+  body.dark {
+    @apply bg-gradient-to-br from-gray-900 via-navy-950 to-gray-900 text-sand-50;
+  }
+}
+
+/* Guildgamesh custom gradient backgrounds and utilities */
 @layer utilities {
   .bg-guildgamesh-gradient {
     background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
@@ -14,5 +25,18 @@
 
   .bg-sand-gradient {
     background: linear-gradient(to bottom, #fef9c3, #fde047, #facc15);
+  }
+  
+  .bg-desert-sunset {
+    background: linear-gradient(135deg, #fef9c3 0%, #fdba74 25%, #fb923c 50%, #f97316 75%, #ea580c 100%);
+  }
+  
+  /* Card backgrounds for Guildgamesh theme */
+  .card-light {
+    @apply bg-white border-sand-200;
+  }
+  
+  .card-dark {
+    @apply bg-gradient-to-br from-navy-900 to-navy-950 border-primary-900/30;
   }
 }
