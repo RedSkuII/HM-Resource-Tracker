@@ -9,7 +9,7 @@
   }
   
   body.dark {
-    @apply bg-gradient-to-br from-gray-900 via-navy-950 to-gray-900 text-sand-50;
+    @apply bg-gradient-to-br from-gray-900 via-gray-800 to-stone-900 text-sand-50;
   }
 }
 

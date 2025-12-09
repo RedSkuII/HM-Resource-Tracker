@@ -13,7 +13,7 @@ export default async function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-desert-sunset dark:bg-gradient-to-br dark:from-navy-950 dark:via-gray-900 dark:to-navy-950 text-white transition-colors duration-300">
+    <main className="min-h-screen bg-desert-sunset dark:bg-gradient-to-br dark:from-stone-950 dark:via-gray-900 dark:to-stone-950 text-white transition-colors duration-300">
       <div className="container mx-auto px-4 py-16">
         <header className="text-center mb-16">
           <h1 className="text-5xl font-bold mb-4">{process.env.NEXT_PUBLIC_APP_NAME || 'Guildgamesh Resource Tracker'}</h1>

@@ -20,7 +20,7 @@ export function ClientNavigation({ title, showDashboardLink = true }: ClientNavi
 
   return (
     <>
-      <nav className="bg-white dark:bg-navy-900 shadow-md border-b border-sand-200 dark:border-primary-900/30 transition-colors duration-300">
+      <nav className="bg-white dark:bg-gradient-to-r dark:from-stone-900 dark:to-gray-900 shadow-md border-b border-sand-200 dark:border-primary-800/40 transition-colors duration-300">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Left side - Title and Version */}
