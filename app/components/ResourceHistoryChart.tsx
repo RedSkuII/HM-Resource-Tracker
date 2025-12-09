@@ -149,7 +149,7 @@ export function ResourceHistoryChart({ resourceId, resourceName, customButton }:
                             y1={`${y1}%`}
                             x2={`${x2}%`}
                             y2={`${y2}%`}
-                            stroke="#3b82f6"
+                            stroke="#f97316"
                             strokeWidth="2"
                           />
                         )
@@ -167,7 +167,7 @@ export function ResourceHistoryChart({ resourceId, resourceName, customButton }:
                             cx={`${x}%`}
                             cy={`${y}%`}
                               r="4"
-                            fill="#3b82f6"
+                            fill="#f97316"
                               stroke="white"
                               strokeWidth="2"
                               className="cursor-pointer hover:r-6 transition-all"
@@ -227,7 +227,7 @@ export function ResourceHistoryChart({ resourceId, resourceName, customButton }:
                           <div className="text-sm text-gray-600">
                             By {entry.updatedBy}
                             {entry.reason && (
-                              <span className="ml-2 text-blue-600">• {entry.reason}</span>
+                              <span className="ml-2 text-primary-600">• {entry.reason}</span>
                             )}
                           </div>
                         </div>
