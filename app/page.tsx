@@ -13,11 +13,11 @@ export default async function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 dark:from-gray-900 dark:to-blue-900 text-white transition-colors duration-300">
+    <main className="min-h-screen bg-guildgamesh-gradient dark:from-navy-900 dark:to-gray-900 text-white transition-colors duration-300">
       <div className="container mx-auto px-4 py-16">
         <header className="text-center mb-16">
           <h1 className="text-5xl font-bold mb-4">{process.env.NEXT_PUBLIC_APP_NAME || 'Guildgamesh Resource Tracker'}</h1>
-          <p className="text-xl text-blue-200 dark:text-blue-300">
+          <p className="text-xl text-sand-100 dark:text-sand-200">
             Resource management and tracking portal for {process.env.NEXT_PUBLIC_ORGANIZATION_NAME || 'gaming guilds'}
           </p>
         </header>
@@ -25,7 +25,7 @@ export default async function Home() {
         <div className="max-w-md mx-auto">
           {session ? (
             // User is logged in but doesn't have access
-            <div className="bg-white/10 dark:bg-gray-800/50 backdrop-blur-md rounded-lg p-8 text-center border border-white/20 dark:border-gray-700">
+            <div className="bg-white/10 dark:bg-gray-800/50 backdrop-blur-md rounded-lg p-8 text-center border border-sand-200/30 dark:border-gray-700">
               <div className="mb-6">
                 {session.user.image && (
                   <img
@@ -64,16 +64,16 @@ export default async function Home() {
 
               <div className="space-y-4">
                 <LogoutButton variant="prominent" fullWidth={true} />
-                <p className="text-center text-blue-200/80 dark:text-blue-300/80 text-sm">
+                <p className="text-center text-sand-100/80 dark:text-sand-200/80 text-sm">
                   Try logging in with a Discord account that has the required server roles
                 </p>
               </div>
             </div>
           ) : (
             // User is not logged in
-            <div className="bg-white/10 dark:bg-gray-800/50 backdrop-blur-md rounded-lg p-8 text-center border border-white/20 dark:border-gray-700">
+            <div className="bg-white/10 dark:bg-gray-800/50 backdrop-blur-md rounded-lg p-8 text-center border border-sand-200/30 dark:border-gray-700">
               <h2 className="text-2xl font-bold mb-4">Sign In Required</h2>
-              <p className="text-blue-200 dark:text-blue-300 mb-8">
+              <p className="text-sand-100 dark:text-sand-200 mb-8">
                 Please sign in with Discord to access the resource portal.
               </p>
               <LoginButton />
@@ -81,7 +81,7 @@ export default async function Home() {
           )}
         </div>
 
-        <footer className="text-center mt-16 text-blue-200/60 dark:text-blue-300/60">
+        <footer className="text-center mt-16 text-sand-100/60 dark:text-sand-200/60">
           <p className="text-sm">
             Powered by Discord authentication • Secure role-based access
           </p>

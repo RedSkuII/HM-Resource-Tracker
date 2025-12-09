@@ -25,7 +25,7 @@ export function ClientNavigation({ title, showDashboardLink = true }: ClientNavi
           <div className="flex items-center justify-between h-16">
             {/* Left side - Title and Version */}
             <div className="flex items-center gap-3">
-              <Link href="/" className="text-xl font-bold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Link href="/" className="text-xl font-bold text-gray-900 dark:text-gray-100 hover:text-primary-600 dark:hover:text-primary-500 transition-colors">
                 {title}
               </Link>
               <VersionDisplay onClick={() => setShowChangelog(true)} />
@@ -36,7 +36,7 @@ export function ClientNavigation({ title, showDashboardLink = true }: ClientNavi
               {session && showDashboardLink && (
                 <Link
                   href="/dashboard"
-                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 text-sm font-medium transition-colors"
+                  className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-500 px-3 py-2 text-sm font-medium transition-colors"
                 >
                   Dashboard
                 </Link>

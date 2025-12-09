@@ -32,7 +32,7 @@ export default async function Dashboard() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen bg-sand-50 dark:bg-gray-900 transition-colors duration-300">
       <ClientNavigation title={process.env.NEXT_PUBLIC_ORG_NAME || 'Guildgamesh'} showDashboardLink={false} />
 
       <main className="container mx-auto px-4 py-8">
@@ -47,16 +47,16 @@ export default async function Dashboard() {
           {/* Resource Management - Prominent Section */}
           {session.user.permissions?.hasResourceAccess && (
             <div className="mb-8">
-              <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-lg p-6 text-white">
+              <div className="bg-guildgamesh-gradient rounded-lg shadow-lg p-6 text-white">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-2xl font-bold mb-2">Resource Management</h2>
-                    <p className="text-blue-100 mb-4">
+                    <p className="text-sand-100 mb-4">
                       Track, update, and monitor all your resources in real-time
                     </p>
                     <Link
                       href="/resources"
-                      className="bg-white text-blue-700 hover:bg-blue-50 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 inline-flex"
+                      className="bg-white text-primary-600 hover:bg-sand-50 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 inline-flex"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -65,7 +65,7 @@ export default async function Dashboard() {
                     </Link>
                   </div>
                   <div className="hidden md:block">
-                    <svg className="w-20 h-20 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-20 h-20 text-sand-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
                   </div>

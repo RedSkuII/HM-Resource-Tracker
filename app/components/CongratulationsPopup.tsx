@@ -161,7 +161,7 @@ export function CongratulationsPopup({
 
               <button
                 onClick={handleViewContributions}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors font-medium"
+                className="w-full bg-primary-600 hover:bg-primary-700 text-white py-2 px-4 rounded-lg transition-colors font-medium"
               >
                 View My Contributions
               </button>

@@ -18,7 +18,7 @@ export default async function ResourcesPage() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen bg-sand-50 dark:bg-gray-900 transition-colors duration-300">
       <ClientNavigation title={process.env.NEXT_PUBLIC_ORG_NAME || 'Guildgamesh'} showDashboardLink={true} />
 
       <main className="container mx-auto px-4 py-8">
