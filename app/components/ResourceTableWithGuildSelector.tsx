@@ -39,7 +39,7 @@ export function ResourceTableWithGuildSelector({ userId }: ResourceTableWithGuil
   return (
     <div className="space-y-6">
       {/* Guild Selector */}
-      <div className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
+      <div className="flex items-center justify-between rounded-lg border border-sand-200 dark:border-primary-700/40 bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 p-4 shadow-sm">
         <GuildSelector 
           selectedGuildId={selectedGuildId} 
           onGuildChange={setSelectedGuildId}
@@ -56,7 +56,7 @@ export function ResourceTableWithGuildSelector({ userId }: ResourceTableWithGuil
       {selectedGuildId ? (
         <ResourceTable userId={userId} guildId={selectedGuildId} />
       ) : (
-        <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-8 text-center">
+        <div className="rounded-lg border border-sand-200 dark:border-primary-700/40 bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 p-8 text-center">
           <div className="flex flex-col items-center gap-3">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-500 border-t-transparent"></div>
             <p className="text-gray-500 dark:text-gray-400">
