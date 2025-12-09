@@ -1,3 +1,74 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities; 
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Guildgamesh Light Theme - Desert/Sand inspired */
+    --background: 42 100% 97%;           /* Very light sand #fef9c3 */
+    --foreground: 20 14.3% 4.1%;         /* Dark navy text */
+    --card: 42 100% 95%;                 /* Light sand card */
+    --card-foreground: 20 14.3% 4.1%;
+    --popover: 42 100% 97%;
+    --popover-foreground: 20 14.3% 4.1%;
+    --primary: 24 95.6% 53.1%;           /* Main orange #f97316 */
+    --primary-foreground: 60 9.1% 97.8%;
+    --secondary: 47 95.8% 53.1%;         /* Golden sand #facc15 */
+    --secondary-foreground: 24 9.8% 10%;
+    --muted: 42 100% 90%;
+    --muted-foreground: 25 5.3% 44.7%;
+    --accent: 199 89.1% 48.4%;           /* Teal accent #06b6d4 */
+    --accent-foreground: 60 9.1% 97.8%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 24 40% 85%;                /* Light orange border */
+    --input: 24 40% 85%;
+    --ring: 24 95.6% 53.1%;              /* Orange focus ring */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Guildgamesh Dark Theme - Night desert with orange accents */
+    --background: 222 47.4% 11.2%;       /* Dark navy #0c4a6e inspired */
+    --foreground: 42 100% 97%;           /* Light sand text */
+    --card: 222 47.4% 15%;               /* Slightly lighter navy */
+    --card-foreground: 42 100% 97%;
+    --popover: 222 47.4% 11.2%;
+    --popover-foreground: 42 100% 97%;
+    --primary: 24 95.6% 53.1%;           /* Orange #f97316 */
+    --primary-foreground: 222 47.4% 11.2%;
+    --secondary: 47 95.8% 53.1%;         /* Golden sand */
+    --secondary-foreground: 222 47.4% 11.2%;
+    --muted: 217 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 199 89.1% 48.4%;           /* Teal accent */
+    --accent-foreground: 222 47.4% 11.2%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 217 32.6% 20%;             /* Dark navy border */
+    --input: 217 32.6% 20%;
+    --ring: 24 95.6% 53.1%;              /* Orange focus ring */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom gradient backgrounds */
+.bg-guildgamesh-gradient {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+}
+
+.bg-desert-dune {
+  background: linear-gradient(180deg, #f97316 0%, #ea580c 25%, #fb923c 50%, #fdba74 75%, #fed7aa 100%);
+}
+
+.bg-sand-gradient {
+  background: linear-gradient(to bottom, #fef9c3, #fde047, #facc15);
+}
