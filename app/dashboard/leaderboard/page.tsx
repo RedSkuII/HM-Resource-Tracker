@@ -87,7 +87,7 @@ export default function LeaderboardPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
             <p className="mt-4 text-gray-600 dark:text-gray-300">Loading leaderboard...</p>
           </div>
         </div>
@@ -164,7 +164,7 @@ export default function LeaderboardPage() {
 
           {loading ? (
             <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
               <p className="mt-2 text-gray-600 dark:text-gray-300">Loading...</p>
             </div>
           ) : !data || data.leaderboard.length === 0 ? (
@@ -212,7 +212,7 @@ export default function LeaderboardPage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                          <div className="text-xl font-bold text-primary-600 dark:text-primary-400">
                             {entry.totalPoints.toFixed(1)} pts
                           </div>
                           <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
@@ -246,11 +246,11 @@ export default function LeaderboardPage() {
         </div>
 
         {/* Points System Info */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-6 mt-6">
-          <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-3">
+        <div className="bg-sand-50 dark:bg-stone-900/20 border border-sand-200 dark:border-primary-700 rounded-lg p-6 mt-6">
+          <h3 className="text-lg font-semibold text-primary-800 dark:text-primary-200 mb-3">
             📊 How Points Work
           </h3>
-          <div className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
+          <div className="space-y-2 text-sm text-primary-700 dark:text-primary-300">
             <p><strong>ADD Actions:</strong> 0.1 points per resource (100 points per 1000 resources)</p>
             <p><strong>SET Actions:</strong> Fixed 1 points regardless of quantity</p>
             <p><strong>Refined Actions:</strong> Fixed 2 points for any action (special category)</p>

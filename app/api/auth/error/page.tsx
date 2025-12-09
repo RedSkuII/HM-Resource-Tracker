@@ -58,7 +58,7 @@ export default function AuthErrorPage() {
   const errorInfo = getErrorMessage(error)
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 dark:from-gray-900 dark:to-blue-900 text-white flex items-center justify-center p-4">
+    <main className="min-h-screen bg-gradient-to-br from-stone-900 to-stone-950 dark:from-gray-900 dark:to-stone-950 text-white flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white/10 dark:bg-gray-800/50 backdrop-blur-md rounded-lg p-8 border border-white/20 dark:border-gray-700">
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-red-500/20 rounded-full mb-4">
@@ -77,16 +77,16 @@ export default function AuthErrorPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold mb-2">{errorInfo.title}</h1>
-          <p className="text-blue-200 dark:text-blue-300 mb-4">
+          <p className="text-sand-200 dark:text-sand-300 mb-4">
             {errorInfo.message}
           </p>
         </div>
 
-        <div className="bg-blue-500/10 border border-blue-400/30 rounded-lg p-4 mb-6">
-          <p className="text-sm text-blue-100 mb-2">
+        <div className="bg-primary-500/10 border border-primary-400/30 rounded-lg p-4 mb-6">
+          <p className="text-sm text-sand-100 mb-2">
             <strong>Details:</strong> {errorInfo.details}
           </p>
-          <p className="text-sm text-blue-100">
+          <p className="text-sm text-sand-100">
             <strong>Next step:</strong> {errorInfo.action}
           </p>
         </div>
@@ -152,7 +152,7 @@ export default function AuthErrorPage() {
         <div className="space-y-3">
           <Link
             href="/"
-            className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors text-center"
+            className="block w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-4 rounded-lg transition-colors text-center"
           >
             Try Again
           </Link>

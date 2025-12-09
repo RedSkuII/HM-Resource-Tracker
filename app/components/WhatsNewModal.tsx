@@ -74,15 +74,15 @@ export function WhatsNewModal({ isOpen: externalIsOpen, onClose: externalOnClose
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-lg">
+        <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white p-6 rounded-t-lg">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold">What's New</h2>
-              <p className="text-blue-100 mt-1">Latest updates and improvements</p>
+              <p className="text-primary-100 mt-1">Latest updates and improvements</p>
             </div>
             <button
               onClick={() => handleClose(false)}
-              className="text-blue-100 hover:text-white p-1 rounded-full hover:bg-blue-600 transition-colors"
+              className="text-primary-100 hover:text-white p-1 rounded-full hover:bg-primary-600 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -102,7 +102,7 @@ export function WhatsNewModal({ isOpen: externalIsOpen, onClose: externalOnClose
                     <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                       {release.title}
                     </h3>
-                    <span className="text-sm bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
+                    <span className="text-sm bg-sand-100 dark:bg-stone-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
                       v{release.version}
                     </span>
                   </div>
@@ -141,7 +141,7 @@ export function WhatsNewModal({ isOpen: externalIsOpen, onClose: externalOnClose
               </button>
               <button
                 onClick={() => handleClose(true)}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
               >
                 Got It!
               </button>
@@ -150,7 +150,7 @@ export function WhatsNewModal({ isOpen: externalIsOpen, onClose: externalOnClose
           {(forceShow || externalIsOpen !== undefined) && (
             <button
               onClick={() => handleClose(false)}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
             >
               Close
             </button>

@@ -90,7 +90,7 @@ export default async function Dashboard() {
                   <p className="font-medium text-gray-900 dark:text-gray-100">{displayName}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{session.user.email}</p>
                   {session.user.discordNickname && (
-                    <p className="text-xs text-blue-600 dark:text-blue-400">
+                    <p className="text-xs text-primary-600 dark:text-primary-400">
                       Discord: {session.user.discordNickname}
                     </p>
                   )}

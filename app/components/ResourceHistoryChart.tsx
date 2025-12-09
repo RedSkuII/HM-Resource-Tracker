@@ -61,7 +61,7 @@ export function ResourceHistoryChart({ resourceId, resourceName, customButton }:
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className={customButton?.className || "text-gray-600 hover:text-blue-600 transition-colors p-1 rounded hover:bg-gray-100"}
+        className={customButton?.className || "text-gray-600 hover:text-primary-600 transition-colors p-1 rounded hover:bg-gray-100"}
         title="View resource history"
       >
         {customButton?.children || (
@@ -105,7 +105,7 @@ export function ResourceHistoryChart({ resourceId, resourceName, customButton }:
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
           {loading ? (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
               <p className="mt-2 text-gray-600">Loading history...</p>
             </div>
           ) : history.length === 0 ? (

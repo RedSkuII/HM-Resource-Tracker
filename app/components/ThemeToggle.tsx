@@ -32,7 +32,7 @@ export function ThemeToggle() {
 
         {/* Moon Icon */}
         <svg
-          className={`absolute h-5 w-5 text-blue-500 transition-all duration-300 ${
+          className={`absolute h-5 w-5 text-primary-500 transition-all duration-300 ${
             theme === 'light' ? '-rotate-90 scale-0 opacity-0' : 'rotate-0 scale-100 opacity-100'
           }`}
           fill="none"
@@ -48,7 +48,7 @@ export function ThemeToggle() {
         </svg>
 
         {/* Hover effect */}
-        <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-yellow-400 to-blue-500 opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
+        <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-yellow-400 to-primary-500 opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
       </button>
     )
   } catch (error) {

@@ -860,7 +860,7 @@ export default function BotDashboardPage() {
                     {inGameGuilds.find(g => g.id === selectedInGameGuildId)!.botChannelId!.map(channelId => {
                       const channel = discordData?.channels.find(c => c.id === channelId)
                       return channel ? (
-                        <span key={channelId} className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs rounded">
+                        <span key={channelId} className="inline-flex items-center gap-1 px-2 py-1 bg-sand-100 dark:bg-stone-800/30 text-primary-800 dark:text-primary-300 text-xs rounded">
                           #{channel.name}
                           <button
                             onClick={() => {
@@ -870,7 +870,7 @@ export default function BotDashboardPage() {
                                 prev.map(g => g.id === selectedInGameGuildId ? { ...g, botChannelId: newChannelIds } : g)
                               )
                             }}
-                            className="ml-1 hover:text-primary-600 dark:hover:text-blue-200"
+                            className="ml-1 hover:text-primary-600 dark:hover:text-primary-200"
                           >
                             ×
                           </button>
@@ -1251,7 +1251,7 @@ export default function BotDashboardPage() {
               {showResetConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                   <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-xl max-w-md w-full p-6">
-                    <h3 className="text-xl font-bold text-primary-600 dark:text-blue-400 mb-4">
+                    <h3 className="text-xl font-bold text-primary-600 dark:text-primary-400 mb-4">
                       🔄 Confirm Reset to Defaults
                     </h3>
                     <p className="text-gray-700 dark:text-gray-300 mb-4">
@@ -1327,7 +1327,7 @@ export default function BotDashboardPage() {
 
             {loadingLogs ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
               </div>
             ) : activityLogs.length === 0 ? (
               <div className="text-center py-12">
@@ -1348,7 +1348,7 @@ export default function BotDashboardPage() {
                     switch (eventType) {
                       case 'order_created':
                         return (
-                          <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
                         )
@@ -1492,8 +1492,8 @@ export default function BotDashboardPage() {
                 <section>
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">🤖 Discord Bot Configuration Guide</h3>
                   
-                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <div className="bg-sand-50 dark:bg-stone-900/20 border border-sand-200 dark:border-primary-800 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-primary-800 dark:text-primary-200">
                       <strong>Quick Tip:</strong> Hold <kbd className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs">Ctrl</kbd> (Windows/Linux) or <kbd className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs">Cmd</kbd> (Mac) to select multiple channels or roles in the dropdowns below.
                     </p>
                   </div>
@@ -1611,7 +1611,7 @@ export default function BotDashboardPage() {
                   <a 
                     href="/bot-configuration-guide.txt"
                     download="Resource-Tracker-Bot-Configuration-Guide.txt"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

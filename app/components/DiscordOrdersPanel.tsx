@@ -126,7 +126,7 @@ export default function DiscordOrdersPanel() {
           📦 Discord Orders
         </h2>
         <div className="flex justify-center items-center h-40">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
         </div>
       </div>
     );
@@ -142,7 +142,7 @@ export default function DiscordOrdersPanel() {
           </h2>
           <button
             onClick={fetchOrders}
-            className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+            className="px-3 py-1 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-md transition-colors"
           >
             🔄 Refresh
           </button>
@@ -155,7 +155,7 @@ export default function DiscordOrdersPanel() {
               onClick={() => setStatusFilter(status)}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 statusFilter === status
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-primary-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
               }`}
             >

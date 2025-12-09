@@ -150,7 +150,7 @@ export function BotStatsCards({ guildId }: BotStatsCardsProps) {
             <div className="text-4xl">✅</div>
           </div>
           <div className="mt-4 flex items-center text-sm">
-            <span className="text-blue-600 dark:text-blue-400 font-medium">
+            <span className="text-primary-600 dark:text-primary-400 font-medium">
               {fillRate}% fill rate
             </span>
           </div>
@@ -290,7 +290,7 @@ export function BotStatsCards({ guildId }: BotStatsCardsProps) {
                   </span>
                   <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-6 overflow-hidden">
                     <div
-                      className="bg-blue-500 dark:bg-blue-400 h-full rounded-full flex items-center justify-end px-2"
+                      className="bg-primary-500 dark:bg-primary-400 h-full rounded-full flex items-center justify-end px-2"
                       style={{ width: `${Math.max(barWidth, 5)}%` }}
                     >
                       <span className="text-xs text-white font-medium">

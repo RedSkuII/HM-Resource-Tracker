@@ -1107,7 +1107,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
               {leaderboard.slice(0, leaderboardExpanded ? leaderboard.length : 5).map((entry, index) => (
                 <div 
                   key={entry.userId} 
-                  className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg hover:from-green-100 hover:to-blue-100 dark:hover:from-green-900/30 dark:hover:to-blue-900/30 transition-all cursor-pointer"
+                  className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-sand-50 dark:from-green-900/20 dark:to-stone-900/20 rounded-lg hover:from-green-100 hover:to-sand-100 dark:hover:from-green-900/30 dark:hover:to-stone-900/30 transition-all cursor-pointer"
                   onClick={() => router.push(`/dashboard/contributions/${entry.userId}`)}
                   title={`Click to view ${entry.userId}'s detailed contributions`}
                 >
@@ -1128,7 +1128,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                    <div className="text-sm font-bold text-primary-600 dark:text-primary-400">
                       {entry.totalPoints.toFixed(1)} pts
                     </div>
                     <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1142,7 +1142,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                 {leaderboard.length > 5 && (
                   <button
                     onClick={() => setLeaderboardExpanded(!leaderboardExpanded)}
-                    className="w-full text-center py-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                    className="w-full text-center py-2 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 transition-colors"
                   >
                     {leaderboardExpanded ? 'Show Less' : `Show All ${leaderboard.length} Contributors`}
                   </button>
@@ -1339,7 +1339,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                 placeholder="Search resources..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
 
@@ -1382,7 +1382,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
                 {statusOptions.map(option => (
                   <option key={option.value} value={option.value}>
@@ -1399,7 +1399,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                   type="checkbox"
                   checked={needsUpdateFilter}
                   onChange={(e) => setNeedsUpdateFilter(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                 />
                 <span>Needs updating ({needsUpdateCount})</span>
                 <span className="text-xs text-gray-500 dark:text-gray-400">(24+ hours)</span>
@@ -1416,7 +1416,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                     setNeedsUpdateFilter(false)
                     setSearchTerm('')
                   }}
-                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                  className="text-primary-600 dark:text-primary-400 hover:underline"
                 >
                   Clear filters
                 </button>
@@ -1714,7 +1714,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                             className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             resource.multiplier === 0 ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' :
                             (resource.multiplier || 1.0) >= 3.0 ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200' :
-                            (resource.multiplier || 1.0) >= 2.0 ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200' :
+                            (resource.multiplier || 1.0) >= 2.0 ? 'bg-sand-100 dark:bg-stone-800/50 text-primary-800 dark:text-primary-200' :
                             (resource.multiplier || 1.0) >= 1.0 ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200' :
                             'bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200'
                           }`}
@@ -1778,7 +1778,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 onChange={(e) => setActiveInput(prev => ({ ...prev, value: e.target.value }))}
                                 placeholder={activeInput.type === 'relative' ? 'e.g. +5 or -3' : 'e.g. 25'}
                                 title={activeInput.type === 'relative' ? 'Enter a positive number to add (e.g., +50) or negative to remove (e.g., -20). Press Enter to apply.' : 'Enter the exact total quantity you want to set. Press Enter to apply.'}
-                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                                 autoFocus
                                 onKeyDown={(e) => {
                                   e.stopPropagation()
@@ -1823,14 +1823,14 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, name: e.target.value }))}
                                 placeholder="Name"
                                 title="Enter the resource name (e.g., 'Iron Ore', 'Advanced Machinery')"
-                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                                 onClick={(e) => e.stopPropagation()}
                               />
                               <select
                                 value={editResourceForm.category}
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, category: e.target.value }))}
                                 title="Select the resource category type (Raw materials, Components, Refined goods, etc.)"
-                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 {CATEGORY_OPTIONS.map(cat => (
@@ -1843,7 +1843,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, description: e.target.value }))}
                                 placeholder="Description"
                                 title="Optional description of the resource (e.g., 'A vehicle module crafting component')"
-                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                                 onClick={(e) => e.stopPropagation()}
                               />
                               <input
@@ -1852,7 +1852,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, imageUrl: e.target.value }))}
                                 placeholder="Image URL"
                                 title="URL to the resource image (must be a valid image link)"
-                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                                 onClick={(e) => e.stopPropagation()}
                               />
                               <input
@@ -1861,7 +1861,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, targetQuantity: parseInt(e.target.value) || 0 }))}
                                 placeholder="Target Quantity"
                                 title="Set the goal quantity to maintain for this resource. Status indicators (Critical/Below Target/At Target) are calculated based on this value."
-                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                                 onClick={(e) => e.stopPropagation()}
                               />
                               <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
@@ -1876,7 +1876,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                   }}
                                   placeholder="0"
                                   title="Point multiplier percentage: 0% = standard points, +100% = double points, -100% = no points earned. Use to incentivize high-priority resources."
-                                  className="flex-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                  className="flex-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                                 />
                                 <span className="text-xs text-gray-500 dark:text-gray-400">%</span>
                               </div>
@@ -1914,7 +1914,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                     activateInput(resource.id, 'relative')
                                   }}
                                   title="Add or remove quantity (e.g., +50 to add 50, -20 to remove 20). Earn points based on amount added."
-                                  className="flex-1 bg-blue-100 dark:bg-blue-900/50 hover:bg-blue-200 dark:hover:bg-blue-900/70 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs font-medium transition-colors"
+                                  className="flex-1 bg-sand-100 dark:bg-stone-800/50 hover:bg-sand-200 dark:hover:bg-stone-800/70 text-primary-700 dark:text-primary-300 px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   Add/Remove
                                 </button>
@@ -2057,7 +2057,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                             </div>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                               {resource.name}
                               <svg className="w-3 h-3 inline ml-1 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -2076,7 +2076,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           resource.multiplier === 0 ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' :
                           (resource.multiplier || 1.0) >= 3.0 ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200' :
-                          (resource.multiplier || 1.0) >= 2.0 ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200' :
+                          (resource.multiplier || 1.0) >= 2.0 ? 'bg-sand-100 dark:bg-stone-800/50 text-primary-800 dark:text-primary-200' :
                           (resource.multiplier || 1.0) >= 1.0 ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200' :
                           'bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200'
                         }`}
@@ -2135,7 +2135,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 onChange={(e) => setActiveInput(prev => ({ ...prev, value: e.target.value }))}
                                 placeholder={activeInput.type === 'relative' ? '+5 or -3' : '25'}
                                 title={activeInput.type === 'relative' ? 'Enter a positive number to add (e.g., +50) or negative to remove (e.g., -20). Press Enter to stage the change.' : 'Enter the exact total quantity you want to set. Press Enter to stage the change.'}
-                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                                 autoFocus
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter') {
@@ -2172,13 +2172,13 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, name: e.target.value }))}
                                 placeholder="Name"
                                 title="Enter the resource name (e.g., 'Iron Ore', 'Advanced Machinery')"
-                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                               />
                               <select
                                 value={editResourceForm.category}
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, category: e.target.value }))}
                                 title="Select the resource category type (Raw materials, Components, Refined goods, etc.)"
-                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                               >
                                 {CATEGORY_OPTIONS.map(cat => (
                                   <option key={cat} value={cat}>{cat}</option>
@@ -2190,7 +2190,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, description: e.target.value }))}
                                 placeholder="Description"
                                 title="Optional description of the resource (e.g., 'A vehicle module crafting component')"
-                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                               />
                               <input
                                 type="url"
@@ -2198,7 +2198,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, imageUrl: e.target.value }))}
                                 placeholder="Image URL"
                                 title="URL to the resource image (must be a valid image link)"
-                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                               />
                               <input
                                 type="number"
@@ -2206,7 +2206,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 onChange={(e) => setEditResourceForm(prev => ({ ...prev, targetQuantity: parseInt(e.target.value) || 0 }))}
                                 placeholder="Target Quantity"
                                 title="Set the goal quantity to maintain for this resource. Status indicators (Critical/Below Target/At Target) are calculated based on this value."
-                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                               />
                               <div className="flex items-center gap-1">
                                 <input
@@ -2220,7 +2220,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                   }}
                                   placeholder="0"
                                   title="Point multiplier percentage: 0% = standard points, +100% = double points, -100% = no points earned. Use to incentivize high-priority resources."
-                                  className="flex-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                  className="flex-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                                 />
                                 <span className="text-xs text-gray-500 dark:text-gray-400">%</span>
                               </div>
@@ -2249,7 +2249,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 <button
                                   onClick={() => activateInput(resource.id, 'relative')}
                                   title="Add or remove quantity (e.g., +50 to add 50, -20 to remove 20). Earn points based on amount added."
-                                  className="flex-1 bg-blue-100 dark:bg-blue-900/50 hover:bg-blue-200 dark:hover:bg-blue-900/70 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs font-medium transition-colors"
+                                  className="flex-1 bg-sand-100 dark:bg-stone-800/50 hover:bg-sand-200 dark:hover:bg-stone-800/70 text-primary-700 dark:text-primary-300 px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   Add/Remove
                                 </button>
@@ -2316,7 +2316,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
               <p className="text-gray-500 dark:text-gray-400">No resources found matching "{searchTerm}"</p>
               <button
                 onClick={() => setSearchTerm('')}
-                className="mt-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                className="mt-2 text-blue-600 hover:text-primary-700 dark:text-blue-400 dark:hover:text-primary-300 text-sm font-medium"
               >
                 Clear search
               </button>

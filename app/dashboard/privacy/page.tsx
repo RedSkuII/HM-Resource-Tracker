@@ -260,9 +260,9 @@ export default function PrivacyPage() {
           </div>
 
           {/* Contact Information */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">Need Help?</h2>
-            <p className="text-blue-800 dark:text-blue-200 text-sm">
+          <div className="bg-sand-50 dark:bg-stone-900/20 border border-sand-200 dark:border-primary-700 rounded-lg p-6">
+            <h2 className="text-lg font-semibold text-primary-900 dark:text-primary-100 mb-2">Need Help?</h2>
+            <p className="text-primary-800 dark:text-primary-200 text-sm">
               If you have questions about your data or need assistance with privacy-related requests, 
               please contact the server administrators through Discord.
             </p>
