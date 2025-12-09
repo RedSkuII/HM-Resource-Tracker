@@ -1150,7 +1150,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                 
                 <button
                   onClick={() => router.push('/dashboard/leaderboard')}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+                  className="w-full bg-primary-600 hover:bg-primary-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
                 >
                   View Full Leaderboard
                 </button>
@@ -1888,7 +1888,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                   }}
                                   disabled={saving || !editResourceForm.name}
                                   title={!editResourceForm.name ? 'Resource name is required' : 'Save changes to this resource metadata'}
-                                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+                                  className="flex-1 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   {saving ? 'Saving...' : 'Save'}
                                 </button>
@@ -2229,7 +2229,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                   onClick={() => saveResourceMetadata(resource.id)}
                                   disabled={saving || !editResourceForm.name}
                                   title={!editResourceForm.name ? 'Resource name is required' : 'Save changes to this resource metadata'}
-                                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+                                  className="flex-1 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   {saving ? 'Saving...' : 'Save'}
                                 </button>
@@ -2442,7 +2442,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                       onClick={() => setCurrentPage(pageNum)}
                       className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
                         currentPage === pageNum
-                          ? 'z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                          ? 'z-10 bg-primary-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600'
                           : 'text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20'
                       }`}
                     >
