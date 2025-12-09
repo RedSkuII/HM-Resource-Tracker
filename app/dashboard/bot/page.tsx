@@ -624,9 +624,9 @@ export default function BotDashboardPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-sand-50 via-primary-50 to-sand-100 dark:from-gray-900 dark:via-stone-900 dark:to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">Loading authentication...</p>
         </div>
       </div>
@@ -635,15 +635,15 @@ export default function BotDashboardPage() {
 
   if (status === 'unauthenticated') {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-sand-50 via-primary-50 to-sand-100 dark:from-gray-900 dark:via-stone-900 dark:to-gray-900 flex items-center justify-center">
+        <div className="text-center bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg p-8 max-w-md border border-sand-200 dark:border-primary-700/40">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Authentication Required</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             Please sign in with Discord to access the bot dashboard.
           </p>
           <button
             onClick={() => router.push('/')}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+            className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors"
           >
             Go to Home
           </button>
@@ -654,9 +654,9 @@ export default function BotDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-sand-50 via-primary-50 to-sand-100 dark:from-gray-900 dark:via-stone-900 dark:to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">Loading bot dashboard...</p>
         </div>
       </div>
@@ -664,13 +664,13 @@ export default function BotDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-sand-50 via-primary-50 to-sand-100 dark:from-gray-900 dark:via-stone-900 dark:to-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Navigation Buttons */}
         <div className="mb-6 flex gap-3 flex-wrap">
           <button
             onClick={() => router.push('/dashboard')}
-            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-sand-200 hover:bg-sand-300 dark:bg-stone-800 dark:hover:bg-stone-700 text-gray-900 dark:text-white font-medium rounded-lg transition-colors flex items-center gap-2 border border-sand-300 dark:border-primary-700/30"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -679,7 +679,7 @@ export default function BotDashboardPage() {
           </button>
           <button
             onClick={() => router.push('/resources')}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -725,7 +725,7 @@ export default function BotDashboardPage() {
               <select
                 value={selectedDiscordServerId || ''}
                 onChange={(e) => setSelectedDiscordServerId(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-sand-200 dark:border-primary-700/40 rounded-lg bg-white dark:bg-stone-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
               >
                 {discordServers.map((server) => (
                   <option key={server.id} value={server.id}>
@@ -751,7 +751,7 @@ export default function BotDashboardPage() {
               <select
                 value={selectedInGameGuildId || ''}
                 onChange={(e) => setSelectedInGameGuildId(e.target.value || null)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-sand-200 dark:border-primary-700/40 rounded-lg bg-white dark:bg-stone-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">Select a guild...</option>
                 {inGameGuilds.map((guild) => (
@@ -772,7 +772,7 @@ export default function BotDashboardPage() {
 
         {/* Bot Not Present - Show Add Bot UI */}
         {selectedDiscordServerId && !checkingBotStatus && !botIsPresent && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-6 text-center">
+          <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg p-8 mb-6 text-center border border-sand-200 dark:border-primary-700/40">
             <div className="mb-6">
               <div className="mx-auto w-16 h-16 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mb-4">
                 <svg className="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -807,15 +807,15 @@ export default function BotDashboardPage() {
 
         {/* Checking Bot Status */}
         {checkingBotStatus && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-6 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg p-8 mb-6 text-center border border-sand-200 dark:border-primary-700/40">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
             <p className="text-gray-600 dark:text-gray-400">Checking bot status...</p>
           </div>
         )}
 
         {/* Configuration Panel */}
         {selectedInGameGuildId && botIsPresent && !checkingBotStatus && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+          <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg p-6 mb-6 border border-sand-200 dark:border-primary-700/40">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               Configuration for {inGameGuilds.find(g => g.id === selectedInGameGuildId)?.title || 'Guild'}
             </h2>
@@ -842,7 +842,7 @@ export default function BotDashboardPage() {
                         prev.map(g => g.id === selectedInGameGuildId ? { ...g, botChannelId: selectedOptions } : g)
                       )
                     }}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                    className="w-full px-4 py-2 border border-sand-200 dark:border-primary-700/40 rounded-lg bg-white dark:bg-stone-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 min-h-[120px]"
                   >
                     {discordData.channels.map((channel) => (
                       <option key={channel.id} value={channel.id}>
@@ -870,7 +870,7 @@ export default function BotDashboardPage() {
                                 prev.map(g => g.id === selectedInGameGuildId ? { ...g, botChannelId: newChannelIds } : g)
                               )
                             }}
-                            className="ml-1 hover:text-blue-600 dark:hover:text-blue-200"
+                            className="ml-1 hover:text-primary-600 dark:hover:text-blue-200"
                           >
                             ×
                           </button>
@@ -902,7 +902,7 @@ export default function BotDashboardPage() {
                         prev.map(g => g.id === selectedInGameGuildId ? { ...g, orderChannelId: selectedOptions } : g)
                       )
                     }}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                    className="w-full px-4 py-2 border border-sand-200 dark:border-primary-700/40 rounded-lg bg-white dark:bg-stone-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 min-h-[120px]"
                   >
                     {discordData.channels.map((channel) => (
                       <option key={channel.id} value={channel.id}>
@@ -1008,7 +1008,7 @@ export default function BotDashboardPage() {
                         prev.map(g => g.id === selectedInGameGuildId ? { ...g, autoUpdateEmbeds: e.target.checked } : g)
                       )
                     }}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                    className="w-4 h-4 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                     Auto-update embeds
@@ -1024,7 +1024,7 @@ export default function BotDashboardPage() {
                         prev.map(g => g.id === selectedInGameGuildId ? { ...g, notifyOnWebsiteChanges: e.target.checked } : g)
                       )
                     }}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                    className="w-4 h-4 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                     Notify on website changes
@@ -1040,7 +1040,7 @@ export default function BotDashboardPage() {
                         prev.map(g => g.id === selectedInGameGuildId ? { ...g, allowPublicOrders: e.target.checked } : g)
                       )
                     }}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                    className="w-4 h-4 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                     Allow public orders
@@ -1069,7 +1069,7 @@ export default function BotDashboardPage() {
                         prev.map(g => g.id === selectedInGameGuildId ? { ...g, adminRoleId: selectedOptions } : g)
                       )
                     }}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 min-h-[120px]"
+                    className="w-full px-4 py-2 border border-sand-200 dark:border-primary-700/40 rounded-lg bg-white dark:bg-stone-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 min-h-[120px]"
                   >
                     {discordData.roles.map((role) => (
                       <option key={role.id} value={role.id}>
@@ -1112,7 +1112,7 @@ export default function BotDashboardPage() {
 
               {/* Delete All Resources (Discord Server Owners Only) */}
               {selectedInGameGuildId && discordServers.find(s => s.id === selectedDiscordServerId)?.isOwner && (
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="pt-4 border-t border-sand-200 dark:border-primary-700/30">
                   <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">
                     ⚠️ Danger Zone
                   </h3>
@@ -1159,7 +1159,7 @@ export default function BotDashboardPage() {
               {/* Delete Confirmation Modal */}
               {showDeleteConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                  <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-xl max-w-md w-full p-6">
                     <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4">
                       ⚠️ Confirm Deletion
                     </h3>
@@ -1202,7 +1202,7 @@ export default function BotDashboardPage() {
               {/* Delete Guild Confirmation Modal */}
               {showDeleteGuildConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                  <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-xl max-w-md w-full p-6">
                     <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4">
                       💥 Confirm Guild Deletion
                     </h3>
@@ -1250,8 +1250,8 @@ export default function BotDashboardPage() {
               {/* Reset to Defaults Confirmation Modal */}
               {showResetConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
-                    <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-4">
+                  <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-xl max-w-md w-full p-6">
+                    <h3 className="text-xl font-bold text-primary-600 dark:text-blue-400 mb-4">
                       🔄 Confirm Reset to Defaults
                     </h3>
                     <p className="text-gray-700 dark:text-gray-300 mb-4">
@@ -1295,7 +1295,7 @@ export default function BotDashboardPage() {
               )}
 
               {/* Save Button */}
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="pt-4 border-t border-sand-200 dark:border-primary-700/30">
                 <button
                   onClick={handleSaveConfig}
                   disabled={saving}
@@ -1315,7 +1315,7 @@ export default function BotDashboardPage() {
 
         {/* Placeholder for Activity Logs */}
         {selectedDiscordServerId && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Activity Log
@@ -1422,7 +1422,7 @@ export default function BotDashboardPage() {
                   return (
                     <div
                       key={log.id}
-                      className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      className="flex items-start gap-3 p-3 rounded-lg bg-sand-50 dark:bg-stone-800/50 hover:bg-sand-100 dark:hover:bg-stone-700 transition-colors"
                     >
                       <div className="flex-shrink-0 mt-0.5">
                         {getEventIcon(log.eventType)}
@@ -1467,9 +1467,9 @@ export default function BotDashboardPage() {
       {/* Documentation Modal */}
       {showDocumentation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+          <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-6 border-b border-sand-200 dark:border-primary-700/30">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -1478,7 +1478,7 @@ export default function BotDashboardPage() {
               </h2>
               <button
                 onClick={() => setShowDocumentation(false)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-sand-100 dark:hover:bg-stone-700 rounded-lg transition-colors"
               >
                 <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1603,7 +1603,7 @@ export default function BotDashboardPage() {
                   </div>
                 </section>
 
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
+                <div className="border-t border-sand-200 dark:border-primary-700/30 pt-6 mt-6">
                   <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Need More Help?</h4>
                   <p className="text-gray-700 dark:text-gray-300 mb-3">
                     For additional help, feature requests, or bug reports, contact your server administrator or check the main dashboard for system announcements.
@@ -1623,7 +1623,7 @@ export default function BotDashboardPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+            <div className="p-4 border-t border-sand-200 dark:border-primary-700/30 flex justify-end">
               <button
                 onClick={() => setShowDocumentation(false)}
                 className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
