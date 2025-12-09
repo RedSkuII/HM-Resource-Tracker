@@ -624,7 +624,7 @@ export default function BotDashboardPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sand-50 via-primary-50 to-sand-100 dark:from-gray-900 dark:via-stone-900 dark:to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-sand-50 via-sand-100 to-primary-100 dark:bg-gradient-to-br dark:from-stone-950 dark:via-stone-900 dark:to-stone-950 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">Loading authentication...</p>
@@ -635,7 +635,7 @@ export default function BotDashboardPage() {
 
   if (status === 'unauthenticated') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sand-50 via-primary-50 to-sand-100 dark:from-gray-900 dark:via-stone-900 dark:to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-sand-50 via-sand-100 to-primary-100 dark:bg-gradient-to-br dark:from-stone-950 dark:via-stone-900 dark:to-stone-950 flex items-center justify-center">
         <div className="text-center bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg p-8 max-w-md border border-sand-200 dark:border-primary-700/40">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Authentication Required</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
@@ -654,7 +654,7 @@ export default function BotDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sand-50 via-primary-50 to-sand-100 dark:from-gray-900 dark:via-stone-900 dark:to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-sand-50 via-sand-100 to-primary-100 dark:bg-gradient-to-br dark:from-stone-950 dark:via-stone-900 dark:to-stone-950 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">Loading bot dashboard...</p>
@@ -664,7 +664,7 @@ export default function BotDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sand-50 via-primary-50 to-sand-100 dark:from-gray-900 dark:via-stone-900 dark:to-gray-900 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-sand-50 via-sand-100 to-primary-100 dark:bg-gradient-to-br dark:from-stone-950 dark:via-stone-900 dark:to-stone-950 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Navigation Buttons */}
         <div className="mb-6 flex gap-3 flex-wrap">
@@ -1299,7 +1299,7 @@ export default function BotDashboardPage() {
                 <button
                   onClick={handleSaveConfig}
                   disabled={saving}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors"
+                  className="px-6 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white rounded-lg font-medium transition-colors"
                 >
                   {saving ? 'Saving...' : 'Save Configuration'}
                 </button>

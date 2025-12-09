@@ -995,7 +995,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
   if (loading) {
     return (
       <div className="p-8 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
         <p className="mt-2 text-gray-600 dark:text-gray-400">Loading resources...</p>
         <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">Guild ID: {guildId}</p>
       </div>
@@ -1034,7 +1034,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
           
           {activityLoading ? (
             <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading updates...</p>
             </div>
           ) : recentActivity.length === 0 ? (
@@ -1095,7 +1095,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
           
           {leaderboardLoading ? (
             <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading leaderboard...</p>
             </div>
           ) : leaderboard.length === 0 ? (
@@ -1659,7 +1659,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                   return (
                     <div
                       key={resource.id}
-                      className={`bg-white dark:bg-gray-800 border rounded-lg p-4 hover:shadow-md transition-all cursor-pointer group ${
+                      className={`bg-white dark:bg-stone-900 border rounded-lg p-4 hover:shadow-md transition-all cursor-pointer group ${
                         isStale 
                           ? 'border-amber-300 dark:border-amber-600 ring-1 ring-amber-200 dark:ring-amber-800 bg-amber-50/50 dark:bg-amber-900/10' 
                           : 'border-sand-200 dark:border-primary-700/30'
@@ -1688,7 +1688,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                         
                         {/* Click indicator */}
                         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                           </svg>
                         </div>
@@ -1696,7 +1696,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
 
                       {/* Resource Info */}
                       <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-                        <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                           {resource.name}
                         </h4>
                         
@@ -2115,7 +2115,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                               <button
                                 onClick={() => saveTargetQuantity(resource.id)}
                                 disabled={saving}
-                                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 disabled:opacity-50 text-white px-2 py-1 rounded text-xs transition-colors"
+                                className="bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 disabled:opacity-50 text-white px-2 py-1 rounded text-xs transition-colors"
                               >
                                 Save
                               </button>

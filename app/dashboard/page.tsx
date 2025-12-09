@@ -32,7 +32,7 @@ export default async function Dashboard() {
   })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sand-50 via-primary-50 to-sand-100 dark:from-gray-900 dark:via-stone-900 dark:to-gray-900 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-sand-50 via-sand-100 to-primary-100 dark:bg-gradient-to-br dark:from-stone-950 dark:via-stone-900 dark:to-stone-950 transition-colors duration-300">
       <ClientNavigation title={process.env.NEXT_PUBLIC_ORG_NAME || 'Guildgamesh'} showDashboardLink={false} />
 
       <main className="container mx-auto px-4 py-8">
