@@ -1,5 +1,5 @@
 'use client'
-// Using guildgamesh-* color classes for Guildgamesh brand theme
+// Guildgamesh sand theme colors (updated Dec 10 2025 - cache bust v3)
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
