@@ -11,19 +11,7 @@ module.exports = {
       colors: {
         // Guildgamesh brand colors inspired by desert/sand theme
         primary: {
-          50: '#faf7f2',   // Lightest beige
-          100: '#f5e6d3',  // Very light sand
-          200: '#ead5b8',  // Light sand
-          300: '#e0c29d',  // Sand
-          400: '#d4a574',  // Main Guildgamesh sand (what we want!)
-          500: '#c49564',  // Medium sand
-          600: '#b48554',  // Darker sand
-          700: '#8b6f47',  // Dark tan
-          800: '#6b5339',  // Very dark tan
-          900: '#4a3a2a',  // Darkest brown
-        },
-        orange: {
-          50: '#fff7ed',   // Lightest orange
+          50: '#fff7ed',   // Lightest sand
           100: '#ffedd5',
           200: '#fed7aa',
           300: '#fdba74',
@@ -33,6 +21,18 @@ module.exports = {
           700: '#c2410c',
           800: '#9a3412',
           900: '#7c2d12',  // Darkest orange
+        },
+        guildgamesh: {
+          50: '#faf7f2',   // Lightest beige
+          100: '#f5e6d3',  // Very light sand
+          200: '#ead5b8',  // Light sand
+          300: '#e0c29d',  // Sand
+          400: '#d4a574',  // Main Guildgamesh sand
+          500: '#c49564',  // Medium sand
+          600: '#b48554',  // Darker sand
+          700: '#8b6f47',  // Dark tan
+          800: '#6b5339',  // Very dark tan
+          900: '#4a3a2a',  // Darkest brown
         },
         accent: {
           50: '#ecfeff',
