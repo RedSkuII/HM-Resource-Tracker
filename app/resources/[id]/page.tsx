@@ -483,9 +483,9 @@ export default function ResourceDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen bg-guildgamesh-50 dark:bg-stone-950 transition-colors duration-300">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-guildgamesh-100 dark:bg-stone-900 shadow-sm border-b border-guildgamesh-200 dark:border-stone-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button
@@ -509,7 +509,7 @@ export default function ResourceDetailPage() {
 
           {/* Resource Info Card - Full Width Horizontal Layout */}
           <div className="w-full">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+            <div className="bg-guildgamesh-50 dark:bg-stone-900 rounded-lg shadow-md p-6 border border-guildgamesh-200 dark:border-stone-800">
               <div className="flex flex-col md:flex-row gap-6">
                 {/* Resource Image */}
                 <div className="flex-shrink-0">
@@ -517,7 +517,7 @@ export default function ResourceDetailPage() {
                     <img
                       src={resource.imageUrl}
                       alt={resource.name}
-                      className="w-32 h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600 mx-auto md:mx-0"
+                      className="w-32 h-32 object-cover rounded-lg border border-guildgamesh-200 dark:border-stone-700 mx-auto md:mx-0"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement
                         target.style.display = 'none'
@@ -526,8 +526,8 @@ export default function ResourceDetailPage() {
                       }}
                     />
                   ) : null}
-                  <div className={`w-32 h-32 rounded-lg bg-gray-200 dark:bg-gray-600 flex items-center justify-center mx-auto md:mx-0 ${resource.imageUrl ? 'hidden' : 'flex'}`}>
-                    <span className="text-gray-400 dark:text-gray-500 text-sm">No Image</span>
+                  <div className={`w-32 h-32 rounded-lg bg-guildgamesh-200 dark:bg-stone-800 flex items-center justify-center mx-auto md:mx-0 ${resource.imageUrl ? 'hidden' : 'flex'}`}>
+                    <span className="text-guildgamesh-500 dark:text-stone-500 text-sm">No Image</span>
                   </div>
                 </div>
 
@@ -712,7 +712,7 @@ export default function ResourceDetailPage() {
         {/* History and Leaderboard Section - Full Width */}
         <div className="w-full space-y-8">
           {/* Activity Timeline with Chart */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+          <div className="bg-guildgamesh-50 dark:bg-stone-900 rounded-lg shadow-md p-6 border border-guildgamesh-200 dark:border-stone-800">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Activity Timeline</h3>
               <div className="flex items-center gap-4">
@@ -734,7 +734,7 @@ export default function ResourceDetailPage() {
 
             {/* History Chart */}
             {!historyLoading && history.length > 1 && (
-              <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+              <div className="mb-6 p-4 bg-guildgamesh-100 dark:bg-stone-800 rounded-lg border border-guildgamesh-200 dark:border-stone-700">
                 <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-4">Quantity Over Time</h4>
                 <div className="relative h-40">
                   <svg
@@ -895,7 +895,7 @@ export default function ResourceDetailPage() {
           </div>
 
           {/* Resource-Specific Contribution Leaderboard */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+          <div className="bg-guildgamesh-50 dark:bg-stone-900 rounded-lg shadow-md p-6 border border-guildgamesh-200 dark:border-stone-800">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Contribution Leaderboard</h3>
               <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
@@ -961,7 +961,7 @@ export default function ResourceDetailPage() {
           </div>
 
           {/* Global Points Leaderboard */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+          <div className="bg-guildgamesh-50 dark:bg-stone-900 rounded-lg shadow-md p-6 border border-guildgamesh-200 dark:border-stone-800">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">🏆 Points Leaderboard</h3>
               <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
@@ -1075,7 +1075,7 @@ export default function ResourceDetailPage() {
                       id={`history-entry-${entry.id}`}
                       className={`group flex items-center justify-between p-4 rounded-lg transition-all duration-300 cursor-pointer ${isHighlighted
                           ? 'bg-guildgamesh-100 dark:bg-guildgamesh-900 border-2 border-guildgamesh-200 dark:border-guildgamesh-700 shadow-md transform scale-[1.02]'
-                          : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600'
+                          : 'bg-guildgamesh-100 dark:bg-stone-800 hover:bg-guildgamesh-200 dark:hover:bg-stone-700'
                         }`}
                       onClick={() => setSelectedPointId(selectedPointId === entry.id ? null : entry.id)}
                     >
