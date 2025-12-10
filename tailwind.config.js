@@ -34,6 +34,11 @@ module.exports = {
     'dark:hover:bg-guildgamesh-50', 'dark:hover:bg-guildgamesh-100', 'dark:hover:bg-guildgamesh-200', 'dark:hover:bg-guildgamesh-300',
     'dark:hover:bg-guildgamesh-400', 'dark:hover:bg-guildgamesh-500', 'dark:hover:bg-guildgamesh-600', 'dark:hover:bg-guildgamesh-700',
     'dark:hover:bg-guildgamesh-800', 'dark:hover:bg-guildgamesh-900',
+    // Stone colors for dark mode backgrounds
+    'bg-stone-700', 'bg-stone-800', 'bg-stone-900', 'bg-stone-950',
+    'dark:bg-stone-700', 'dark:bg-stone-800', 'dark:bg-stone-900', 'dark:bg-stone-950',
+    'hover:bg-stone-700', 'dark:hover:bg-stone-700',
+    'border-stone-700', 'border-stone-800', 'dark:border-stone-700', 'dark:border-stone-800',
   ],
   darkMode: 'class',
   theme: {
