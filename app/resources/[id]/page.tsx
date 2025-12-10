@@ -74,6 +74,7 @@ interface Resource {
 }
 
 export default function ResourceDetailPage() {
+  // Resource details page with Guildgamesh theme (v2)
   const params = useParams()
   const router = useRouter()
   const { data: session, status: sessionStatus } = useSession()
