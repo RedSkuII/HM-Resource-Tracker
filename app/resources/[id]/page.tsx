@@ -424,7 +424,7 @@ export default function ResourceDetailPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 dark:border-primary-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#d4a574] mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">Loading resource details...</p>
         </div>
       </div>
@@ -450,7 +450,7 @@ export default function ResourceDetailPage() {
           </p>
           <button
             onClick={() => router.push('/resources')}
-            className="bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white px-4 py-2 rounded-lg transition-colors"
+            className="bg-[#d4a574] hover:bg-[#c49564] text-white px-4 py-2 rounded-lg transition-colors"
           >
             Back to Resources
           </button>
@@ -571,7 +571,7 @@ export default function ResourceDetailPage() {
                                 setNewQuantity(resource.quantity)
                                 setNewQuantityInput(resource.quantity.toString())
                               }}
-                              className="p-1 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                              className="p-1 text-gray-400 hover:text-[#d4a574] transition-colors"
                               title="Edit quantity"
                             >
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -656,7 +656,7 @@ export default function ResourceDetailPage() {
                         }
                       }}
                       className={`px-3 py-1 rounded text-sm font-medium ${updateType === 'relative'
-                          ? 'bg-primary-100 text-primary-800 dark:bg-primary-900/50 dark:text-primary-200'
+                          ? 'bg-[#f5e6d3] text-[#8b6f47] dark:bg-[#3d3021] dark:text-[#d4a574]'
                           : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
                         }`}
                     >
@@ -698,7 +698,7 @@ export default function ResourceDetailPage() {
                   <button
                     onClick={updateResource}
                     disabled={saving}
-                    className="w-full bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 disabled:opacity-50 text-white py-2 rounded-lg font-medium"
+                    className="w-full bg-[#d4a574] hover:bg-[#c49564] disabled:opacity-50 text-white py-2 rounded-lg font-medium"
                   >
                     {saving ? 'Updating...' : 'Update Quantity'}
                   </button>
@@ -858,7 +858,7 @@ export default function ResourceDetailPage() {
                       </div>
                       <div className="text-gray-300">By: {hoveredPoint.updatedBy}</div>
                       <div className="text-gray-300">{getRelativeTime(hoveredPoint.createdAt, currentTime)}</div>
-                      <div className="text-primary-300 text-center mt-1">Click to highlight</div>
+                      <div className="text-[#d4a574] text-center mt-1">Click to highlight</div>
                     </div>
                   )}
                 </div>
@@ -1006,7 +1006,7 @@ export default function ResourceDetailPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="text-sm font-bold text-primary-600 dark:text-primary-400">
+                      <div className="text-sm font-bold text-[#d4a574]">
                         {entry.totalPoints.toFixed(1)} pts
                       </div>
                       <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1019,7 +1019,7 @@ export default function ResourceDetailPage() {
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                   <button
                     onClick={() => router.push('/dashboard/leaderboard')}
-                    className="w-full bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+                    className="w-full bg-[#d4a574] hover:bg-[#c49564] text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
                   >
                     View Full Leaderboard
                   </button>
@@ -1041,7 +1041,7 @@ export default function ResourceDetailPage() {
                 {selectedPointId && (
                   <button
                     onClick={() => setSelectedPointId(null)}
-                    className="px-3 py-1 text-sm bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 rounded-lg hover:bg-primary-200 dark:hover:bg-primary-900/70 transition-colors"
+                    className="px-3 py-1 text-sm bg-[#f5e6d3] dark:bg-[#3d3021] text-[#8b6f47] dark:text-[#d4a574] rounded-lg hover:bg-[#ead5b8] dark:hover:bg-[#4a3a2a] transition-colors"
                   >
                     Clear Selection
                   </button>
@@ -1053,7 +1053,7 @@ export default function ResourceDetailPage() {
 
             {historyLoading ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 dark:border-primary-500 mx-auto"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#d4a574] mx-auto"></div>
                 <p className="mt-2 text-gray-600 dark:text-gray-400">Loading history...</p>
               </div>
             ) : history.length === 0 ? (
@@ -1073,7 +1073,7 @@ export default function ResourceDetailPage() {
                       key={entry.id}
                       id={`history-entry-${entry.id}`}
                       className={`group flex items-center justify-between p-4 rounded-lg transition-all duration-300 cursor-pointer ${isHighlighted
-                          ? 'bg-primary-100 dark:bg-primary-900/50 border-2 border-primary-300 dark:border-primary-500 shadow-md transform scale-[1.02]'
+                          ? 'bg-[#f5e6d3] dark:bg-[#3d3021] border-2 border-[#e6d4b8] dark:border-[#6b5d4f] shadow-md transform scale-[1.02]'
                           : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600'
                         }`}
                       onClick={() => setSelectedPointId(selectedPointId === entry.id ? null : entry.id)}
@@ -1081,7 +1081,7 @@ export default function ResourceDetailPage() {
                       <div className="flex items-center gap-4">
                         <div className={`w-3 h-3 rounded-full ${entry.changeAmount > 0 ? 'bg-green-500' :
                             entry.changeAmount < 0 ? 'bg-red-500' : 'bg-gray-400'
-                          } ${isHighlighted ? 'ring-2 ring-primary-400 dark:ring-primary-500' : ''}`}></div>
+                          } ${isHighlighted ? 'ring-2 ring-[#d4a574]' : ''}`}></div>
                         <div>
                           <div className="font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
                             {formatNumber(entry.previousQuantity)} → {formatNumber(entry.newQuantity)}
@@ -1092,13 +1092,13 @@ export default function ResourceDetailPage() {
                             </span>
                             {/* Change Type Indicator */}
                             <span className={`text-xs px-2 py-0.5 rounded-full ${entry.changeType === 'relative'
-                                ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300'
+                                ? 'bg-[#f5e6d3] dark:bg-[#3d3021] text-[#8b6f47] dark:text-[#d4a574]'
                                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                               }`}>
                               {entry.changeType === 'relative' ? '+/-' : 'Set'}
                             </span>
                             {isHighlighted && (
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-primary-200 dark:bg-primary-800 text-primary-800 dark:text-primary-200 animate-pulse">
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-[#ead5b8] dark:bg-[#5a4a3a] text-[#6b5339] dark:text-[#d4a574] animate-pulse">
                                 Selected
                               </span>
                             )}
@@ -1106,7 +1106,7 @@ export default function ResourceDetailPage() {
                           <div className="text-sm text-gray-600 dark:text-gray-400">
                             By <span className="font-medium">{entry.updatedBy}</span>
                             {entry.reason && (
-                              <span className="ml-2 text-primary-600 dark:text-primary-400">• {entry.reason}</span>
+                              <span className="ml-2 text-[#d4a574]">• {entry.reason}</span>
                             )}
                             {entry.changeType === 'relative' && (
                               <span className="ml-2 text-green-600 dark:text-green-400 text-xs">• Counts toward leaderboard</span>
@@ -1123,7 +1123,7 @@ export default function ResourceDetailPage() {
                             {getRelativeTime(entry.createdAt, currentTime)}
                           </div>
                           {isHighlighted && (
-                            <div className="text-xs text-primary-600 dark:text-primary-400 mt-1">📍 Chart point</div>
+                            <div className="text-xs text-[#d4a574] mt-1">📍 Chart point</div>
                           )}
                         </div>
                         
