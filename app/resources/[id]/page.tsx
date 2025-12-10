@@ -1,4 +1,5 @@
 'use client'
+// Using guildgamesh-* color classes for Guildgamesh brand theme
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'

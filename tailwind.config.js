@@ -5,6 +5,10 @@ module.exports = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  safelist: [
+    // Ensure Guildgamesh theme colors are always included in build
+    { pattern: /^(bg|text|border|hover:bg|hover:text|dark:bg|dark:text|dark:border)-guildgamesh-(50|100|200|300|400|500|600|700|800|900)$/ },
+  ],
   darkMode: 'class',
   theme: {
     extend: {
