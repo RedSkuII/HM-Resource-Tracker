@@ -1,4 +1,5 @@
 'use client'
+// Guildgamesh sand theme site-wide (updated Dec 13 2025 - cache bust v5)
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
@@ -112,9 +113,9 @@ export default function ActivityLogPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-guildgamesh-50 dark:bg-stone-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-guildgamesh-400 mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
@@ -122,9 +123,9 @@ export default function ActivityLogPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen bg-guildgamesh-50 dark:bg-stone-950 transition-colors duration-300">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-guildgamesh-100 dark:bg-stone-900 shadow-sm border-b border-guildgamesh-200 dark:border-stone-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
@@ -145,7 +146,7 @@ export default function ActivityLogPage() {
               <select
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(parseInt(e.target.value))}
-                className="border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="border border-guildgamesh-300 dark:border-stone-700 rounded px-3 py-1 text-sm bg-guildgamesh-100 dark:bg-stone-800 text-gray-900 dark:text-gray-100"
               >
                 <option value={7}>Last 7 days</option>
                 <option value={14}>Last 14 days</option>
@@ -176,7 +177,7 @@ export default function ActivityLogPage() {
         ) : (
           <div className="space-y-6">
             {/* Summary Stats */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+            <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow p-6 border border-guildgamesh-200 dark:border-stone-700">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Summary</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center">
@@ -199,7 +200,7 @@ export default function ActivityLogPage() {
             </div>
 
             {/* Activity Timeline */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+            <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow p-6 border border-guildgamesh-200 dark:border-stone-700">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Activity Timeline</h2>
               <div className="space-y-4">
                 {activities.map((activity) => (
@@ -214,14 +215,14 @@ export default function ActivityLogPage() {
                           <div className="flex items-center gap-2 mb-1">
                             <Link
                               href={`/resources/${activity.resourceId}`}
-                              className="font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                              className="font-medium text-gray-900 dark:text-gray-100 hover:text-guildgamesh-600 dark:hover:text-guildgamesh-400 transition-colors"
                             >
                               {activity.resourceName}
                             </Link>
                             <span className={`text-xs px-2 py-0.5 rounded-full ${
                               activity.changeType === 'relative' 
-                                ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300' 
-                                : 'bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300'
+                                ? 'bg-guildgamesh-200 dark:bg-stone-800/50 text-guildgamesh-700 dark:text-guildgamesh-300' 
+                                : 'bg-gray-100 dark:bg-stone-800/30 text-gray-700 dark:text-gray-300'
                             }`}>
                               {activity.changeType === 'relative' ? '+/-' : 'Set'}
                             </span>

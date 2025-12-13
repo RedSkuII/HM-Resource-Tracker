@@ -1,4 +1,5 @@
 'use client'
+// Guildgamesh sand theme site-wide (updated Dec 13 2025 - cache bust v5)
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
@@ -113,7 +114,7 @@ export default function PrivacyPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-guildgamesh-50 dark:bg-stone-950 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
@@ -127,7 +128,7 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-guildgamesh-100 dark:bg-stone-900 shadow-sm border-b border-guildgamesh-200 dark:border-stone-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
@@ -171,7 +172,7 @@ export default function PrivacyPage() {
           )}
           
           {/* Data Rights Overview */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+          <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow p-6 border border-guildgamesh-200 dark:border-stone-700">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Your Data Rights</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Under GDPR and other privacy regulations, you have certain rights regarding your personal data. 
@@ -179,7 +180,7 @@ export default function PrivacyPage() {
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
+              <div className="border border-guildgamesh-200 dark:border-stone-700 rounded-lg p-4 bg-guildgamesh-50 dark:bg-stone-800">
                 <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">🔍 Right to Access</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                   Download all data we have about you, including your resource change history, Discord information, and account settings.
@@ -187,13 +188,13 @@ export default function PrivacyPage() {
                 <button
                   onClick={downloadData}
                   disabled={downloading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  className="w-full bg-guildgamesh-400 hover:bg-guildgamesh-500 dark:bg-guildgamesh-500 dark:hover:bg-guildgamesh-600 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
                   {downloading ? 'Preparing Download...' : 'Download My Data'}
                 </button>
               </div>
 
-              <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
+              <div className="border border-guildgamesh-200 dark:border-stone-700 rounded-lg p-4 bg-guildgamesh-50 dark:bg-stone-800">
                 <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">🗑️ Right to Erasure</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                   Request anonymization of your personal data. This will remove your resource change history but preserve anonymized statistics.
@@ -210,7 +211,7 @@ export default function PrivacyPage() {
           </div>
 
           {/* Data We Collect */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+          <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow p-6 border border-guildgamesh-200 dark:border-stone-700">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Data We Collect</h2>
             <div className="space-y-4">
               <div>
@@ -235,7 +236,7 @@ export default function PrivacyPage() {
           </div>
 
           {/* Data Retention */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+          <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow p-6 border border-guildgamesh-200 dark:border-stone-700">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Data Retention</h2>
             <div className="space-y-4">
               <div>
