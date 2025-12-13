@@ -147,7 +147,7 @@ export default function UserContributionsPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-guildgamesh-400 dark:border-guildgamesh-500 mx-auto"></div>
             <p className="mt-4 text-gray-600 dark:text-gray-300">Loading contributions...</p>
           </div>
         </div>
@@ -163,7 +163,7 @@ export default function UserContributionsPage() {
             <p className="text-red-600 dark:text-red-400">{error}</p>
             <button
               onClick={() => router.push('/resources')}
-              className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+              className="mt-4 bg-guildgamesh-400 hover:bg-guildgamesh-500 dark:bg-guildgamesh-500 dark:hover:bg-guildgamesh-600 text-white px-4 py-2 rounded-lg"
             >
               Back to Resources
             </button>
@@ -181,7 +181,7 @@ export default function UserContributionsPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -201,11 +201,11 @@ export default function UserContributionsPage() {
 
           {/* Summary Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <div className="bg-guildgamesh-50 dark:bg-guildgamesh-900 rounded-lg p-4">
+              <div className="text-2xl font-bold text-guildgamesh-600 dark:text-guildgamesh-400">
                 {(data.summary?.totalPoints || 0).toFixed(1)}
               </div>
-              <div className="text-sm text-blue-700 dark:text-blue-300">Total Points</div>
+              <div className="text-sm text-guildgamesh-700 dark:text-guildgamesh-300">Total Points</div>
             </div>
             <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
@@ -223,7 +223,7 @@ export default function UserContributionsPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 mb-6">
           <div className="flex items-center gap-4">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Time Period:
@@ -231,7 +231,7 @@ export default function UserContributionsPage() {
             <select
               value={timeFilter}
               onChange={(e) => handleTimeFilterChange(e.target.value)}
-              className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+              className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-guildgamesh-500"
             >
               {timeFilterOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -243,7 +243,7 @@ export default function UserContributionsPage() {
         </div>
 
         {/* Contributions List */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -259,7 +259,7 @@ export default function UserContributionsPage() {
 
           {loading ? (
             <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-guildgamesh-400 dark:border-guildgamesh-500 mx-auto"></div>
               <p className="mt-2 text-gray-600 dark:text-gray-300">Loading...</p>
             </div>
           ) : data.contributions.length === 0 ? (
@@ -332,7 +332,7 @@ export default function UserContributionsPage() {
         </div>
 
         {/* Points System Info */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-6 mt-6">
+        <div className="bg-guildgamesh-50 dark:bg-guildgamesh-900 border border-guildgamesh-200 dark:border-guildgamesh-700 rounded-lg p-6 mt-6">
           <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-3">
             📊 How Points Work
           </h3>

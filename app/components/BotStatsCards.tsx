@@ -72,7 +72,7 @@ export function BotStatsCards({ guildId }: BotStatsCardsProps) {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg border border-sand-200 dark:border-primary-700/40-lg p-6">
+      <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg border border-sand-200 dark:border-primary-700/40-lg p-6">
         <div className="animate-pulse">
           <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -109,7 +109,7 @@ export function BotStatsCards({ guildId }: BotStatsCardsProps) {
         <select
           value={timeFilter}
           onChange={(e) => setTimeFilter(e.target.value as any)}
-          className="px-4 py-2 border border-sand-200 dark:border-primary-700/40 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary-500"
+          className="px-4 py-2 border border-sand-200 dark:border-primary-700/40 rounded-lg bg-guildgamesh-100 dark:bg-stone-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary-500"
         >
           <option value="24h">Last 24 Hours</option>
           <option value="7d">Last 7 Days</option>
@@ -121,7 +121,7 @@ export function BotStatsCards({ guildId }: BotStatsCardsProps) {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Orders */}
-        <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg border border-sand-200 dark:border-primary-700/40 p-6 border border-sand-200 dark:border-primary-700/30">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg border border-sand-200 dark:border-primary-700/40 p-6 border border-sand-200 dark:border-primary-700/30">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Total Orders</p>
@@ -139,7 +139,7 @@ export function BotStatsCards({ guildId }: BotStatsCardsProps) {
         </div>
 
         {/* Filled Orders */}
-        <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg border border-sand-200 dark:border-primary-700/40 p-6 border border-sand-200 dark:border-primary-700/30">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg border border-sand-200 dark:border-primary-700/40 p-6 border border-sand-200 dark:border-primary-700/30">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Filled Orders</p>
@@ -157,7 +157,7 @@ export function BotStatsCards({ guildId }: BotStatsCardsProps) {
         </div>
 
         {/* Active Users */}
-        <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg border border-sand-200 dark:border-primary-700/40 p-6 border border-sand-200 dark:border-primary-700/30">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg border border-sand-200 dark:border-primary-700/40 p-6 border border-sand-200 dark:border-primary-700/30">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Active Users</p>
@@ -175,7 +175,7 @@ export function BotStatsCards({ guildId }: BotStatsCardsProps) {
         </div>
 
         {/* Points Awarded */}
-        <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg border border-sand-200 dark:border-primary-700/40 p-6 border border-sand-200 dark:border-primary-700/30">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg border border-sand-200 dark:border-primary-700/40 p-6 border border-sand-200 dark:border-primary-700/30">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Points Awarded</p>
@@ -198,7 +198,7 @@ export function BotStatsCards({ guildId }: BotStatsCardsProps) {
       {/* Event Breakdown & Top Contributors */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Event Breakdown */}
-        <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg border border-sand-200 dark:border-primary-700/40 p-6 border border-sand-200 dark:border-primary-700/30">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg border border-sand-200 dark:border-primary-700/40 p-6 border border-sand-200 dark:border-primary-700/30">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Activity Breakdown
           </h3>
@@ -234,7 +234,7 @@ export function BotStatsCards({ guildId }: BotStatsCardsProps) {
         </div>
 
         {/* Top Contributors */}
-        <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg border border-sand-200 dark:border-primary-700/40 p-6 border border-sand-200 dark:border-primary-700/30">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg border border-sand-200 dark:border-primary-700/40 p-6 border border-sand-200 dark:border-primary-700/30">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             🏆 Top Contributors
           </h3>
@@ -274,7 +274,7 @@ export function BotStatsCards({ guildId }: BotStatsCardsProps) {
 
       {/* Daily Trend Chart */}
       {stats.dailyTrend.length > 0 && (
-        <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg border border-sand-200 dark:border-primary-700/40 p-6 border border-sand-200 dark:border-primary-700/30">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg border border-sand-200 dark:border-primary-700/40 p-6 border border-sand-200 dark:border-primary-700/30">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             📈 Activity Trend (Last 7 Days)
           </h3>

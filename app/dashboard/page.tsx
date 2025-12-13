@@ -76,7 +76,7 @@ export default async function Dashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* User Info Card */}
-            <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
+            <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Profile</h2>
               <div className="space-y-3">
                 {session.user.image && (
@@ -99,7 +99,7 @@ export default async function Dashboard() {
             </div>
 
             {/* Community Status Card */}
-            <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
+            <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Community Status</h2>
                 <RefreshRolesButton />
@@ -151,7 +151,7 @@ export default async function Dashboard() {
 
           {/* Quick Actions */}
           <div className="mt-8">
-            <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
+            <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Quick Actions</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Link

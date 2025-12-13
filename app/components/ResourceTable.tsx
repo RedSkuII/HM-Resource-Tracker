@@ -1024,7 +1024,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       {/* Dashboard Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Updates */}
-        <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Updates</h3>
             <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1073,7 +1073,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
         </div>
 
         {/* Leaderboard */}
-        <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">🏆 Leaderboard</h3>
             <div className="flex items-center gap-2">
@@ -1325,7 +1325,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       )}
 
       {/* Search and View Toggle */}
-      <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
+      <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
         <div className="flex flex-col gap-4">
           {/* Search and Filters Row */}
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -1448,7 +1448,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
 
       {/* Create Resource Form */}
       {isResourceAdmin && showCreateForm && (
-        <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
           <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Create New Resource</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -2017,7 +2017,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-sand-200 dark:divide-primary-700/30">
+              <tbody className="bg-guildgamesh-100 dark:bg-stone-800 divide-y divide-sand-200 dark:divide-primary-700/30">
                 {filteredResources.map((resource) => {
                   const status = calculateResourceStatus(resource.quantity, resource.targetQuantity || 0)
                   const statusChange = statusChanges.get(resource.id)
@@ -2330,7 +2330,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       {/* Delete Confirmation Dialog */}
       {deleteConfirm.showDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4 border border-sand-200 dark:border-primary-700/30">
+          <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg p-6 max-w-md mx-4 border border-sand-200 dark:border-primary-700/30">
             <div className="flex items-center gap-3 mb-4">
               <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.888-.833-2.664 0L4.232 15.5c-.77.833.192 2.5 1.732 2.5z" />
@@ -2385,7 +2385,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-sand-200 dark:border-primary-700/30 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6 rounded-lg mt-6">
+        <div className="flex items-center justify-between border-t border-sand-200 dark:border-primary-700/30 bg-guildgamesh-100 dark:bg-stone-800 px-4 py-3 sm:px-6 rounded-lg mt-6">
           <div className="flex flex-1 justify-between sm:hidden">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}

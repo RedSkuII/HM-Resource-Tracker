@@ -99,7 +99,7 @@ export default function LeaderboardPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
@@ -150,7 +150,7 @@ export default function LeaderboardPage() {
         )}
 
         {/* Leaderboard */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Rankings ({timeFilterOptions.find(opt => opt.value === timeFilter)?.label})

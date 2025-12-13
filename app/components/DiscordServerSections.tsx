@@ -91,13 +91,13 @@ export function DiscordServerSections({
   return (
     <div className="space-y-6">
       {serversWithBot.length === 0 ? (
-        <div className="text-center py-8 bg-white dark:bg-stone-900 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-lg">
+        <div className="text-center py-8 bg-guildgamesh-100 dark:bg-stone-800 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-lg">
           <p className="text-gray-500 dark:text-gray-400">
             No Discord servers found with the bot installed. Make sure the bot is added to your server and guilds are configured.
           </p>
         </div>
       ) : paginatedServerIds.length === 0 ? (
-        <div className="text-center py-8 bg-white dark:bg-stone-900 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-lg">
+        <div className="text-center py-8 bg-guildgamesh-100 dark:bg-stone-800 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-lg">
           <p className="text-gray-500 dark:text-gray-400">No servers on this page</p>
         </div>
       ) : (
@@ -110,7 +110,7 @@ export function DiscordServerSections({
           return (
             <div
               key={serverId}
-              className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-xl border border-sand-200 dark:border-primary-700/40 overflow-hidden"
+              className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-xl border border-sand-200 dark:border-primary-700/40 overflow-hidden"
             >
               {/* Server Header */}
               <div className="bg-guildgamesh-gradient p-4 flex items-center justify-between">

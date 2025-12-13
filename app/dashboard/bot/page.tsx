@@ -636,7 +636,7 @@ export default function BotDashboardPage() {
   if (status === 'unauthenticated') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sand-50 via-sand-100 to-primary-100 dark:bg-gradient-to-br dark:from-stone-950 dark:via-stone-900 dark:to-stone-950 flex items-center justify-center">
-        <div className="text-center bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg p-8 max-w-md border border-sand-200 dark:border-primary-700/40">
+        <div className="text-center bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-8 max-w-md border border-sand-200 dark:border-primary-700/40">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Authentication Required</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             Please sign in with Discord to access the bot dashboard.
@@ -772,7 +772,7 @@ export default function BotDashboardPage() {
 
         {/* Bot Not Present - Show Add Bot UI */}
         {selectedDiscordServerId && !checkingBotStatus && !botIsPresent && (
-          <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg p-8 mb-6 text-center border border-sand-200 dark:border-primary-700/40">
+          <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-8 mb-6 text-center border border-sand-200 dark:border-primary-700/40">
             <div className="mb-6">
               <div className="mx-auto w-16 h-16 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mb-4">
                 <svg className="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -807,7 +807,7 @@ export default function BotDashboardPage() {
 
         {/* Checking Bot Status */}
         {checkingBotStatus && (
-          <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg p-8 mb-6 text-center border border-sand-200 dark:border-primary-700/40">
+          <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-8 mb-6 text-center border border-sand-200 dark:border-primary-700/40">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
             <p className="text-gray-600 dark:text-gray-400">Checking bot status...</p>
           </div>
@@ -815,7 +815,7 @@ export default function BotDashboardPage() {
 
         {/* Configuration Panel */}
         {selectedInGameGuildId && botIsPresent && !checkingBotStatus && (
-          <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg shadow-lg p-6 mb-6 border border-sand-200 dark:border-primary-700/40">
+          <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 mb-6 border border-sand-200 dark:border-primary-700/40">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               Configuration for {inGameGuilds.find(g => g.id === selectedInGameGuildId)?.title || 'Guild'}
             </h2>
@@ -1159,7 +1159,7 @@ export default function BotDashboardPage() {
               {/* Delete Confirmation Modal */}
               {showDeleteConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-xl max-w-md w-full p-6">
+                  <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-xl max-w-md w-full p-6">
                     <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4">
                       ⚠️ Confirm Deletion
                     </h3>
@@ -1202,7 +1202,7 @@ export default function BotDashboardPage() {
               {/* Delete Guild Confirmation Modal */}
               {showDeleteGuildConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-xl max-w-md w-full p-6">
+                  <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-xl max-w-md w-full p-6">
                     <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4">
                       💥 Confirm Guild Deletion
                     </h3>
@@ -1250,7 +1250,7 @@ export default function BotDashboardPage() {
               {/* Reset to Defaults Confirmation Modal */}
               {showResetConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-xl max-w-md w-full p-6">
+                  <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-xl max-w-md w-full p-6">
                     <h3 className="text-xl font-bold text-primary-600 dark:text-primary-400 mb-4">
                       🔄 Confirm Reset to Defaults
                     </h3>
@@ -1315,7 +1315,7 @@ export default function BotDashboardPage() {
 
         {/* Placeholder for Activity Logs */}
         {selectedDiscordServerId && (
-          <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-lg p-6">
+          <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Activity Log
@@ -1467,7 +1467,7 @@ export default function BotDashboardPage() {
       {/* Documentation Modal */}
       {showDocumentation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gradient-to-br dark:from-stone-900 dark:to-stone-950 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+          <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg border border-sand-200 dark:border-primary-700/40 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-sand-200 dark:border-primary-700/30">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
