@@ -9,7 +9,7 @@ import { hasResourceAccess } from '@/lib/discord-roles'
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions)
   
-  if (!session || !hasResourceAccess(session.user.roles)) {
+  if (!session || !session.user.permissions?.hasResourceAccess) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
