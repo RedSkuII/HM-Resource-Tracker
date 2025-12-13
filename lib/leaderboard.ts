@@ -17,9 +17,6 @@ const STATUS_BONUSES = {
   surplus: 0.0           // 0%
 }
 
-// Categories that are eligible for points (Raw, Components, and Refined)
-const ELIGIBLE_CATEGORIES = ['Raw', 'Components', 'Refined']
-
 export interface PointsCalculation {
   basePoints: number
   resourceMultiplier: number
@@ -37,8 +34,8 @@ export function calculatePoints(
   resourceStatus: string,
   resourceCategory: string
 ): PointsCalculation {
-  // No points for REMOVE actions or ineligible categories
-  if (actionType === 'REMOVE' || !ELIGIBLE_CATEGORIES.includes(resourceCategory as any)) {
+  // No points for REMOVE actions or if multiplier is 0 (which represents -100% in UI)
+  if (actionType === 'REMOVE' || resourceMultiplier === 0) {
     return {
       basePoints: 0,
       resourceMultiplier,
