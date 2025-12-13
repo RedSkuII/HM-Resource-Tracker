@@ -4,6 +4,19 @@ const nextConfig = {
     // Force new build ID for cache busting - v4 theme update Dec 12 2025
     return 'guildgamesh-theme-v4-' + Date.now()
   },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate, max-age=0',
+          },
+        ],
+      },
+    ]
+  },
   experimental: {
     serverComponentsExternalPackages: ['@libsql/client', 'libsql']
   },

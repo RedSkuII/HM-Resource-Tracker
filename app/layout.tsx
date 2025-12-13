@@ -14,7 +14,14 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.ico',
   },
+  other: {
+    'version': 'v4-theme-update-' + Date.now(),
+  },
 }
+
+// Force dynamic rendering to prevent static optimization caching
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default function RootLayout({
   children,
