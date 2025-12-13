@@ -1,4 +1,5 @@
 'use client'
+// Guildgamesh sand theme site-wide (updated Dec 12 2025 - cache bust v4)
 
 import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'

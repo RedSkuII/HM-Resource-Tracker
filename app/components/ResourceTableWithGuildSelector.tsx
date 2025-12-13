@@ -1,4 +1,5 @@
 'use client'
+// Guildgamesh sand theme site-wide (updated Dec 12 2025 - cache bust v4)
 
 import { useState, useEffect } from 'react'
 import GuildSelector from './GuildSelector'

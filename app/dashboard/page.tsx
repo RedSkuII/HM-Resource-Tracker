@@ -1,3 +1,4 @@
+// Guildgamesh sand theme site-wide (updated Dec 12 2025 - cache bust v4)
 import { getServerSession } from 'next-auth'
 import { authOptions, getDisplayName } from '@/lib/auth'
 import { redirect } from 'next/navigation'
