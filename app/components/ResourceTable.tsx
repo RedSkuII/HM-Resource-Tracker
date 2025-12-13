@@ -76,7 +76,7 @@ const getStatusBackgroundColor = (status: string): string => {
     case 'above_target':
       return 'bg-purple-50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800'
     default:
-      return 'bg-sand-50 dark:bg-stone-900 border-sand-200 dark:border-primary-700/40'
+      return 'bg-guildgamesh-100 dark:bg-stone-900 border-guildgamesh-300 dark:border-primary-700/40'
   }
 }
 
@@ -1025,7 +1025,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       {/* Dashboard Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Updates */}
-        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-guildgamesh-300 dark:border-primary-700/40">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Updates</h3>
             <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1074,7 +1074,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
         </div>
 
         {/* Leaderboard */}
-        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-guildgamesh-300 dark:border-primary-700/40">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">🏆 Leaderboard</h3>
             <div className="flex items-center gap-2">
@@ -1185,7 +1185,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
           </div>
           
           {showCreateForm && (
-            <div className="bg-white dark:bg-stone-900 rounded-lg p-4 border border-sand-200 dark:border-primary-700/40">
+            <div className="bg-white dark:bg-stone-900 rounded-lg p-4 border border-guildgamesh-300 dark:border-primary-700/40">
               <h4 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">Create New Resource</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -1326,7 +1326,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       )}
 
       {/* Search and View Toggle */}
-      <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
+      <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-guildgamesh-300 dark:border-primary-700/40">
         <div className="flex flex-col gap-4">
           {/* Search and Filters Row */}
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -1428,7 +1428,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
 
         {/* Admin Add Button */}
         {isResourceAdmin && !showCreateForm && (
-          <div className="mt-4 pt-4 border-t border-sand-200 dark:border-primary-700/30">
+          <div className="mt-4 pt-4 border-t border-guildgamesh-300 dark:border-primary-700/30">
             <button
               onClick={() => setShowCreateForm(true)}
               className="bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
@@ -1449,7 +1449,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
 
       {/* Create Resource Form */}
       {isResourceAdmin && showCreateForm && (
-        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
+        <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-guildgamesh-300 dark:border-primary-700/40">
           <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Create New Resource</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -1648,7 +1648,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
             })
             .map(([category, categoryResources]) => (
             <div key={category} className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 border-b border-sand-200 dark:border-primary-700/30 pb-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 border-b border-guildgamesh-300 dark:border-primary-700/30 pb-2">
                 {category} ({categoryResources.length})
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -1663,7 +1663,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                       className={`bg-white dark:bg-stone-900 border rounded-lg p-4 hover:shadow-md transition-all cursor-pointer group ${
                         isStale 
                           ? 'border-amber-300 dark:border-amber-600 ring-1 ring-amber-200 dark:ring-amber-800 bg-amber-50/50 dark:bg-amber-900/10' 
-                          : 'border-sand-200 dark:border-primary-700/30'
+                          : 'border-guildgamesh-300 dark:border-primary-700/30'
                       }`}
                       onClick={() => handleResourceClick(resource.id)}
                       title={isStale ? "⚠️ Not updated in 48+ hours - Click to view details" : "Click to view detailed resource information"}
@@ -1715,7 +1715,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                             className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             resource.multiplier === 0 ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' :
                             (resource.multiplier || 1.0) >= 3.0 ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200' :
-                            (resource.multiplier || 1.0) >= 2.0 ? 'bg-sand-100 dark:bg-stone-800/50 text-primary-800 dark:text-primary-200' :
+                            (resource.multiplier || 1.0) >= 2.0 ? 'bg-guildgamesh-200 dark:bg-stone-800/50 text-primary-800 dark:text-primary-200' :
                             (resource.multiplier || 1.0) >= 1.0 ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200' :
                             'bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200'
                           }`}
@@ -1742,7 +1742,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                         </div>
 
                         {/* Last Updated Info */}
-                        <div className="text-center pt-2 border-t border-sand-100 dark:border-primary-700/30">
+                        <div className="text-center pt-2 border-t border-guildgamesh-200 dark:border-primary-700/30">
                           <div 
                             className="text-xs text-gray-500 dark:text-gray-400"
                             title={`Last person to update this resource's quantity`}
@@ -1915,7 +1915,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                     activateInput(resource.id, 'relative')
                                   }}
                                   title="Add or remove quantity (e.g., +50 to add 50, -20 to remove 20). Earn points based on amount added."
-                                  className="flex-1 bg-sand-100 dark:bg-stone-800/50 hover:bg-sand-200 dark:hover:bg-stone-800/70 text-primary-700 dark:text-primary-300 px-2 py-1 rounded text-xs font-medium transition-colors"
+                                  className="flex-1 bg-guildgamesh-200 dark:bg-stone-800/50 hover:bg-guildgamesh-300 dark:hover:bg-stone-800/70 text-primary-700 dark:text-primary-300 px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   Add/Remove
                                 </button>
@@ -1988,7 +1988,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
 
       {/* Table View */}
       {viewMode === 'table' && (
-        <div className="bg-white dark:bg-stone-900 shadow-lg border border-sand-200 dark:border-primary-700/40 rounded-lg overflow-hidden border border-sand-200 dark:border-primary-700/30">
+        <div className="bg-white dark:bg-stone-900 shadow-lg border border-guildgamesh-300 dark:border-primary-700/40 rounded-lg overflow-hidden border border-guildgamesh-300 dark:border-primary-700/30">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-sand-200 dark:divide-primary-700/30">
               <thead className="bg-gray-50 dark:bg-gray-900">
@@ -2077,7 +2077,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           resource.multiplier === 0 ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' :
                           (resource.multiplier || 1.0) >= 3.0 ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200' :
-                          (resource.multiplier || 1.0) >= 2.0 ? 'bg-sand-100 dark:bg-stone-800/50 text-primary-800 dark:text-primary-200' :
+                          (resource.multiplier || 1.0) >= 2.0 ? 'bg-guildgamesh-200 dark:bg-stone-800/50 text-primary-800 dark:text-primary-200' :
                           (resource.multiplier || 1.0) >= 1.0 ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200' :
                           'bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200'
                         }`}
@@ -2250,7 +2250,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                                 <button
                                   onClick={() => activateInput(resource.id, 'relative')}
                                   title="Add or remove quantity (e.g., +50 to add 50, -20 to remove 20). Earn points based on amount added."
-                                  className="flex-1 bg-sand-100 dark:bg-stone-800/50 hover:bg-sand-200 dark:hover:bg-stone-800/70 text-primary-700 dark:text-primary-300 px-2 py-1 rounded text-xs font-medium transition-colors"
+                                  className="flex-1 bg-guildgamesh-200 dark:bg-stone-800/50 hover:bg-guildgamesh-300 dark:hover:bg-stone-800/70 text-primary-700 dark:text-primary-300 px-2 py-1 rounded text-xs font-medium transition-colors"
                                 >
                                   Add/Remove
                                 </button>
@@ -2331,7 +2331,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       {/* Delete Confirmation Dialog */}
       {deleteConfirm.showDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg p-6 max-w-md mx-4 border border-sand-200 dark:border-primary-700/30">
+          <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg p-6 max-w-md mx-4 border border-guildgamesh-300 dark:border-primary-700/30">
             <div className="flex items-center gap-3 mb-4">
               <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.888-.833-2.664 0L4.232 15.5c-.77.833.192 2.5 1.732 2.5z" />
@@ -2386,7 +2386,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-sand-200 dark:border-primary-700/30 bg-guildgamesh-100 dark:bg-stone-800 px-4 py-3 sm:px-6 rounded-lg mt-6">
+        <div className="flex items-center justify-between border-t border-guildgamesh-300 dark:border-primary-700/30 bg-guildgamesh-100 dark:bg-stone-800 px-4 py-3 sm:px-6 rounded-lg mt-6">
           <div className="flex flex-1 justify-between sm:hidden">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -2485,3 +2485,4 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
     </div>
   )
 } 
+

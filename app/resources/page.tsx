@@ -18,7 +18,7 @@ export default async function ResourcesPage() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sand-50 via-sand-100 to-primary-100 dark:bg-gradient-to-br dark:from-stone-950 dark:via-stone-900 dark:to-stone-950 transition-colors duration-300">
+    <div className="min-h-screen bg-guildgamesh-50 dark:bg-gradient-to-br dark:from-stone-950 dark:via-stone-900 dark:to-stone-950 transition-colors duration-300">
       <ClientNavigation title={process.env.NEXT_PUBLIC_ORG_NAME || 'Guildgamesh'} showDashboardLink={true} />
 
       <main className="container mx-auto px-4 py-8">
@@ -37,3 +37,4 @@ export default async function ResourcesPage() {
     </div>
   )
 } 
+

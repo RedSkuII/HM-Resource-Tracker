@@ -6,7 +6,7 @@
 /* Guildgamesh Desert Theme - Global Styles */
 @layer base {
   body {
-    @apply bg-sand-50 text-gray-900;
+    @apply bg-guildgamesh-100 text-gray-900;
   }
   
   body.dark {

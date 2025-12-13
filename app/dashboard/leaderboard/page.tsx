@@ -85,7 +85,7 @@ export default function LeaderboardPage() {
 
   if (loading && !data) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+      <div className="min-h-screen bg-guildgamesh-50 dark:bg-gray-900 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
@@ -247,7 +247,7 @@ export default function LeaderboardPage() {
         </div>
 
         {/* Points System Info */}
-        <div className="bg-sand-50 dark:bg-stone-900/20 border border-sand-200 dark:border-primary-700 rounded-lg p-6 mt-6">
+        <div className="bg-guildgamesh-100 dark:bg-stone-900/20 border border-guildgamesh-300 dark:border-primary-700 rounded-lg p-6 mt-6">
           <h3 className="text-lg font-semibold text-primary-800 dark:text-primary-200 mb-3">
             📊 How Points Work
           </h3>
@@ -264,3 +264,4 @@ export default function LeaderboardPage() {
     </div>
   )
 } 
+

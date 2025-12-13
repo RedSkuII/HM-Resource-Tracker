@@ -103,7 +103,7 @@ export function WhatsNewModal({ isOpen: externalIsOpen, onClose: externalOnClose
                     <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                       {release.title}
                     </h3>
-                    <span className="text-sm bg-sand-100 dark:bg-stone-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
+                    <span className="text-sm bg-guildgamesh-200 dark:bg-stone-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
                       v{release.version}
                     </span>
                   </div>

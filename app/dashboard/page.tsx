@@ -33,7 +33,7 @@ export default async function Dashboard() {
   })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sand-50 via-sand-100 to-primary-100 dark:bg-gradient-to-br dark:from-stone-950 dark:via-stone-900 dark:to-stone-950 transition-colors duration-300">
+    <div className="min-h-screen bg-guildgamesh-50 dark:bg-gradient-to-br dark:from-stone-950 dark:via-stone-900 dark:to-stone-950 transition-colors duration-300">
       <ClientNavigation title={process.env.NEXT_PUBLIC_ORG_NAME || 'Guildgamesh'} showDashboardLink={false} />
 
       <main className="container mx-auto px-4 py-8">
@@ -57,7 +57,7 @@ export default async function Dashboard() {
                     </p>
                     <Link
                       href="/resources"
-                      className="bg-white text-primary-600 hover:bg-sand-50 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 inline-flex"
+                      className="bg-white text-primary-600 hover:bg-guildgamesh-100 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 inline-flex"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -77,7 +77,7 @@ export default async function Dashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* User Info Card */}
-            <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
+            <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-guildgamesh-300 dark:border-primary-700/40">
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Profile</h2>
               <div className="space-y-3">
                 {session.user.image && (
@@ -100,7 +100,7 @@ export default async function Dashboard() {
             </div>
 
             {/* Community Status Card */}
-            <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
+            <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-guildgamesh-300 dark:border-primary-700/40">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Community Status</h2>
                 <RefreshRolesButton />
@@ -152,12 +152,12 @@ export default async function Dashboard() {
 
           {/* Quick Actions */}
           <div className="mt-8">
-            <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-sand-200 dark:border-primary-700/40">
+            <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow-lg p-6 border border-guildgamesh-300 dark:border-primary-700/40">
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Quick Actions</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Link
                   href="/dashboard/activity"
-                  className="p-4 border border-sand-200 dark:border-primary-700/30 rounded-lg bg-sand-50 dark:bg-stone-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                  className="p-4 border border-guildgamesh-300 dark:border-primary-700/30 rounded-lg bg-guildgamesh-100 dark:bg-stone-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
                 >
                   <div className="flex items-center">
                     <svg className="w-6 h-6 text-sand-600 dark:text-sand-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,7 +172,7 @@ export default async function Dashboard() {
 
                 <Link
                   href="/dashboard/privacy"
-                  className="p-4 border border-sand-200 dark:border-primary-700/30 rounded-lg bg-sand-50 dark:bg-stone-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                  className="p-4 border border-guildgamesh-300 dark:border-primary-700/30 rounded-lg bg-guildgamesh-100 dark:bg-stone-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
                 >
                   <div className="flex items-center">
                     <svg className="w-6 h-6 text-primary-600 dark:text-primary-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -189,7 +189,7 @@ export default async function Dashboard() {
                 {session.user.permissions?.hasResourceAdminAccess && (
                   <Link
                     href="/dashboard/bot"
-                    className="p-4 border border-sand-200 dark:border-primary-700/30 rounded-lg bg-sand-50 dark:bg-stone-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                    className="p-4 border border-guildgamesh-300 dark:border-primary-700/30 rounded-lg bg-guildgamesh-100 dark:bg-stone-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
                   >
                     <div className="flex items-center">
                       <svg className="w-6 h-6 text-sand-600 dark:text-sand-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -211,3 +211,4 @@ export default async function Dashboard() {
     </div>
   )
 } 
+
