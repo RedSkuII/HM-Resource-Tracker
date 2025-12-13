@@ -1,4 +1,5 @@
 'use client'
+// Guildgamesh sand theme site-wide (updated Dec 13 2025 - cache bust v5)
 
 import { useSession } from 'next-auth/react'
 
@@ -10,7 +11,7 @@ export function NicknameSettings() {
   const displayName = session.user.discordNickname || session.user.name || 'Unknown User'
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-gray-200 dark:border-gray-700">
+    <div className="bg-guildgamesh-100 dark:bg-stone-800 rounded-lg shadow p-4 border border-guildgamesh-200 dark:border-stone-700">
       <h2 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Display Name</h2>
       
       <div className="space-y-3">
@@ -36,7 +37,7 @@ export function NicknameSettings() {
         </div>
 
         {/* Info */}
-        <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <div className="p-3 bg-guildgamesh-50 dark:bg-stone-800/30 rounded-lg">
           <p className="text-xs text-gray-600 dark:text-gray-400">
             💡 Your display name is automatically synced from Discord. 
             {session.user.discordNickname 

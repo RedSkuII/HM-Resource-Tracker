@@ -204,7 +204,7 @@ export default function ActivityLogPage() {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Activity Timeline</h2>
               <div className="space-y-4">
                 {activities.map((activity) => (
-                  <div key={activity.id} className="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                  <div key={activity.id} className="flex items-start gap-4 p-4 bg-guildgamesh-50 dark:bg-stone-800/50 rounded-lg hover:bg-guildgamesh-100 dark:hover:bg-stone-700 transition-colors">
                     <div className={`w-3 h-3 rounded-full mt-2 ${
                       activity.changeAmount > 0 ? 'bg-green-500' : 
                       activity.changeAmount < 0 ? 'bg-red-500' : 'bg-gray-400'

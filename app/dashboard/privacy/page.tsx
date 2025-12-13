@@ -126,7 +126,7 @@ export default function PrivacyPage() {
   const displayName = session ? getDisplayName(session.user) : 'User'
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen bg-guildgamesh-50 dark:bg-stone-950 transition-colors duration-300">
       {/* Header */}
       <div className="bg-guildgamesh-100 dark:bg-stone-900 shadow-sm border-b border-guildgamesh-200 dark:border-stone-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

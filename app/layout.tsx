@@ -1,4 +1,4 @@
-// Guildgamesh sand theme site-wide (updated Dec 12 2025 - cache bust v4)
+// Guildgamesh sand theme site-wide (updated Dec 13 2025 - cache bust v5)
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
