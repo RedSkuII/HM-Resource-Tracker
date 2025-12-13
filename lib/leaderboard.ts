@@ -17,8 +17,8 @@ const STATUS_BONUSES = {
   surplus: 0.0           // 0%
 }
 
-// Categories that are eligible for points (Raw, Component, and Refined)
-const ELIGIBLE_CATEGORIES = ['Raw', 'Component', 'Refined']
+// Categories that are eligible for points (Raw, Components, and Refined)
+const ELIGIBLE_CATEGORIES = ['Raw', 'Components', 'Refined']
 
 export interface PointsCalculation {
   basePoints: number
