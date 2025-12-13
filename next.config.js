@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  generateBuildId: async () => {
+    // Force new build ID for cache busting - v4 theme update Dec 12 2025
+    return 'guildgamesh-theme-v4-' + Date.now()
+  },
   experimental: {
     serverComponentsExternalPackages: ['@libsql/client', 'libsql']
   },
