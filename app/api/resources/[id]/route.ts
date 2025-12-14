@@ -288,32 +288,6 @@ export async function DELETE(
       }
     }
 
-  try {
-    // Check if resource exists
-    const resource = await db.select().from(resources).where(eq(resources.id, params.id))
-    if (resource.length === 0) {
-      return NextResponse.json({ error: 'Resource not found' }, { status: 404 })
-    }
-
-    // Verify user has access to the resource's guild
-    if (resource[0].guildId) {
-      const discordToken = (session as any).accessToken
-      if (discordToken) {
-        const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
-          headers: { 'Authorization': `Bearer ${discordToken}` },
-        })
-        if (discordResponse.ok) {
-          const servers = await discordResponse.json()
-          const userDiscordServers = servers.map((server: any) => server.id)
-          const { guilds } = await import('@/lib/db')
-          const guild = await db.select().from(guilds).where(eq(guilds.id, resource[0].guildId!)).limit(1)
-          if (guild.length === 0 || !guild[0].discordGuildId || !userDiscordServers.includes(guild[0].discordGuildId)) {
-            return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
-          }
-        }
-      }
-    }
-
     // Delete all related records first (due to foreign key constraints)
     // 1. Delete leaderboard entries for this resource
     await db.delete(leaderboard).where(eq(leaderboard.resourceId, params.id))
