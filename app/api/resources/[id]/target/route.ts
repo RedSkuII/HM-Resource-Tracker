@@ -12,17 +12,8 @@ export async function PUT(
 ) {
   const session = await getServerSession(authOptions)
   
-  // Check if user is a server owner
-  const { isDiscordServerOwner } = await import('@/lib/discord-roles')
-  const isOwner = isDiscordServerOwner(session)
-  
-  if (!session || !hasResourceAccess(session.user.roles, isOwner)) {
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  // Check for admin role
-  if (!hasTargetEditAccess(session.user.roles, isOwner)) {
-    return NextResponse.json({ error: 'Insufficient permissions - admin access required' }, { status: 403 })
   }
 
   try {
@@ -53,8 +44,22 @@ export async function PUT(
           const userDiscordServers = servers.map((server: any) => server.id)
           const { guilds } = await import('@/lib/db')
           const guild = await db.select().from(guilds).where(eq(guilds.id, resource.guildId!)).limit(1)
+          
           if (guild.length === 0 || !guild[0].discordGuildId || !userDiscordServers.includes(guild[0].discordGuildId)) {
             return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
+          }
+          
+          // Check permissions for THIS specific Discord server
+          const { isDiscordServerOwner } = await import('@/lib/discord-roles')
+          const discordServerId = guild[0].discordGuildId
+          const isOwner = isDiscordServerOwner(session, discordServerId)
+          
+          if (!hasResourceAccess(session.user.roles, isOwner)) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+          }
+          
+          if (!hasTargetEditAccess(session.user.roles, isOwner)) {
+            return NextResponse.json({ error: 'Insufficient permissions - admin access required' }, { status: 403 })
           }
         }
       }
