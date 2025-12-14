@@ -122,8 +122,9 @@ export function hasResourceAccess(userRoles: string[], isServerOwner: boolean = 
   }
   
   if (RESOURCE_ACCESS_ROLES.length === 0) {
-    // Only log once per session, not on every call
-    return true // Allow access when no roles are configured
+    // Secure by default: deny access when no roles are configured
+    // Only server owners can access without configured roles
+    return false
   }
   return userRoles.some(role => RESOURCE_ACCESS_ROLES.includes(role))
 }
@@ -136,8 +137,9 @@ export function hasResourceAdminAccess(userRoles: string[], isServerOwner: boole
   }
   
   if (RESOURCE_ADMIN_ROLES.length === 0) {
-    // Only log once per session, not on every call
-    return true // Allow admin access when no roles are configured
+    // Secure by default: deny admin access when no roles are configured
+    // Only server owners can have admin access without configured roles
+    return false
   }
   return userRoles.some(role => RESOURCE_ADMIN_ROLES.includes(role))
 }
@@ -150,7 +152,8 @@ export function hasTargetEditAccess(userRoles: string[], isServerOwner: boolean 
   }
   
   if (TARGET_ADMIN_ROLES.length === 0) {
-    // Return false silently - server owners will still have access
+    // Secure by default: deny target editing when no roles are configured
+    // Only server owners will still have access
     return false
   }
   return userRoles.some(role => TARGET_ADMIN_ROLES.includes(role))

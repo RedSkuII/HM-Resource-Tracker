@@ -329,6 +329,11 @@ export async function PUT(request: NextRequest) {
     )
     
     if (resourcesToUpdate.length > 0) {
+      const { canAccessGuild } = await getAuthDependencies()
+      const userRoles = session.user.roles || []
+      const hasGlobalAccess = session.user.permissions?.hasResourceAdminAccess || false
+      
+      // Check both Discord server membership AND guild-specific role access
       const discordToken = (session as any).accessToken
       if (discordToken) {
         const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
@@ -343,9 +348,22 @@ export async function PUT(request: NextRequest) {
             (await import('drizzle-orm')).inArray(guilds.id, guildIds)
           )
           
+          // First check: User must be in the Discord server
           for (const guild of relevantGuilds) {
             if (!guild.discordGuildId || !userDiscordServers.includes(guild.discordGuildId)) {
               return NextResponse.json({ error: 'Access denied to one or more guilds' }, { status: 403 })
+            }
+          }
+          
+          // Second check: User must have guild-specific role access (Member/Officer/Leader)
+          // This check is skipped ONLY for users with hasGlobalAccess (Discord server admins with configured admin roles)
+          for (const guildId of guildIds) {
+            const canAccess = await canAccessGuild(guildId, userRoles, hasGlobalAccess)
+            if (!canAccess) {
+              console.log(`[API PUT /api/resources] User ${session.user.name} denied access to guild ${guildId} - lacks guild membership role`)
+              return NextResponse.json({ 
+                error: 'You do not have permission to edit resources for one or more guilds. You must be a member of the guild.' 
+              }, { status: 403 })
             }
           }
         }
