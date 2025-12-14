@@ -33,10 +33,8 @@ export async function GET(request: NextRequest) {
     const discordServerId = searchParams.get('discordServerId')
     const discordToken = (session as any).accessToken
     
-    // Get user roles and global access permission
-    const userRoles = session.user.roles || []
+    // Get user Discord ID for access checks
     const userDiscordId = session.user.id
-    const hasGlobalAccess = session.user.permissions?.hasResourceAdminAccess || false
     
     // Fetch in-game guilds, filtered by Discord server ID or user's accessible servers
     let allGuilds
@@ -52,8 +50,15 @@ export async function GET(request: NextRequest) {
       const isDiscordServerOwner = session.user.ownedServerIds?.includes(discordServerId) || false
       console.log('[GUILDS API] Discord server ownership check:', { discordServerId, isDiscordServerOwner })
       
-      // Get accessible guild IDs based on role requirements
-      const accessibleGuildIds = await getAccessibleGuilds(discordServerId, userRoles, userDiscordId, isDiscordServerOwner, hasGlobalAccess)
+      // Get user's roles for THIS specific Discord server
+      const userRolesForServer = session.user.serverRolesMap?.[discordServerId] || []
+      
+      // Calculate hasGlobalAccess for THIS specific Discord server
+      const { hasResourceAdminAccess } = await import('@/lib/discord-roles')
+      const hasGlobalAccess = hasResourceAdminAccess(userRolesForServer, isDiscordServerOwner)
+      
+      // Get accessible guild IDs based on role requirements for THIS server
+      const accessibleGuildIds = await getAccessibleGuilds(discordServerId, userRolesForServer, userDiscordId, isDiscordServerOwner, hasGlobalAccess)
       
       if (accessibleGuildIds.length === 0) {
         console.log('[GUILDS API] User has no accessible guilds in Discord server:', discordServerId)
@@ -88,13 +93,20 @@ export async function GET(request: NextRequest) {
       
       // Filter by role-based access
       const accessibleGuildIds = new Set<string>()
+      const { hasResourceAdminAccess } = await import('@/lib/discord-roles')
+      
       for (const discordId of userDiscordServers) {
         const isDiscordServerOwner = ownedServerIds.includes(discordId)
         const serverRoles = session.user.serverRolesMap?.[discordId] || []
+        
+        // Calculate hasGlobalAccess for THIS specific Discord server
+        const hasGlobalAccess = hasResourceAdminAccess(serverRoles, isDiscordServerOwner)
+        
         console.log(`[GUILDS API] Checking access for server ${discordId}:`, {
           isOwner: isDiscordServerOwner,
           roles: serverRoles,
-          userDiscordId
+          userDiscordId,
+          hasGlobalAccess
         })
         const guildsForServer = await getAccessibleGuilds(discordId, serverRoles, userDiscordId, isDiscordServerOwner, hasGlobalAccess)
         console.log(`[GUILDS API] Server ${discordId} accessible guilds:`, guildsForServer)
