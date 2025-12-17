@@ -41,6 +41,7 @@ export const guilds = sqliteTable('guilds', {
   discordOfficerRoleId: text('discord_officer_role_id'), // Auto-created Discord role ID for guild officers
   discordLeaderRoleId: text('discord_leader_role_id'), // Auto-created Discord role ID for guild leader
   discordCategoryId: text('discord_category_id'), // Auto-created Discord category ID for guild channels
+  discordOrderChannelId: text('discord_order_channel_id'), // Auto-created Discord channel ID for guild-specific orders
   // Bot configuration (per in-game guild)
   botChannelId: text('bot_channel_id'), // JSON array of channel IDs where bot posts notifications for THIS guild
   orderChannelId: text('order_channel_id'), // JSON array of channel IDs where orders are created for THIS guild
