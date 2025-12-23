@@ -44,46 +44,52 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
       
-      // Check guild-specific role requirements
-      const userRoles = session.user.roles || []
-      const hasGlobalAccess = session.user.permissions?.hasResourceAdminAccess || false
-      const canAccess = await canAccessGuild(guildId, userRoles, hasGlobalAccess)
+      // Super admins bypass all guild access checks
+      const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
+      const isSuperAdmin = superAdminUserId && session.user.id === superAdminUserId
       
-      if (!canAccess) {
-        console.log(`[API /api/resources] User ${session.user.name} denied access to guild ${guildId}`)
-        return NextResponse.json(
-          { error: 'You do not have the required Discord roles to access this guild' }, 
-          { status: 403 }
-        )
-      }
-      
-      // Verify the guild belongs to a Discord server the user is in
-      const discordToken = (session as any).accessToken
-      if (discordToken) {
-        try {
-          // Fetch user's Discord servers
-          const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
-            headers: {
-              'Authorization': `Bearer ${discordToken}`,
-            },
-          })
-          
-          if (discordResponse.ok) {
-            const servers = await discordResponse.json()
-            const userDiscordServers = servers.map((server: any) => server.id)
+      if (!isSuperAdmin) {
+        // Check guild-specific role requirements
+        const userRoles = session.user.roles || []
+        const hasGlobalAccess = session.user.permissions?.hasResourceAdminAccess || false
+        const canAccess = await canAccessGuild(guildId, userRoles, hasGlobalAccess)
+        
+        if (!canAccess) {
+          console.log(`[API /api/resources] User ${session.user.name} denied access to guild ${guildId}`)
+          return NextResponse.json(
+            { error: 'You do not have the required Discord roles to access this guild' }, 
+            { status: 403 }
+          )
+        }
+        
+        // Verify the guild belongs to a Discord server the user is in
+        const discordToken = (session as any).accessToken
+        if (discordToken) {
+          try {
+            // Fetch user's Discord servers
+            const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+              headers: {
+                'Authorization': `Bearer ${discordToken}`,
+              },
+            })
             
-            // Check if the requested guild belongs to any of user's Discord servers
-            const { guilds } = await import('@/lib/db')
-            const { eq } = await import('drizzle-orm')
-            const guild = await db.select().from(guilds).where(eq(guilds.id, guildId)).limit(1)
-            
-            if (guild.length === 0 || !guild[0].discordGuildId || !userDiscordServers.includes(guild[0].discordGuildId)) {
-              return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
+            if (discordResponse.ok) {
+              const servers = await discordResponse.json()
+              const userDiscordServers = servers.map((server: any) => server.id)
+              
+              // Check if the requested guild belongs to any of user's Discord servers
+              const { guilds } = await import('@/lib/db')
+              const { eq } = await import('drizzle-orm')
+              const guild = await db.select().from(guilds).where(eq(guilds.id, guildId)).limit(1)
+              
+              if (guild.length === 0 || !guild[0].discordGuildId || !userDiscordServers.includes(guild[0].discordGuildId)) {
+                return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
+              }
             }
+          } catch (error) {
+            console.error('[API /api/resources] Error verifying guild access:', error)
+            return NextResponse.json({ error: 'Failed to verify access' }, { status: 500 })
           }
-        } catch (error) {
-          console.error('[API /api/resources] Error verifying guild access:', error)
-          return NextResponse.json({ error: 'Failed to verify access' }, { status: 500 })
         }
       }
     }
@@ -389,19 +395,24 @@ export async function PUT(request: NextRequest) {
           }
           
           // Third check: User must have guild-specific role access (Member/Officer/Leader)
-          // This check uses hasGlobalAccess per Discord server
-          for (const guild of relevantGuilds) {
-            const discordServerId = guild.discordGuildId!
-            const isOwner = isDiscordServerOwner(session, discordServerId)
-            const hasResourceAdminAccessForServer = session.user.permissions?.hasResourceAdminAccess || false
-            const hasGlobalAccess = hasResourceAdminAccessForServer && isOwner
-            
-            const canAccess = await canAccessGuild(guild.id, userRoles, hasGlobalAccess)
-            if (!canAccess) {
-              console.log(`[API PUT /api/resources] User ${session.user.name} denied access to guild ${guild.id} - lacks guild membership role`)
-              return NextResponse.json({ 
-                error: 'You do not have permission to edit resources for one or more guilds. You must be a member of the guild.' 
-              }, { status: 403 })
+          // Super admins bypass this check entirely
+          const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
+          const isSuperAdmin = superAdminUserId && session.user.id === superAdminUserId
+          
+          if (!isSuperAdmin) {
+            for (const guild of relevantGuilds) {
+              const discordServerId = guild.discordGuildId!
+              const isOwner = isDiscordServerOwner(session, discordServerId)
+              const hasResourceAdminAccessForServer = session.user.permissions?.hasResourceAdminAccess || false
+              const hasGlobalAccess = hasResourceAdminAccessForServer && isOwner
+              
+              const canAccess = await canAccessGuild(guild.id, userRoles, hasGlobalAccess)
+              if (!canAccess) {
+                console.log(`[API PUT /api/resources] User ${session.user.name} denied access to guild ${guild.id} - lacks guild membership role`)
+                return NextResponse.json({ 
+                  error: 'You do not have permission to edit resources for one or more guilds. You must be a member of the guild.' 
+                }, { status: 403 })
+              }
             }
           }
         }
