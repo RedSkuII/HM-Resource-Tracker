@@ -206,7 +206,7 @@ export async function PUT(
       const resourceStatus = calculateResourceStatus(resource.quantity, resource.targetQuantity)
 
       pointsCalculation = await awardPoints(
-        getUserIdentifier(session),
+        session.user.id,  // Use Discord ID for consistent leaderboard tracking
         params.id,
         actionType,
         Math.abs(changeAmount),
