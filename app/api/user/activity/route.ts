@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions, getUserIdentifier } from '@/lib/auth'
 import { db, resourceHistory, resources, users } from '@/lib/db'
-import { eq, gte, desc, and, or, sql } from 'drizzle-orm'
+import { eq, gte, desc, and, or, sql, inArray } from 'drizzle-orm'
 import { hasResourceAccess } from '@/lib/discord-roles'
+import { getAccessibleGuildsForUser } from '@/lib/guild-access'
 
 // GET /api/user/activity - Get user's activity history
 export async function GET(request: NextRequest) {
@@ -21,6 +22,30 @@ export async function GET(request: NextRequest) {
     const guildId = searchParams.get('guildId')
     const userId = getUserIdentifier(session)
 
+    // SECURITY: Get accessible guilds for user to prevent cross-guild data leakage
+    const accessibleGuildIds = await getAccessibleGuildsForUser(session)
+    
+    if (accessibleGuildIds.length === 0) {
+      return NextResponse.json([], {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      })
+    }
+    
+    // If specific guild requested, verify access
+    let targetGuildIds: string[]
+    if (guildId) {
+      if (!accessibleGuildIds.includes(guildId)) {
+        return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
+      }
+      targetGuildIds = [guildId]
+    } else {
+      targetGuildIds = accessibleGuildIds
+    }
+
     // For backward compatibility, also check for old user identifiers
     const oldUserIds = [
       session.user.id,
@@ -34,6 +59,7 @@ export async function GET(request: NextRequest) {
     daysAgo.setDate(daysAgo.getDate() - days)
 
     // Fetch activity from database with resource names and categories
+    // SECURITY: Always filter by accessible guilds
     const activity = await db
       .select({
         id: resourceHistory.id,
@@ -53,18 +79,15 @@ export async function GET(request: NextRequest) {
       .leftJoin(users, eq(resourceHistory.updatedBy, users.discordId))
       .where(
         and(
-          // Guild filter if provided
-          guildId ? eq(resources.guildId, guildId) : undefined,
+          // SECURITY: Always filter by accessible guilds
+          inArray(resources.guildId, targetGuildIds),
+          gte(resourceHistory.createdAt, daysAgo),
           // Global vs user-specific filter
           isGlobal 
-            ? gte(resourceHistory.createdAt, daysAgo)
-            : and(
-                // Check current nickname AND old identifiers for backward compatibility
-                or(
-                  eq(resourceHistory.updatedBy, userId),
-                  ...oldUserIds.map(id => eq(resourceHistory.updatedBy, id as string))
-                ),
-                gte(resourceHistory.createdAt, daysAgo)
+            ? undefined
+            : or(
+                eq(resourceHistory.updatedBy, userId),
+                ...oldUserIds.map(id => eq(resourceHistory.updatedBy, id as string))
               )
         )
       )

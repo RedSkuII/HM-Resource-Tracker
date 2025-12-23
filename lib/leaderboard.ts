@@ -186,14 +186,24 @@ export async function awardPoints(
 
 /**
  * Get leaderboard rankings with optional time filtering, guild filtering, and pagination
+ * @param timeFilter - Time period filter
+ * @param limit - Number of results to return
+ * @param offset - Pagination offset
+ * @param guildIds - Array of guild IDs to filter by (REQUIRED for security)
  */
 export async function getLeaderboard(
   timeFilter?: '24h' | '7d' | '30d' | 'all', 
   limit = 50, 
   offset = 0,
-  guildId?: string | null
+  guildIds?: string[] | null
 ): Promise<{ rankings: any[], total: number }> {
   try {
+    // SECURITY: Must always have guild IDs to prevent cross-guild data leakage
+    if (!guildIds || guildIds.length === 0) {
+      console.log('[LEADERBOARD] No guild IDs provided, returning empty results')
+      return { rankings: [], total: 0 }
+    }
+    
     // Build conditions array
     const conditions: any[] = []
 
@@ -217,15 +227,14 @@ export async function getLeaderboard(
       conditions.push(gte(leaderboard.createdAt, cutoffDate!))
     }
 
-    // Guild filter
-    if (guildId) {
-      conditions.push(eq(leaderboard.guildId, guildId))
-    }
+    // Guild filter - ALWAYS apply this for security
+    const { inArray } = await import('drizzle-orm')
+    conditions.push(inArray(leaderboard.guildId, guildIds))
 
     // Combine conditions
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined
 
-    console.log(`Fetching leaderboard with filter: ${timeFilter}, guild: ${guildId || 'all'}, limit: ${limit}, offset: ${offset}`)
+    console.log(`Fetching leaderboard with filter: ${timeFilter}, guilds: [${guildIds.join(', ')}], limit: ${limit}, offset: ${offset}`)
 
     // Get total count for pagination
     const totalResult = await db
@@ -261,14 +270,35 @@ export async function getLeaderboard(
 
 /**
  * Get detailed user contributions with pagination
+ * @param userId - User's Discord ID
+ * @param timeFilter - Time period filter
+ * @param limit - Number of results
+ * @param offset - Pagination offset
+ * @param guildIds - Array of guild IDs to filter by (REQUIRED for security)
  */
 export async function getUserContributions(
   userId: string, 
   timeFilter?: '24h' | '7d' | '30d' | 'all',
   limit = 100,
-  offset = 0
+  offset = 0,
+  guildIds?: string[]
 ): Promise<{ contributions: any[], summary: any, total: number, userName?: string }> {
-  let timeCondition = sql`1 = 1`
+  // SECURITY: Must have guild IDs to prevent cross-guild data leakage
+  if (!guildIds || guildIds.length === 0) {
+    console.log('[CONTRIBUTIONS] No guild IDs provided, returning empty results')
+    return {
+      contributions: [],
+      summary: { totalPoints: 0, totalActions: 0 },
+      total: 0,
+      userName: userId
+    }
+  }
+  
+  const conditions: any[] = [eq(leaderboard.userId, userId)]
+  
+  // Guild filter - ALWAYS apply for security
+  const { inArray } = await import('drizzle-orm')
+  conditions.push(inArray(leaderboard.guildId, guildIds))
 
   if (timeFilter && timeFilter !== 'all') {
     const now = new Date()
@@ -286,8 +316,10 @@ export async function getUserContributions(
         break
     }
 
-    timeCondition = gte(leaderboard.createdAt, cutoffDate!)
+    conditions.push(gte(leaderboard.createdAt, cutoffDate!))
   }
+  
+  const whereClause = and(...conditions)
 
   // Get total count for pagination
   const totalResult = await db
@@ -295,14 +327,14 @@ export async function getUserContributions(
       count: sql<number>`COUNT(*)`.as('count')
     })
     .from(leaderboard)
-    .where(and(eq(leaderboard.userId, userId), timeCondition))
+    .where(whereClause)
 
   const total = totalResult[0]?.count || 0
 
   const contributions = await db
     .select()
     .from(leaderboard)
-    .where(and(eq(leaderboard.userId, userId), timeCondition))
+    .where(whereClause)
     .orderBy(desc(leaderboard.createdAt))
     .limit(limit)
     .offset(offset)
@@ -313,7 +345,7 @@ export async function getUserContributions(
       totalActions: sql<number>`COALESCE(COUNT(*), 0)`.as('totalActions'),
     })
     .from(leaderboard)
-    .where(and(eq(leaderboard.userId, userId), timeCondition))
+    .where(whereClause)
 
   // Get username from users table
   const userResult = await db
@@ -334,9 +366,16 @@ export async function getUserContributions(
 
 /**
  * Get user's rank in the leaderboard
+ * @param userId - User's Discord ID
+ * @param timeFilter - Time period filter
+ * @param guildIds - Array of guild IDs to filter by (REQUIRED for security)
  */
-export async function getUserRank(userId: string, timeFilter?: '24h' | '7d' | '30d' | 'all') {
-  const result = await getLeaderboard(timeFilter, 1000) // Get top 1000
+export async function getUserRank(userId: string, timeFilter?: '24h' | '7d' | '30d' | 'all', guildIds?: string[]) {
+  if (!guildIds || guildIds.length === 0) {
+    return null
+  }
+  
+  const result = await getLeaderboard(timeFilter, 1000, 0, guildIds) // Get top 1000
   const userRankIndex = result.rankings.findIndex(ranking => ranking.userId === userId)
   
   return userRankIndex === -1 ? null : userRankIndex + 1

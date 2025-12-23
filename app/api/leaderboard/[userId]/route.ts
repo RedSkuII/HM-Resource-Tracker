@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getUserContributions, getUserRank } from '@/lib/leaderboard'
+import { getAccessibleGuildsForUser } from '@/lib/guild-access'
 
 export async function GET(
   request: NextRequest,
@@ -24,9 +25,29 @@ export async function GET(
     const offset = (page - 1) * pageSize
     const effectiveLimit = searchParams.get('limit') ? limit : pageSize
 
+    // SECURITY: Get accessible guilds to prevent cross-guild data leakage
+    const accessibleGuildIds = await getAccessibleGuildsForUser(session)
+    
+    if (accessibleGuildIds.length === 0) {
+      return NextResponse.json({
+        userId: params.userId,
+        userName: null,
+        timeFilter,
+        rank: null,
+        contributions: [],
+        summary: { totalPoints: 0, totalActions: 0 },
+        total: 0,
+        page,
+        pageSize: effectiveLimit,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false
+      })
+    }
+
     const [contributions, rank] = await Promise.all([
-      getUserContributions(params.userId, timeFilter, effectiveLimit, offset),
-      getUserRank(params.userId, timeFilter)
+      getUserContributions(params.userId, timeFilter, effectiveLimit, offset, accessibleGuildIds),
+      getUserRank(params.userId, timeFilter, accessibleGuildIds)
     ])
 
     return NextResponse.json({

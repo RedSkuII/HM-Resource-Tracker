@@ -146,3 +146,55 @@ export async function getAccessibleGuilds(
     return []
   }
 }
+/**
+ * Get all accessible guild IDs for a user across ALL Discord servers they are in
+ * This is used for leaderboard, activity, and other cross-guild queries
+ * @param session - NextAuth session object
+ * @returns Promise<string[]> - Array of all accessible guild IDs
+ */
+export async function getAccessibleGuildsForUser(session: any): Promise<string[]> {
+  try {
+    const userDiscordId = session.user.id
+    const allServerIds = session.user.allServerIds || []
+    const ownedServerIds = session.user.ownedServerIds || []
+    const serverRolesMap = session.user.serverRolesMap || {}
+    const hasGlobalAccess = session.user.permissions?.hasResourceAdminAccess || false
+    
+    const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
+    const isSuperAdmin = superAdminUserId && userDiscordId === superAdminUserId
+    
+    // Super admin gets all guilds
+    if (isSuperAdmin) {
+      const allGuilds = await db.select({ id: guilds.id }).from(guilds)
+      console.log(`[GUILD-ACCESS] Super admin: access to all ${allGuilds.length} guilds`)
+      return allGuilds.map(g => g.id)
+    }
+    
+    // Collect accessible guilds from all Discord servers the user is in
+    const accessibleGuildIds: string[] = []
+    
+    for (const discordServerId of allServerIds) {
+      const userRoles = serverRolesMap[discordServerId] || []
+      const isOwner = ownedServerIds.includes(discordServerId)
+      
+      const serverGuilds = await getAccessibleGuilds(
+        discordServerId,
+        userRoles,
+        userDiscordId,
+        isOwner,
+        hasGlobalAccess
+      )
+      
+      accessibleGuildIds.push(...serverGuilds)
+    }
+    
+    // Remove duplicates
+    const uniqueGuildIds = [...new Set(accessibleGuildIds)]
+    console.log(`[GUILD-ACCESS] User ${userDiscordId} has access to ${uniqueGuildIds.length} total guilds across ${allServerIds.length} servers`)
+    
+    return uniqueGuildIds
+  } catch (error) {
+    console.error('[GUILD-ACCESS] Error getting accessible guilds for user:', error)
+    return []
+  }
+}

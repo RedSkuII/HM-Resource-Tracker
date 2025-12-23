@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getLeaderboard } from '@/lib/leaderboard'
+import { getAccessibleGuildsForUser } from '@/lib/guild-access'
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
@@ -26,7 +27,35 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * pageSize
     const effectiveLimit = searchParams.get('limit') ? limit : pageSize
 
-    const result = await getLeaderboard(timeFilter, effectiveLimit, offset, guildId)
+    // Get accessible guilds for user (SECURITY: prevent cross-guild data leakage)
+    const accessibleGuildIds = await getAccessibleGuildsForUser(session)
+    
+    if (accessibleGuildIds.length === 0) {
+      return NextResponse.json({
+        leaderboard: [],
+        timeFilter,
+        total: 0,
+        page,
+        pageSize: effectiveLimit,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false
+      })
+    }
+    
+    // If specific guild requested, verify access
+    let targetGuildIds: string[]
+    if (guildId && guildId !== 'all') {
+      if (!accessibleGuildIds.includes(guildId)) {
+        return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
+      }
+      targetGuildIds = [guildId]
+    } else {
+      // "All" means all guilds the user has access to, NOT all guilds in the system
+      targetGuildIds = accessibleGuildIds
+    }
+
+    const result = await getLeaderboard(timeFilter, effectiveLimit, offset, targetGuildIds)
 
     return NextResponse.json({
       leaderboard: result.rankings,
