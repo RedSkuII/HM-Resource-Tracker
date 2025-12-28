@@ -6,10 +6,114 @@
  * - discord_role_id (Member role) = View/edit access
  * - discord_officer_role_id (Officer role) = View/edit access
  * - discord_leader_role_id (Leader role) = View/edit access
+ * - admin_role_id (Bot Admin roles) = Bot dashboard access for THIS guild
  */
 
 import { db, guilds } from './db'
 import { eq } from 'drizzle-orm'
+
+/**
+ * Check if user has bot admin access for a specific guild via guild-specific adminRoleId
+ * @param guildId - The in-game guild ID (e.g., 'house-melange')
+ * @param userRoles - Array of user's Discord role IDs
+ * @returns Promise<boolean> - True if user has guild-specific bot admin access
+ */
+export async function hasGuildBotAdminAccess(
+  guildId: string,
+  userRoles: string[]
+): Promise<boolean> {
+  try {
+    // Fetch guild configuration
+    const guildData = await db
+      .select()
+      .from(guilds)
+      .where(eq(guilds.id, guildId))
+      .limit(1)
+
+    if (guildData.length === 0) {
+      console.warn(`[GUILD-ACCESS] Guild not found for admin check: ${guildId}`)
+      return false
+    }
+
+    const guild = guildData[0]
+
+    // Parse adminRoleId JSON array
+    if (!guild.adminRoleId) {
+      return false
+    }
+
+    let adminRoles: string[]
+    try {
+      adminRoles = JSON.parse(guild.adminRoleId)
+    } catch {
+      // Legacy single value support
+      adminRoles = [guild.adminRoleId]
+    }
+
+    if (adminRoles.length === 0) {
+      return false
+    }
+
+    // Check if user has any of the guild's admin roles
+    const hasAdminRole = adminRoles.some(roleId => userRoles.includes(roleId))
+
+    if (hasAdminRole) {
+      console.log(`[GUILD-ACCESS] ✓ User has guild admin role for "${guild.title}"`)
+    }
+
+    return hasAdminRole
+
+  } catch (error) {
+    console.error('[GUILD-ACCESS] Error checking guild bot admin access:', error)
+    return false
+  }
+}
+
+/**
+ * Check if user has bot admin access for any guild on a Discord server via guild-specific adminRoleId
+ * @param discordGuildId - The Discord server ID
+ * @param userRoles - Array of user's Discord role IDs
+ * @returns Promise<string[]> - Array of guild IDs the user has admin access to
+ */
+export async function getGuildsWithBotAdminAccess(
+  discordGuildId: string,
+  userRoles: string[]
+): Promise<string[]> {
+  try {
+    // Fetch all guilds for this Discord server
+    const allGuilds = await db
+      .select()
+      .from(guilds)
+      .where(eq(guilds.discordGuildId, discordGuildId))
+
+    const adminGuildIds: string[] = []
+
+    for (const guild of allGuilds) {
+      if (!guild.adminRoleId) continue
+
+      let adminRoles: string[]
+      try {
+        adminRoles = JSON.parse(guild.adminRoleId)
+      } catch {
+        adminRoles = [guild.adminRoleId]
+      }
+
+      if (adminRoles.length === 0) continue
+
+      // Check if user has any of this guild's admin roles
+      if (adminRoles.some(roleId => userRoles.includes(roleId))) {
+        console.log(`[GUILD-ACCESS] ✓ User has guild admin role for "${guild.title}"`)
+        adminGuildIds.push(guild.id)
+      }
+    }
+
+    return adminGuildIds
+
+  } catch (error) {
+    console.error('[GUILD-ACCESS] Error getting guilds with bot admin access:', error)
+    return []
+  }
+}
 
 /**
  * Check if user has access to a specific guild based on automatic Discord roles

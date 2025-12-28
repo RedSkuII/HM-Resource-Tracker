@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasBotAdminAccess } from '@/lib/discord-roles'
+import { hasGuildBotAdminAccess } from '@/lib/guild-access'
 import { db, guilds } from '@/lib/db'
 import { eq } from 'drizzle-orm'
 
@@ -70,14 +71,21 @@ export async function GET(
       }
       
       if (!isServerOwnerOrAdmin) {
-        console.log('[GUILD-CONFIG] Access denied - not owner/admin of guild\'s Discord server:', {
-          guildId,
-          discordServerId,
-          userId: session.user.id
-        })
-        return NextResponse.json({ 
-          error: 'You must be an owner or administrator of this guild\'s Discord server.' 
-        }, { status: 403 })
+        // Check guild-specific admin role access
+        const userRolesForServer = session.user.serverRolesMap?.[discordServerId] || []
+        const hasGuildAdminRole = await hasGuildBotAdminAccess(guildId, userRolesForServer)
+        
+        if (!hasGuildAdminRole) {
+          console.log('[GUILD-CONFIG] Access denied - not owner/admin and no guild admin role:', {
+            guildId,
+            discordServerId,
+            userId: session.user.id
+          })
+          return NextResponse.json({ 
+            error: 'You must be an owner, administrator, or have the guild admin role.' 
+          }, { status: 403 })
+        }
+        console.log('[GUILD-CONFIG] Access granted via guild admin role:', { guildId, userId: session.user.id })
       }
     }
 
@@ -199,14 +207,21 @@ export async function PUT(
       }
       
       if (!isServerOwnerOrAdmin) {
-        console.log('[GUILD-CONFIG] PUT access denied - not owner/admin of guild\'s Discord server:', {
-          guildId,
-          discordServerId,
-          userId: session.user.id
-        })
-        return NextResponse.json({ 
-          error: 'You must be an owner or administrator of this guild\'s Discord server.' 
-        }, { status: 403 })
+        // Check guild-specific admin role access
+        const userRolesForServer = session.user.serverRolesMap?.[discordServerId] || []
+        const hasGuildAdminRole = await hasGuildBotAdminAccess(guildId, userRolesForServer)
+        
+        if (!hasGuildAdminRole) {
+          console.log('[GUILD-CONFIG] PUT access denied - not owner/admin and no guild admin role:', {
+            guildId,
+            discordServerId,
+            userId: session.user.id
+          })
+          return NextResponse.json({ 
+            error: 'You must be an owner, administrator, or have the guild admin role.' 
+          }, { status: 403 })
+        }
+        console.log('[GUILD-CONFIG] PUT access granted via guild admin role:', { guildId, userId: session.user.id })
       }
     }
 

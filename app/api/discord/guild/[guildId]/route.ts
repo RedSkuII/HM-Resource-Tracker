@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasBotAdminAccess } from '@/lib/discord-roles'
+import { getGuildsWithBotAdminAccess } from '@/lib/guild-access'
 
 export const dynamic = 'force-dynamic'
 
@@ -73,16 +74,28 @@ export async function GET(
         console.error('[DISCORD-GUILD] No access token available in session')
       }
       
-      // Non-super admins MUST be owner/admin of THIS specific server
+      // Non-super admins MUST be owner/admin of THIS specific server OR have guild admin role
       if (!isServerOwnerOrAdmin) {
-        console.log('[DISCORD-GUILD] Access denied - not owner/admin of this server:', { 
-          guildId, 
-          userId: session.user.id,
-          userName: session.user.name
-        })
-        return NextResponse.json({ 
-          error: 'You must be an owner or administrator of this Discord server to access its configuration.' 
-        }, { status: 403 })
+        // Check if user has admin role for any in-game guild on this Discord server
+        const userRolesForServer = session.user.serverRolesMap?.[guildId] || []
+        const guildsWithAdminAccess = await getGuildsWithBotAdminAccess(guildId, userRolesForServer)
+        
+        if (guildsWithAdminAccess.length > 0) {
+          console.log('[DISCORD-GUILD] Access granted via guild admin role:', { 
+            guildId, 
+            userId: session.user.id,
+            guildsWithAccess: guildsWithAdminAccess
+          })
+        } else {
+          console.log('[DISCORD-GUILD] Access denied - not owner/admin and no guild admin role:', { 
+            guildId, 
+            userId: session.user.id,
+            userName: session.user.name
+          })
+          return NextResponse.json({ 
+            error: 'You must be an owner, administrator, or have a guild admin role to access this configuration.' 
+          }, { status: 403 })
+        }
       }
     }
 
