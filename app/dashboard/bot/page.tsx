@@ -23,7 +23,6 @@ interface InGameGuild {
   officerRoleIds?: string[]
   defaultRoleId?: string | null
   // Bot configuration (per guild)
-  botChannelId?: string[]
   orderChannelId?: string[]
   adminRoleId?: string[]
   autoUpdateEmbeds?: boolean
@@ -169,7 +168,6 @@ export default function BotDashboardPage() {
       setInGameGuilds(prev => 
         prev.map(g => g.id === guildId ? { 
           ...g,
-          botChannelId: data.botChannelId || [],
           orderChannelId: data.orderChannelId || [],
           adminRoleId: data.adminRoleId || [],
           autoUpdateEmbeds: data.autoUpdateEmbeds ?? true,
@@ -412,7 +410,6 @@ export default function BotDashboardPage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          botChannelId: currentGuild.botChannelId || [],
           orderChannelId: currentGuild.orderChannelId || [],
           adminRoleId: currentGuild.adminRoleId || [],
           autoUpdateEmbeds: currentGuild.autoUpdateEmbeds ?? true,
@@ -822,66 +819,6 @@ export default function BotDashboardPage() {
             </h2>
 
             <div className="space-y-4">
-              {/* Bot Channel ID */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Bot Channels
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  Select Discord channels where the bot will post inventory and resource updates. You can select multiple channels.
-                </p>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Bot Notification Channels (hold Ctrl/Cmd to select multiple)
-                </label>
-                {discordData && discordData.channels.length > 0 ? (
-                  <select
-                    multiple
-                    value={inGameGuilds.find(g => g.id === selectedInGameGuildId)?.botChannelId || []}
-                    onChange={(e) => {
-                      const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
-                      setInGameGuilds(prev =>
-                        prev.map(g => g.id === selectedInGameGuildId ? { ...g, botChannelId: selectedOptions } : g)
-                      )
-                    }}
-                    className="w-full px-4 py-2 border border-guildgamesh-300 dark:border-primary-700/40 rounded-lg bg-white dark:bg-stone-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 min-h-[120px]"
-                  >
-                    {discordData.channels.map((channel) => (
-                      <option key={channel.id} value={channel.id}>
-                        #{channel.name}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <div className="text-sm text-gray-500 dark:text-gray-400 italic">
-                    Loading channels...
-                  </div>
-                )}
-                {inGameGuilds.find(g => g.id === selectedInGameGuildId)?.botChannelId && inGameGuilds.find(g => g.id === selectedInGameGuildId)!.botChannelId!.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {inGameGuilds.find(g => g.id === selectedInGameGuildId)!.botChannelId!.map(channelId => {
-                      const channel = discordData?.channels.find(c => c.id === channelId)
-                      return channel ? (
-                        <span key={channelId} className="inline-flex items-center gap-1 px-2 py-1 bg-guildgamesh-200 dark:bg-stone-800/30 text-primary-800 dark:text-primary-300 text-xs rounded">
-                          #{channel.name}
-                          <button
-                            onClick={() => {
-                              const currentGuild = inGameGuilds.find(g => g.id === selectedInGameGuildId)
-                              const newChannelIds = currentGuild?.botChannelId?.filter(id => id !== channelId) || []
-                              setInGameGuilds(prev =>
-                                prev.map(g => g.id === selectedInGameGuildId ? { ...g, botChannelId: newChannelIds } : g)
-                              )
-                            }}
-                            className="ml-1 hover:text-primary-600 dark:hover:text-primary-200"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ) : null
-                    })}
-                  </div>
-                )}
-              </div>
-
               {/* Order Channel ID */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -1511,7 +1448,6 @@ export default function BotDashboardPage() {
                   <h4 className="text-lg font-medium text-gray-900 dark:text-white mt-6 mb-2">Multi-Select Channels & Roles</h4>
                   <p className="text-gray-700 dark:text-gray-300 mb-2">You can select multiple channels and roles for each setting:</p>
                   <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 ml-4">
-                    <li><strong>Bot Channels:</strong> Where the bot posts stock/inventory updates (blue tags)</li>
                     <li><strong>Order Channels:</strong> Where members can place orders (green tags)</li>
                     <li><strong>Admin Roles:</strong> Roles that can manage bot configuration (purple tags)</li>
                   </ul>
@@ -1544,7 +1480,7 @@ export default function BotDashboardPage() {
                     <div>
                       <p className="text-gray-700 dark:text-gray-300 font-medium">✅ Notify on Website Resource Changes</p>
                       <p className="text-gray-600 dark:text-gray-400 text-sm ml-4">
-                        When enabled, the bot sends notifications to bot channels when resources are updated via the website. Useful for keeping the community informed.
+                        When enabled, the bot sends notifications to the guild's order channel when resources are updated via the website. Useful for keeping the community informed.
                       </p>
                     </div>
                     <div>
@@ -1559,7 +1495,6 @@ export default function BotDashboardPage() {
                   <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 ml-4">
                     <li>Select your Discord server from the dropdown (bot must be installed)</li>
                     <li>Link it to an in-game guild (the database that stores resources)</li>
-                    <li>Choose bot channels where inventory updates will be posted</li>
                     <li>Choose order channels where members can request resources</li>
                     <li>Select admin roles that can manage the bot configuration</li>
                     <li>Set the resource update bonus percentage (0-200%)</li>
@@ -1598,7 +1533,7 @@ export default function BotDashboardPage() {
                     <div>
                       <p className="text-gray-700 dark:text-gray-300 font-medium">📊 Bot not posting updates?</p>
                       <p className="text-gray-600 dark:text-gray-400 text-sm ml-4">
-                        Ensure "Auto-Update Discord Embeds" is enabled. Check that the bot has permissions to post in the selected bot channels. Verify the channel IDs are correct.
+                        Ensure "Auto-Update Discord Embeds" is enabled. Check that the bot has permissions to post in the guild's order channel. Verify the channel IDs are correct.
                       </p>
                     </div>
                   </div>
