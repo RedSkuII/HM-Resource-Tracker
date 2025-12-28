@@ -29,7 +29,6 @@ interface InGameGuild {
   notifyOnWebsiteChanges?: boolean
   orderFulfillmentBonus?: number
   websiteBonusPercentage?: number
-  allowPublicOrders?: boolean
 }
 
 // Legacy BotConfig interface - DEPRECATED (now using guild-specific config in InGameGuild interface)
@@ -174,7 +173,6 @@ export default function BotDashboardPage() {
           notifyOnWebsiteChanges: data.notifyOnWebsiteChanges ?? true,
           orderFulfillmentBonus: data.orderFulfillmentBonus ?? 50,
           websiteBonusPercentage: data.websiteBonusPercentage ?? 0,
-          allowPublicOrders: data.allowPublicOrders ?? true,
         } : g)
       )
     } catch (err) {
@@ -416,7 +414,6 @@ export default function BotDashboardPage() {
           notifyOnWebsiteChanges: currentGuild.notifyOnWebsiteChanges ?? true,
           orderFulfillmentBonus: currentGuild.orderFulfillmentBonus ?? 50,
           websiteBonusPercentage: currentGuild.websiteBonusPercentage ?? 0,
-          allowPublicOrders: currentGuild.allowPublicOrders ?? true
         })
       })
 
@@ -969,21 +966,6 @@ export default function BotDashboardPage() {
                   </span>
                 </label>
 
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={inGameGuilds.find(g => g.id === selectedInGameGuildId)?.allowPublicOrders ?? true}
-                    onChange={(e) => {
-                      setInGameGuilds(prev =>
-                        prev.map(g => g.id === selectedInGameGuildId ? { ...g, allowPublicOrders: e.target.checked } : g)
-                      )
-                    }}
-                    className="w-4 h-4 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                    Allow public orders
-                  </span>
-                </label>
               </div>
 
               {/* Admin Role ID */}
@@ -1483,12 +1465,6 @@ export default function BotDashboardPage() {
                         When enabled, the bot sends notifications to the guild's order channel when resources are updated via the website. Useful for keeping the community informed.
                       </p>
                     </div>
-                    <div>
-                      <p className="text-gray-700 dark:text-gray-300 font-medium">✅ Allow Public Orders</p>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm ml-4">
-                        When enabled, any server member can place orders. When disabled, only users with admin roles can place orders (more restricted mode).
-                      </p>
-                    </div>
                   </div>
 
                   <h4 className="text-lg font-medium text-gray-900 dark:text-white mt-6 mb-2">Workflow for Server Owners</h4>
@@ -1498,7 +1474,7 @@ export default function BotDashboardPage() {
                     <li>Choose order channels where members can request resources</li>
                     <li>Select admin roles that can manage the bot configuration</li>
                     <li>Set the resource update bonus percentage (0-200%)</li>
-                    <li>Configure notification preferences with the three toggles</li>
+                    <li>Configure notification preferences with the two toggles</li>
                     <li>Click <strong>Save Configuration</strong></li>
                   </ol>
 
