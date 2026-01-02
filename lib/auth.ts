@@ -328,7 +328,7 @@ export const authOptions: NextAuthOptions = {
         const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
         const isSuperAdmin = superAdminUserId && token.sub === superAdminUserId
         
-        token.permissions = {
+        const permissions = {
           // Grant basic resource access if user is in a relevant server (even if roles don't match config)
           // This allows cross-server users to access the dashboard
           hasResourceAccess: isSuperAdmin || hasResourceAccess(userRoles, isServerOwner) || isInRelevantServer,
@@ -339,9 +339,10 @@ export const authOptions: NextAuthOptions = {
           hasUserManagementAccess: isSuperAdmin || hasUserManagementAccess(userRoles),
           hasDataExportAccess: isSuperAdmin || hasDataExportAccess(userRoles)
         }
+        token.permissions = permissions
         
         // Debug logging for permission troubleshooting
-        console.log(`[AUTH] Computed permissions for user ${token.sub}: resourceAccess=${token.permissions.hasResourceAccess}, isInGuild=${isInRelevantServer}, isServerOwner=${isServerOwner}, roleCount=${userRoles.length}`)
+        console.log(`[AUTH] Computed permissions for user ${token.sub}: resourceAccess=${permissions.hasResourceAccess}, isInGuild=${isInRelevantServer}, isServerOwner=${isServerOwner}, roleCount=${userRoles.length}`)
       }
 
       return token
