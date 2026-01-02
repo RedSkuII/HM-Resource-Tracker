@@ -296,17 +296,22 @@ export const authOptions: NextAuthOptions = {
         
         // Compute permissions server-side to avoid client-side environment variable issues
         const userRoles = (token.userRoles || []) as string[]
-        const ownedServers = (token.ownedServerIds || []) as string[]
-        const isServerOwner = ownedServers.length > 0
+        // Use isAnyServerOwner (owns ANY Discord server) for permission checks
+        // This gives server owners elevated access even if their server doesn't have guilds yet
+        const isServerOwner = Boolean(token.isAnyServerOwner)
+        
+        // Check if user is super admin - they get all permissions
+        const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
+        const isSuperAdmin = superAdminUserId && token.sub === superAdminUserId
         
         token.permissions = {
-          hasResourceAccess: hasResourceAccess(userRoles, isServerOwner),
-          hasResourceAdminAccess: hasResourceAdminAccess(userRoles, isServerOwner),
-          hasTargetEditAccess: hasTargetEditAccess(userRoles, isServerOwner),
+          hasResourceAccess: isSuperAdmin || hasResourceAccess(userRoles, isServerOwner),
+          hasResourceAdminAccess: isSuperAdmin || hasResourceAdminAccess(userRoles, isServerOwner),
+          hasTargetEditAccess: isSuperAdmin || hasTargetEditAccess(userRoles, isServerOwner),
           // 🆕 Add new permission computations:
-          hasReportAccess: hasReportAccess(userRoles),
-          hasUserManagementAccess: hasUserManagementAccess(userRoles),
-          hasDataExportAccess: hasDataExportAccess(userRoles)
+          hasReportAccess: isSuperAdmin || hasReportAccess(userRoles),
+          hasUserManagementAccess: isSuperAdmin || hasUserManagementAccess(userRoles),
+          hasDataExportAccess: isSuperAdmin || hasDataExportAccess(userRoles)
         }
       }
 

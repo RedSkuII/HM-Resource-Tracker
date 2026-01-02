@@ -274,6 +274,10 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // Check if user is super admin - they bypass all permission checks
+  const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
+  const isSuperAdmin = superAdminUserId && session.user.id === superAdminUserId
+
   try {
     const body = await request.json()
     const { resourceUpdates, resourceMetadata } = body
@@ -282,7 +286,7 @@ export async function PUT(request: NextRequest) {
 
     // Handle resource metadata update (admin only)
     if (resourceMetadata) {
-      const { id, name, category, description, imageUrl, multiplier } = resourceMetadata
+      const { id, name, category, description, imageUrl, multiplier, targetQuantity } = resourceMetadata
 
       // Verify user has access to the resource's guild and check ownership
       const existingResource = await db.select().from(resources).where(eq(resources.id, id)).limit(1)
@@ -299,27 +303,30 @@ export async function PUT(request: NextRequest) {
       
       const discordServerId = guild[0].discordGuildId
       
-      // Verify user is in this Discord server
-      const discordToken = (session as any).accessToken
-      if (discordToken) {
-        const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
-          headers: { 'Authorization': `Bearer ${discordToken}` },
-        })
-        if (discordResponse.ok) {
-          const servers = await discordResponse.json()
-          const userDiscordServers = servers.map((server: any) => server.id)
-          if (!userDiscordServers.includes(discordServerId)) {
-            return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
+      // Super admins bypass all permission checks for metadata updates
+      if (!isSuperAdmin) {
+        // Verify user is in this Discord server
+        const discordToken = (session as any).accessToken
+        if (discordToken) {
+          const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+            headers: { 'Authorization': `Bearer ${discordToken}` },
+          })
+          if (discordResponse.ok) {
+            const servers = await discordResponse.json()
+            const userDiscordServers = servers.map((server: any) => server.id)
+            if (!userDiscordServers.includes(discordServerId)) {
+              return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
+            }
           }
         }
-      }
-      
-      // Check if user owns THIS specific Discord server
-      const { isDiscordServerOwner } = await import('@/lib/discord-roles')
-      const isOwner = isDiscordServerOwner(session, discordServerId)
-      
-      if (!hasResourceAdminAccess(session.user.roles, isOwner)) {
-        return NextResponse.json({ error: 'Admin access required for metadata updates' }, { status: 403 })
+        
+        // Check if user owns THIS specific Discord server
+        const { isDiscordServerOwner } = await import('@/lib/discord-roles')
+        const isOwner = isDiscordServerOwner(session, discordServerId)
+        
+        if (!hasResourceAdminAccess(session.user.roles, isOwner)) {
+          return NextResponse.json({ error: 'Admin access required for metadata updates' }, { status: 403 })
+        }
       }
 
       // Update resource metadata
@@ -330,6 +337,7 @@ export async function PUT(request: NextRequest) {
           description,
           imageUrl,
           multiplier,
+          targetQuantity,
           lastUpdatedBy: userId,
           updatedAt: new Date(),
         })
@@ -360,35 +368,32 @@ export async function PUT(request: NextRequest) {
       const { canAccessGuild } = await getAuthDependencies()
       const userRoles = session.user.roles || []
       
-      // Check both Discord server membership AND guild-specific role access
-      const discordToken = (session as any).accessToken
-      if (discordToken) {
-        const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
-          headers: { 'Authorization': `Bearer ${discordToken}` },
-        })
-        if (discordResponse.ok) {
-          const servers = await discordResponse.json()
-          const userDiscordServers = servers.map((server: any) => server.id)
-          const { guilds } = await import('@/lib/db')
-          const { isDiscordServerOwner, hasResourceAccess } = await import('@/lib/discord-roles')
-          const guildIds = [...new Set(resourcesToUpdate.map(r => r.guildId).filter((id): id is string => id !== null))]
-          const relevantGuilds = await db.select().from(guilds).where(
-            (await import('drizzle-orm')).inArray(guilds.id, guildIds)
-          )
-          
-          // First check: User must be in the Discord server
-          for (const guild of relevantGuilds) {
-            if (!guild.discordGuildId || !userDiscordServers.includes(guild.discordGuildId)) {
-              return NextResponse.json({ error: 'Access denied to one or more guilds' }, { status: 403 })
+      // Super admins bypass all permission checks for quantity updates
+      if (!isSuperAdmin) {
+        // Check both Discord server membership AND guild-specific role access
+        const discordToken = (session as any).accessToken
+        if (discordToken) {
+          const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+            headers: { 'Authorization': `Bearer ${discordToken}` },
+          })
+          if (discordResponse.ok) {
+            const servers = await discordResponse.json()
+            const userDiscordServers = servers.map((server: any) => server.id)
+            const { guilds } = await import('@/lib/db')
+            const { isDiscordServerOwner, hasResourceAccess } = await import('@/lib/discord-roles')
+            const guildIds = [...new Set(resourcesToUpdate.map(r => r.guildId).filter((id): id is string => id !== null))]
+            const relevantGuilds = await db.select().from(guilds).where(
+              (await import('drizzle-orm')).inArray(guilds.id, guildIds)
+            )
+            
+            // First check: User must be in the Discord server
+            for (const guild of relevantGuilds) {
+              if (!guild.discordGuildId || !userDiscordServers.includes(guild.discordGuildId)) {
+                return NextResponse.json({ error: 'Access denied to one or more guilds' }, { status: 403 })
+              }
             }
-          }
-          
-          // Second check: User must have resource access permission for THIS server
-          // Super admins bypass all permission checks
-          const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
-          const isSuperAdmin = superAdminUserId && session.user.id === superAdminUserId
-          
-          if (!isSuperAdmin) {
+            
+            // Second check: User must have resource access permission for THIS server
             for (const guild of relevantGuilds) {
               const discordServerId = guild.discordGuildId!
               const isOwner = isDiscordServerOwner(session, discordServerId)
@@ -398,12 +403,8 @@ export async function PUT(request: NextRequest) {
                 return NextResponse.json({ error: 'You do not have resource access permissions' }, { status: 403 })
               }
             }
-          }
-          
-          // Third check: User must have guild-specific role access (Member/Officer/Leader)
-          // Super admins already bypassed above
-          
-          if (!isSuperAdmin) {
+            
+            // Third check: User must have guild-specific role access (Member/Officer/Leader)
             for (const guild of relevantGuilds) {
               const discordServerId = guild.discordGuildId!
               const isOwner = isDiscordServerOwner(session, discordServerId)
@@ -420,6 +421,7 @@ export async function PUT(request: NextRequest) {
             }
           }
         }
+      }
       }
     }
     
