@@ -181,6 +181,17 @@ interface CongratulationsState {
 // Category options for dropdown
 const CATEGORY_OPTIONS = ['Raw', 'Refined', 'Components', 'Other']
 
+// Guild permissions interface
+interface GuildPermissions {
+  canManageResources: boolean
+  canEditTargets: boolean
+  isLeader: boolean
+  isOfficer: boolean
+  isMember: boolean
+  hasGlobalAdmin?: boolean
+  isServerOwner?: boolean
+}
+
 export function ResourceTable({ userId, guildId }: ResourceTableProps) {
   const { data: session } = useSession()
   const router = useRouter()
@@ -188,7 +199,13 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
   // Use pre-computed permissions from session (computed server-side)
   const canEdit = session?.user?.permissions?.hasResourceAccess ?? false
   const isTargetAdmin = session?.user?.permissions?.hasTargetEditAccess ?? false
-  const isResourceAdmin = session?.user?.permissions?.hasResourceAdminAccess ?? false
+  const globalResourceAdmin = session?.user?.permissions?.hasResourceAdminAccess ?? false
+  
+  // Guild-specific permissions (fetched from API)
+  const [guildPermissions, setGuildPermissions] = useState<GuildPermissions | null>(null)
+  
+  // Effective permission: global admin OR guild-specific leader/officer
+  const isResourceAdmin = globalResourceAdmin || guildPermissions?.canManageResources || false
   
 
   
@@ -283,6 +300,33 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       }))
     }
   }, [guildId])
+
+  // Fetch guild-specific permissions when guild changes
+  useEffect(() => {
+    const fetchGuildPermissions = async () => {
+      if (!guildId || !session) {
+        setGuildPermissions(null)
+        return
+      }
+      
+      try {
+        const response = await fetch(`/api/guilds/${guildId}/permissions`)
+        if (response.ok) {
+          const permissions = await response.json()
+          console.log('[ResourceTable] Guild permissions:', permissions)
+          setGuildPermissions(permissions)
+        } else {
+          console.error('[ResourceTable] Failed to fetch guild permissions')
+          setGuildPermissions(null)
+        }
+      } catch (error) {
+        console.error('[ResourceTable] Error fetching guild permissions:', error)
+        setGuildPermissions(null)
+      }
+    }
+    
+    fetchGuildPermissions()
+  }, [guildId, session])
 
   // Load view preference
   useEffect(() => {
