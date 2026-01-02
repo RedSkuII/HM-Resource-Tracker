@@ -384,20 +384,24 @@ export async function PUT(request: NextRequest) {
           }
           
           // Second check: User must have resource access permission for THIS server
-          for (const guild of relevantGuilds) {
-            const discordServerId = guild.discordGuildId!
-            const isOwner = isDiscordServerOwner(session, discordServerId)
-            
-            if (!hasResourceAccess(userRoles, isOwner)) {
-              console.log(`[API PUT /api/resources] User ${session.user.name} lacks resource access for Discord server ${discordServerId}`)
-              return NextResponse.json({ error: 'You do not have resource access permissions' }, { status: 403 })
+          // Super admins bypass all permission checks
+          const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
+          const isSuperAdmin = superAdminUserId && session.user.id === superAdminUserId
+          
+          if (!isSuperAdmin) {
+            for (const guild of relevantGuilds) {
+              const discordServerId = guild.discordGuildId!
+              const isOwner = isDiscordServerOwner(session, discordServerId)
+              
+              if (!hasResourceAccess(userRoles, isOwner)) {
+                console.log(`[API PUT /api/resources] User ${session.user.name} lacks resource access for Discord server ${discordServerId}`)
+                return NextResponse.json({ error: 'You do not have resource access permissions' }, { status: 403 })
+              }
             }
           }
           
           // Third check: User must have guild-specific role access (Member/Officer/Leader)
-          // Super admins bypass this check entirely
-          const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
-          const isSuperAdmin = superAdminUserId && session.user.id === superAdminUserId
+          // Super admins already bypassed above
           
           if (!isSuperAdmin) {
             for (const guild of relevantGuilds) {
