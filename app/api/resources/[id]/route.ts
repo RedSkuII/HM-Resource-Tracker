@@ -240,7 +240,7 @@ export async function PUT(
   }
 } 
 
-// DELETE /api/resources/[id] - Delete resource and all its history (admin only)
+// DELETE /api/resources/[id] - Delete resource and all its history (admin or guild leader/officer)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -280,9 +280,14 @@ export async function DELETE(
           const { isDiscordServerOwner } = await import('@/lib/discord-roles')
           const discordServerId = guild[0].discordGuildId
           const isOwner = isDiscordServerOwner(session, discordServerId)
+          const hasGlobalAdmin = hasResourceAdminAccess(session.user.roles, isOwner)
           
-          if (!hasResourceAdminAccess(session.user.roles, isOwner)) {
-            return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+          // Check guild-specific permissions (leader/officer can delete)
+          const { canManageGuildResources } = await import('@/lib/guild-access')
+          const canManage = await canManageGuildResources(resource[0].guildId!, session.user.roles, hasGlobalAdmin)
+          
+          if (!canManage) {
+            return NextResponse.json({ error: 'You must be a guild leader or officer to delete resources' }, { status: 403 })
           }
         }
       }

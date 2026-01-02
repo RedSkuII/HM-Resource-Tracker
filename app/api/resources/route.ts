@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/resources - Create new resource (admin only)
+// POST /api/resources - Create new resource (admin or guild leader/officer)
 export async function POST(request: NextRequest) {
   const { getServerSession, authOptions, getUserIdentifier, hasResourceAdminAccess } = await getAuthDependencies()
   const session = await getServerSession(authOptions)
@@ -194,12 +194,18 @@ export async function POST(request: NextRequest) {
     const { isDiscordServerOwner } = await import('@/lib/discord-roles')
     const isOwner = isDiscordServerOwner(session, discordServerId)
     
-    // Check admin permissions for this specific server
-    if (!hasResourceAdminAccess(session.user.roles, isOwner)) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+    // Check permissions: global admin, server owner, OR guild leader/officer
+    const hasGlobalAdmin = hasResourceAdminAccess(session.user.roles, isOwner)
+    
+    // Import guild management check
+    const { canManageGuildResources } = await import('@/lib/guild-access')
+    const canManage = await canManageGuildResources(guildId, session.user.roles, hasGlobalAdmin)
+    
+    if (!canManage) {
+      return NextResponse.json({ error: 'You must be a guild leader or officer to add resources' }, { status: 403 })
     }
 
-    // Verify user has access to this guild
+    // Verify user has access to this guild's Discord server
     const discordToken = (session as any).accessToken
     if (discordToken) {
       try {
@@ -284,7 +290,7 @@ export async function PUT(request: NextRequest) {
     const userId = getUserIdentifier(session)
     const discordId = session.user.id  // Use Discord ID for leaderboard tracking
 
-    // Handle resource metadata update (admin only)
+    // Handle resource metadata update (admin or guild leader/officer)
     if (resourceMetadata) {
       const { id, name, category, description, imageUrl, multiplier, targetQuantity } = resourceMetadata
 
@@ -323,9 +329,14 @@ export async function PUT(request: NextRequest) {
         // Check if user owns THIS specific Discord server
         const { isDiscordServerOwner } = await import('@/lib/discord-roles')
         const isOwner = isDiscordServerOwner(session, discordServerId)
+        const hasGlobalAdmin = hasResourceAdminAccess(session.user.roles, isOwner)
         
-        if (!hasResourceAdminAccess(session.user.roles, isOwner)) {
-          return NextResponse.json({ error: 'Admin access required for metadata updates' }, { status: 403 })
+        // Check guild-specific permissions (leader/officer can edit metadata)
+        const { canManageGuildResources } = await import('@/lib/guild-access')
+        const canManage = await canManageGuildResources(existingResource[0].guildId!, session.user.roles, hasGlobalAdmin)
+        
+        if (!canManage) {
+          return NextResponse.json({ error: 'You must be a guild leader or officer to edit resource details' }, { status: 403 })
         }
       }
 

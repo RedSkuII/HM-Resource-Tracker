@@ -250,6 +250,80 @@ export async function getAccessibleGuilds(
     return []
   }
 }
+
+/**
+ * Check if user is a guild leader or officer for a specific guild
+ * @param guildId - The in-game guild ID
+ * @param userRoles - Array of user's Discord role IDs
+ * @returns Promise<{ isLeader: boolean, isOfficer: boolean, isMember: boolean }> - User's role in the guild
+ */
+export async function getGuildMembershipRole(
+  guildId: string,
+  userRoles: string[]
+): Promise<{ isLeader: boolean, isOfficer: boolean, isMember: boolean }> {
+  try {
+    // Fetch guild configuration
+    const guildData = await db
+      .select()
+      .from(guilds)
+      .where(eq(guilds.id, guildId))
+      .limit(1)
+
+    if (guildData.length === 0) {
+      return { isLeader: false, isOfficer: false, isMember: false }
+    }
+
+    const guild = guildData[0]
+
+    // Check if user has the leader role
+    const isLeader = guild.discordLeaderRoleId ? userRoles.includes(guild.discordLeaderRoleId) : false
+
+    // Check if user has the officer role
+    const isOfficer = guild.discordOfficerRoleId ? userRoles.includes(guild.discordOfficerRoleId) : false
+
+    // Check if user has the member role
+    const isMember = guild.discordRoleId ? userRoles.includes(guild.discordRoleId) : false
+
+    if (isLeader) {
+      console.log(`[GUILD-ACCESS] User is LEADER of "${guild.title}"`)
+    } else if (isOfficer) {
+      console.log(`[GUILD-ACCESS] User is OFFICER of "${guild.title}"`)
+    } else if (isMember) {
+      console.log(`[GUILD-ACCESS] User is MEMBER of "${guild.title}"`)
+    }
+
+    return { isLeader, isOfficer, isMember }
+  } catch (error) {
+    console.error('[GUILD-ACCESS] Error checking guild membership role:', error)
+    return { isLeader: false, isOfficer: false, isMember: false }
+  }
+}
+
+/**
+ * Check if user can manage resources for a specific guild (create/edit/delete)
+ * Leaders and officers can manage resources for their guild
+ * @param guildId - The in-game guild ID
+ * @param userRoles - Array of user's Discord role IDs
+ * @param hasGlobalAdminAccess - Whether user has global admin access
+ * @returns Promise<boolean> - True if user can manage resources for this guild
+ */
+export async function canManageGuildResources(
+  guildId: string,
+  userRoles: string[],
+  hasGlobalAdminAccess: boolean = false
+): Promise<boolean> {
+  // Global admins can manage all guilds
+  if (hasGlobalAdminAccess) {
+    return true
+  }
+
+  // Check guild-specific role
+  const { isLeader, isOfficer } = await getGuildMembershipRole(guildId, userRoles)
+  
+  // Leaders and officers can manage guild resources
+  return isLeader || isOfficer
+}
+
 /**
  * Get all accessible guild IDs for a user across ALL Discord servers they are in
  * This is used for leaderboard, activity, and other cross-guild queries
