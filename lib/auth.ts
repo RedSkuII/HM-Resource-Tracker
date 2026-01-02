@@ -129,12 +129,11 @@ export const authOptions: NextAuthOptions = {
               serverNames[guild.id] = guild.name
             })
             
-            token.ownedServerIds = ownedServerIds
-            token.allServerIds = allServerIds
-            token.serverNames = serverNames
-            
             // Fetch member details only for Discord servers that have guilds in the database
             // This avoids rate limiting from fetching too many servers
+            let serverIdsWithGuilds: string[] = []
+            let relevantServers: string[] = []
+            
             try {
               const { db, guilds } = await import('./db')
               const { sql } = await import('drizzle-orm')
@@ -145,10 +144,10 @@ export const authOptions: NextAuthOptions = {
                 .from(guilds)
                 .groupBy(guilds.discordGuildId)
               
-              const serverIdsWithGuilds = serversWithGuilds.map(s => s.discordGuildId)
+              serverIdsWithGuilds = serversWithGuilds.map(s => s.discordGuildId)
               
               // Only fetch member data for servers the user is in AND have guilds configured
-              const relevantServers = allServerIds.filter(id => serverIdsWithGuilds.includes(id))
+              relevantServers = allServerIds.filter(id => serverIdsWithGuilds.includes(id))
               
               console.log(`[AUTH] Fetching member data for ${relevantServers.length}/${allServerIds.length} servers with guilds`)
               
@@ -197,6 +196,29 @@ export const authOptions: NextAuthOptions = {
               console.error('[AUTH] Error querying guilds database:', dbError)
             }
             
+            // OPTIMIZATION: Only store relevant server IDs to reduce session cookie size
+            // Instead of storing all 49 servers, only store ones with guilds + owned ones
+            const relevantServerIds = [...new Set([...relevantServers, ...ownedServerIds.filter((id: string) => serverIdsWithGuilds.includes(id) || relevantServers.length === 0)])]
+            const relevantOwnedServerIds = ownedServerIds.filter((id: string) => relevantServerIds.includes(id))
+            
+            // Only store server names for relevant servers
+            const relevantServerNames: Record<string, string> = {}
+            for (const serverId of relevantServerIds) {
+              if (serverNames[serverId]) {
+                relevantServerNames[serverId] = serverNames[serverId]
+              }
+            }
+            
+            token.ownedServerIds = relevantOwnedServerIds
+            token.allServerIds = relevantServerIds
+            token.serverNames = relevantServerNames
+            
+            // IMPORTANT: Store whether user owns ANY server (not just relevant ones)
+            // This is used for permission calculations - server owners get elevated access
+            token.isAnyServerOwner = ownedServerIds.length > 0
+            
+            console.log(`[AUTH] Optimized token: storing ${relevantServerIds.length} servers (from ${allServerIds.length} total), owns any server: ${ownedServerIds.length > 0}`)
+            
             // Fetch role names using bot token (to avoid user rate limits)
             const roleNames: Record<string, string> = {}
             if (process.env.DISCORD_BOT_TOKEN) {
@@ -242,7 +264,7 @@ export const authOptions: NextAuthOptions = {
             } else {
               // No DISCORD_GUILD_ID set - allow access based on server ownership
               token.userRoles = []
-              token.isInGuild = allServerIds.length > 0
+              token.isInGuild = relevantServerIds.length > 0
             }
           }
           
@@ -252,8 +274,8 @@ export const authOptions: NextAuthOptions = {
           // Log server data in development only
           if (process.env.NODE_ENV === 'development') {
             console.log('Discord auth data:', {
-              servers: allServerIds.length,
-              ownedServers: ownedServerIds.length,
+              servers: relevantServerIds.length,
+              ownedServers: relevantOwnedServerIds.length,
               nickname: token.discordNickname
             })
           }
