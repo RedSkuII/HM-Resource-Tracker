@@ -33,7 +33,12 @@ export async function PUT(
 
     // Verify user has access to the resource's guild
     const resource = currentResource[0]
-    if (resource.guildId) {
+    
+    // Super admins bypass all permission checks
+    const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
+    const isSuperAdmin = superAdminUserId && session.user.id === superAdminUserId
+    
+    if (!isSuperAdmin && resource.guildId) {
       const discordToken = (session as any).accessToken
       if (discordToken) {
         const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
