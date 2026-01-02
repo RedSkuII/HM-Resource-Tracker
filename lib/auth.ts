@@ -250,21 +250,40 @@ export const authOptions: NextAuthOptions = {
             
             token.roleNames = roleNames
             
-            // Set legacy fields based on DISCORD_GUILD_ID or first server
+            // Aggregate roles from ALL servers with guilds for permission checking
+            // This allows users in multiple Discord servers to access resources
+            const allUserRoles: string[] = []
+            for (const [serverId, roles] of Object.entries(serverRolesMap)) {
+              allUserRoles.push(...roles)
+            }
+            // Remove duplicates
+            const uniqueUserRoles = [...new Set(allUserRoles)]
+            
+            // User is "in guild" if they're in ANY server that has guilds configured
+            const isInAnyRelevantServer = Object.keys(serverRolesMap).length > 0
+            
+            // Set legacy fields - prefer DISCORD_GUILD_ID server if user is in it
             if (process.env.DISCORD_GUILD_ID) {
               const mainGuildId = process.env.DISCORD_GUILD_ID
               if (serverRolesMap[mainGuildId]) {
-                token.userRoles = serverRolesMap[mainGuildId]
+                // User is in the main configured server - use those roles for display
+                token.userRoles = uniqueUserRoles  // But use ALL roles for permission checks
                 token.isInGuild = true
+              } else if (isInAnyRelevantServer) {
+                // User is NOT in main server but IS in other servers with guilds
+                // Grant access based on their roles in those servers
+                token.userRoles = uniqueUserRoles
+                token.isInGuild = true  // They're in a relevant server
+                console.log(`[AUTH] User not in DISCORD_GUILD_ID but is in ${Object.keys(serverRolesMap).length} other server(s) with guilds`)
               } else {
                 token.userRoles = []
                 token.isInGuild = false
                 token.discordNickname = null
               }
             } else {
-              // No DISCORD_GUILD_ID set - allow access based on server ownership
-              token.userRoles = []
-              token.isInGuild = relevantServerIds.length > 0
+              // No DISCORD_GUILD_ID set - allow access based on any relevant server membership
+              token.userRoles = uniqueUserRoles
+              token.isInGuild = isInAnyRelevantServer
             }
           }
           
@@ -301,12 +320,18 @@ export const authOptions: NextAuthOptions = {
         // This gives server owners elevated access even if their server doesn't have guilds yet
         const isServerOwner = Boolean(token.isAnyServerOwner)
         
+        // Check if user is in ANY relevant server (has guilds configured)
+        // This is used as a fallback for basic access when role IDs don't match
+        const isInRelevantServer = Boolean(token.isInGuild)
+        
         // Check if user is super admin - they get all permissions
         const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
         const isSuperAdmin = superAdminUserId && token.sub === superAdminUserId
         
         token.permissions = {
-          hasResourceAccess: isSuperAdmin || hasResourceAccess(userRoles, isServerOwner),
+          // Grant basic resource access if user is in a relevant server (even if roles don't match config)
+          // This allows cross-server users to access the dashboard
+          hasResourceAccess: isSuperAdmin || hasResourceAccess(userRoles, isServerOwner) || isInRelevantServer,
           hasResourceAdminAccess: isSuperAdmin || hasResourceAdminAccess(userRoles, isServerOwner),
           hasTargetEditAccess: isSuperAdmin || hasTargetEditAccess(userRoles, isServerOwner),
           // 🆕 Add new permission computations:
@@ -314,6 +339,9 @@ export const authOptions: NextAuthOptions = {
           hasUserManagementAccess: isSuperAdmin || hasUserManagementAccess(userRoles),
           hasDataExportAccess: isSuperAdmin || hasDataExportAccess(userRoles)
         }
+        
+        // Debug logging for permission troubleshooting
+        console.log(`[AUTH] Computed permissions for user ${token.sub}: resourceAccess=${token.permissions.hasResourceAccess}, isInGuild=${isInRelevantServer}, isServerOwner=${isServerOwner}, roleCount=${userRoles.length}`)
       }
 
       return token
