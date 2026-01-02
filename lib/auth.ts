@@ -274,8 +274,8 @@ export const authOptions: NextAuthOptions = {
           // Log server data in development only
           if (process.env.NODE_ENV === 'development') {
             console.log('Discord auth data:', {
-              servers: relevantServerIds.length,
-              ownedServers: relevantOwnedServerIds.length,
+              servers: allServerIds.length,
+              ownedServers: ownedServerIds.length,
               nickname: token.discordNickname
             })
           }
@@ -289,6 +289,7 @@ export const authOptions: NextAuthOptions = {
           token.serverRolesMap = {}
           token.serverNames = {}
           token.roleNames = {}
+          token.isAnyServerOwner = false
         }
         
         // Mark roles as fetched to prevent future API calls (unless explicitly triggered)

@@ -422,7 +422,6 @@ export async function PUT(request: NextRequest) {
           }
         }
       }
-      }
     }
     
     // Handle quantity updates with points calculation
