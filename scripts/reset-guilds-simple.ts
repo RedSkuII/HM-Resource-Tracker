@@ -129,7 +129,7 @@ async function resetGuilds() {
       category: resource.category,
       icon: resource.icon,
       status: 'critical',
-      targetQuantity: 1000,
+      targetQuantity: 10000,
       multiplier: resource.multiplier,
       lastUpdatedBy: 'System',
       createdAt: new Date(),

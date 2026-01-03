@@ -171,7 +171,7 @@ export default function BotDashboardPage() {
           adminRoleId: data.adminRoleId || [],
           autoUpdateEmbeds: data.autoUpdateEmbeds ?? true,
           notifyOnWebsiteChanges: data.notifyOnWebsiteChanges ?? true,
-          orderFulfillmentBonus: data.orderFulfillmentBonus ?? 50,
+          orderFulfillmentBonus: data.orderFulfillmentBonus ?? 0,
           websiteBonusPercentage: data.websiteBonusPercentage ?? 0,
         } : g)
       )
@@ -412,7 +412,7 @@ export default function BotDashboardPage() {
           adminRoleId: currentGuild.adminRoleId || [],
           autoUpdateEmbeds: currentGuild.autoUpdateEmbeds ?? true,
           notifyOnWebsiteChanges: currentGuild.notifyOnWebsiteChanges ?? true,
-          orderFulfillmentBonus: currentGuild.orderFulfillmentBonus ?? 50,
+          orderFulfillmentBonus: currentGuild.orderFulfillmentBonus ?? 0,
           websiteBonusPercentage: currentGuild.websiteBonusPercentage ?? 0,
         })
       })
@@ -879,7 +879,7 @@ export default function BotDashboardPage() {
               {/* Discord Order Fulfillment Bonus */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Discord Order Fulfillment Bonus: {inGameGuilds.find(g => g.id === selectedInGameGuildId)?.orderFulfillmentBonus ?? 50}%
+                  Discord Order Fulfillment Bonus: {inGameGuilds.find(g => g.id === selectedInGameGuildId)?.orderFulfillmentBonus ?? 0}%
                   <span className="text-gray-500 text-xs ml-2">(Bonus points for filling orders via Discord)</span>
                 </label>
                 <input
@@ -887,7 +887,7 @@ export default function BotDashboardPage() {
                   min="0"
                   max="200"
                   step="10"
-                  value={inGameGuilds.find(g => g.id === selectedInGameGuildId)?.orderFulfillmentBonus ?? 50}
+                  value={inGameGuilds.find(g => g.id === selectedInGameGuildId)?.orderFulfillmentBonus ?? 0}
                   onChange={(e) => {
                     const value = parseInt(e.target.value)
                     setInGameGuilds(prev =>

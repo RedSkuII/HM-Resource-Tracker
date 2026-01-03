@@ -78,7 +78,7 @@ export async function GET(
         adminRoleId: [],
         autoUpdateEmbeds: true,
         notifyOnWebsiteChanges: true,
-        orderFulfillmentBonus: 50,
+        orderFulfillmentBonus: 0,
         websiteBonusPercentage: 0,
         allowPublicOrders: true,
         exists: false
@@ -228,7 +228,7 @@ export async function PUT(
         adminRoleId: (adminRoleId && adminRoleId.length > 0) ? JSON.stringify(adminRoleId) : null,
         autoUpdateEmbeds: autoUpdateEmbeds ?? true,
         notifyOnWebsiteChanges: notifyOnWebsiteChanges ?? true,
-        orderFulfillmentBonus: orderFulfillmentBonus ?? 50,
+        orderFulfillmentBonus: orderFulfillmentBonus ?? 0,
         websiteBonusPercentage: websiteBonusPercentage ?? 0,
         allowPublicOrders: allowPublicOrders ?? true,
         createdAt: now,

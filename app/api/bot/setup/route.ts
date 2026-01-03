@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       adminRoleId: null,
       autoUpdateEmbeds: true,
       notifyOnWebsiteChanges: true,
-      orderFulfillmentBonus: 50,
+      orderFulfillmentBonus: 0,
       allowPublicOrders: true,
       createdAt: now,
       updatedAt: now

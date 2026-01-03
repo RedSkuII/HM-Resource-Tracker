@@ -48,7 +48,7 @@ export const guilds = sqliteTable('guilds', {
   adminRoleId: text('admin_role_id'), // JSON array of role IDs that can access bot dashboard for THIS guild
   autoUpdateEmbeds: integer('auto_update_embeds', { mode: 'boolean' }).notNull().default(true),
   notifyOnWebsiteChanges: integer('notify_on_website_changes', { mode: 'boolean' }).notNull().default(true),
-  orderFulfillmentBonus: integer('order_fulfillment_bonus').notNull().default(50), // Bonus % for Discord order fills (50% = 1.5x)
+  orderFulfillmentBonus: integer('order_fulfillment_bonus').notNull().default(0), // Bonus % for Discord order fills (0% = no bonus by default)
   websiteBonusPercentage: integer('website_bonus_percentage').notNull().default(0), // Bonus % for website additions (0% = no bonus)
   allowPublicOrders: integer('allow_public_orders', { mode: 'boolean' }).notNull().default(true),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
@@ -158,7 +158,7 @@ export const botConfigurations = sqliteTable('bot_configurations', {
   adminRoleId: text('admin_role_id'), // JSON array of role IDs that can access bot dashboard
   autoUpdateEmbeds: integer('auto_update_embeds', { mode: 'boolean' }).notNull().default(true),
   notifyOnWebsiteChanges: integer('notify_on_website_changes', { mode: 'boolean' }).notNull().default(true),
-  orderFulfillmentBonus: integer('order_fulfillment_bonus').notNull().default(50), // Bonus % for Discord order fills (50% = 1.5x)
+  orderFulfillmentBonus: integer('order_fulfillment_bonus').notNull().default(0), // Bonus % for Discord order fills (0% = no bonus by default)
   websiteBonusPercentage: integer('website_bonus_percentage').notNull().default(0), // Bonus % for website additions (0% = no bonus)
   allowPublicOrders: integer('allow_public_orders', { mode: 'boolean' }).notNull().default(true),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),

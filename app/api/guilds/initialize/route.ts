@@ -276,7 +276,7 @@ export async function POST(request: NextRequest) {
       icon: resource.icon,
       imageUrl: resource.imageUrl || null,
       status: 'critical',
-      targetQuantity: 1000,
+      targetQuantity: 10000,
       multiplier: resource.multiplier,
       lastUpdatedBy: 'System',
       createdAt: new Date(),
