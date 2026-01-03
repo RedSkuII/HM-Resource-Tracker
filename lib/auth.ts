@@ -382,6 +382,7 @@ export const authOptions: NextAuthOptions = {
         isInGuild: Boolean(token.isInGuild),
         discordNickname: token.discordNickname as string | null,
         ownedServerIds: (token.ownedServerIds || []) as string[],
+        adminServerIds: (token.adminServerIds || []) as string[],  // Servers where user has ADMINISTRATOR permission
         allServerIds: (token.allServerIds || []) as string[],
         serverRolesMap: (token.serverRolesMap || {}) as Record<string, string[]>,
         serverNames: (token.serverNames || {}) as Record<string, string>,

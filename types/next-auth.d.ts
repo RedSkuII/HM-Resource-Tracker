@@ -22,6 +22,7 @@ declare module "next-auth" {
       discordNickname?: string | null
       customNickname?: string | null
       ownedServerIds: string[]
+      adminServerIds: string[]  // Servers where user has ADMINISTRATOR permission
       allServerIds: string[]
       serverRolesMap: Record<string, string[]>
       serverNames: Record<string, string>
