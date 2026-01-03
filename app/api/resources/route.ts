@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     
     // Validate pagination params
     const validatedPage = Math.max(1, page)
-    const validatedLimit = Math.min(Math.max(1, limit), 500) // Max 500 per page (allows "show all" for most guilds)
+    const validatedLimit = Math.min(Math.max(1, limit), 100) // Max 100 per page
     const offset = (validatedPage - 1) * validatedLimit
     
     // Build where clause with guild filter and search

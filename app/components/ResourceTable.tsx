@@ -477,7 +477,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       const url = `/api/resources?t=${timestamp}${guildParam}${searchParam}&page=${currentPage}&limit=${itemsPerPage}`
       
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
       
       const response = await fetch(url, {
         cache: 'no-store',
@@ -504,7 +504,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        setError('Request timed out after 15 seconds. The server may be experiencing issues.')
+        setError('Request timed out after 30 seconds. The server may be experiencing issues. Try a smaller page size.')
       } else {
         setError(`Error loading resources: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
@@ -2530,7 +2530,6 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                 <option value={25}>25 per page</option>
                 <option value={50}>50 per page</option>
                 <option value={100}>100 per page</option>
-                <option value={500}>Show All</option>
               </select>
             </div>
             <div>
