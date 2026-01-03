@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, resources, resourceHistory, websiteChanges, users } from '@/lib/db'
-import { eq, count, sql } from 'drizzle-orm'
+import { eq, count } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
 // Force dynamic rendering - API routes should never be statically generated
@@ -84,26 +84,10 @@ export async function GET(request: NextRequest) {
     const totalCount = countResult[0]?.count || 0
     const totalPages = Math.ceil(totalCount / validatedLimit)
     
-    // Get paginated results with username lookup
+    // Get paginated results (no join for speed)
     const paginatedResources = await db
-      .select({
-        id: resources.id,
-        guildId: resources.guildId,
-        name: resources.name,
-        quantity: resources.quantity,
-        description: resources.description,
-        category: resources.category,
-        icon: resources.icon,
-        imageUrl: resources.imageUrl,
-        status: resources.status,
-        targetQuantity: resources.targetQuantity,
-        multiplier: resources.multiplier,
-        lastUpdatedBy: sql<string>`COALESCE(${users.customNickname}, ${users.username}, ${resources.lastUpdatedBy})`.as('lastUpdatedBy'),
-        createdAt: resources.createdAt,
-        updatedAt: resources.updatedAt,
-      })
+      .select()
       .from(resources)
-      .leftJoin(users, eq(resources.lastUpdatedBy, users.discordId))
       .where(whereClause)
       .limit(validatedLimit)
       .offset(offset)
