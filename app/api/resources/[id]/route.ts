@@ -196,9 +196,17 @@ export async function PUT(
     })
 
     // Log website change for Discord bot to detect
+    // Use specific change types so bot knows whether to create orders
+    let websiteChangeType = 'resource_update'
+    if (changeAmount > 0) {
+      websiteChangeType = 'resource_increase'
+    } else if (changeAmount < 0) {
+      websiteChangeType = 'resource_decrease'
+    }
+    
     await db.insert(websiteChanges).values({
       id: nanoid(),
-      changeType: 'resource_update',
+      changeType: websiteChangeType,
       resourceId: params.id,
       orderId: null,
       previousValue: String(previousQuantity),
