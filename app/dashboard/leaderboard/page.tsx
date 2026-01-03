@@ -23,6 +23,11 @@ interface LeaderboardData {
   hasPrevPage: boolean
 }
 
+interface Guild {
+  id: string
+  title: string
+}
+
 const timeFilterOptions = [
   { value: '24h', label: 'Last 24 Hours' },
   { value: '7d', label: 'Last 7 Days' },
@@ -38,19 +43,45 @@ export default function LeaderboardPage() {
   const [timeFilter, setTimeFilter] = useState('7d')
   const [currentPage, setCurrentPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
+  const [guilds, setGuilds] = useState<Guild[]>([])
+  const [selectedGuildId, setSelectedGuildId] = useState<string>('all')
+  const [guildsLoading, setGuildsLoading] = useState(true)
   
   const pageSize = 20
 
+  // Fetch accessible guilds on mount
+  useEffect(() => {
+    const fetchGuilds = async () => {
+      try {
+        const response = await fetch('/api/guilds')
+        if (response.ok) {
+          const data = await response.json()
+          setGuilds(data.guilds || [])
+          // If user only has access to one guild, auto-select it
+          if (data.guilds?.length === 1) {
+            setSelectedGuildId(data.guilds[0].id)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching guilds:', error)
+      } finally {
+        setGuildsLoading(false)
+      }
+    }
+    fetchGuilds()
+  }, [])
+
   useEffect(() => {
     fetchLeaderboard()
-  }, [timeFilter, currentPage])
+  }, [timeFilter, currentPage, selectedGuildId])
 
   const fetchLeaderboard = async () => {
     try {
       setLoading(true)
       setError(null)
       
-      const response = await fetch(`/api/leaderboard?timeFilter=${timeFilter}&page=${currentPage}&pageSize=${pageSize}`, {
+      const guildParam = selectedGuildId !== 'all' ? `&guildId=${selectedGuildId}` : ''
+      const response = await fetch(`/api/leaderboard?timeFilter=${timeFilter}&page=${currentPage}&pageSize=${pageSize}${guildParam}`, {
         headers: {
           'Cache-Control': 'no-cache',
         },
@@ -83,6 +114,16 @@ export default function LeaderboardPage() {
     setCurrentPage(1) // Reset to first page when changing filters
   }
 
+  const handleGuildFilterChange = (guildId: string) => {
+    setSelectedGuildId(guildId)
+    setCurrentPage(1) // Reset to first page when changing filters
+  }
+
+  // Get the selected guild name for display
+  const selectedGuildName = selectedGuildId === 'all' 
+    ? 'All Guilds' 
+    : guilds.find(g => g.id === selectedGuildId)?.title || 'Guild'
+
   if (loading && !data) {
     return (
       <div className="min-h-screen bg-guildgamesh-50 dark:bg-gray-900 py-8">
@@ -107,7 +148,7 @@ export default function LeaderboardPage() {
                 🏆 Leaderboard
               </h1>
               <p className="text-gray-600 dark:text-gray-300 mt-1">
-                Top contributors in the {process.env.NEXT_PUBLIC_ORG_NAME || 'community'}
+                Top contributors in {selectedGuildId === 'all' ? 'Guildgamesh - Resource Tracker' : selectedGuildName}
               </p>
             </div>
             <button
@@ -119,21 +160,45 @@ export default function LeaderboardPage() {
           </div>
 
           {/* Time Filter */}
-          <div className="mt-6">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Time Period:
-            </label>
-            <select
-              value={timeFilter}
-              onChange={(e) => handleTimeFilterChange(e.target.value)}
-              className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-            >
-              {timeFilterOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+          <div className="mt-6 flex flex-wrap gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Time Period:
+              </label>
+              <select
+                value={timeFilter}
+                onChange={(e) => handleTimeFilterChange(e.target.value)}
+                className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+              >
+                {timeFilterOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Guild Filter - only show if user has access to multiple guilds */}
+            {guilds.length > 1 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Guild:
+                </label>
+                <select
+                  value={selectedGuildId}
+                  onChange={(e) => handleGuildFilterChange(e.target.value)}
+                  disabled={guildsLoading}
+                  className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 min-w-[180px]"
+                >
+                  <option value="all">All Guilds</option>
+                  {guilds.map((guild) => (
+                    <option key={guild.id} value={guild.id}>
+                      {guild.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         </div>
 
