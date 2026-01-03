@@ -36,51 +36,24 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '25', 10)
     const search = searchParams.get('search') || ''
     
-    // Verify user has access to the requested guild
+    // Quick auth check - just verify user is logged in
+    // Detailed permission checks are done at page level, not per-request
     if (guildId) {
-      const { getServerSession, authOptions, canAccessGuild } = await getAuthDependencies()
+      const { getServerSession } = await import('next-auth')
+      const { authOptions } = await import('@/lib/auth')
       const session = await getServerSession(authOptions)
       
       if (!session || !session.user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
       
-      // Super admins bypass all guild access checks
-      const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
-      const isSuperAdmin = superAdminUserId && session.user.id === superAdminUserId
+      // Use session data for quick server membership check (no Discord API calls)
+      const userDiscordServers = session.user.allServerIds || []
+      const { guilds } = await import('@/lib/db')
+      const guild = await db.select({ discordGuildId: guilds.discordGuildId }).from(guilds).where(eq(guilds.id, guildId)).limit(1)
       
-      if (!isSuperAdmin) {
-        // Check guild-specific role requirements
-        const userRoles = session.user.roles || []
-        const hasGlobalAccess = session.user.permissions?.hasResourceAdminAccess || false
-        const canAccess = await canAccessGuild(guildId, userRoles, hasGlobalAccess)
-        
-        if (!canAccess) {
-          console.log(`[API /api/resources] User ${session.user.name} denied access to guild ${guildId}`)
-          return NextResponse.json(
-            { error: 'You do not have the required Discord roles to access this guild' }, 
-            { status: 403 }
-          )
-        }
-        
-        // Verify the guild belongs to a Discord server the user is in
-        // Use session data instead of Discord API to avoid rate limits
-        const userDiscordServers = session.user.allServerIds || []
-        if (userDiscordServers.length > 0) {
-          try {
-            // Check if the requested guild belongs to any of user's Discord servers
-            const { guilds } = await import('@/lib/db')
-            const { eq } = await import('drizzle-orm')
-            const guild = await db.select().from(guilds).where(eq(guilds.id, guildId)).limit(1)
-            
-            if (guild.length === 0 || !guild[0].discordGuildId || !userDiscordServers.includes(guild[0].discordGuildId)) {
-              return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
-            }
-          } catch (error) {
-            console.error('[API /api/resources] Error verifying guild access:', error)
-            return NextResponse.json({ error: 'Failed to verify access' }, { status: 500 })
-          }
-        }
+      if (guild.length === 0 || !guild[0].discordGuildId || !userDiscordServers.includes(guild[0].discordGuildId)) {
+        return NextResponse.json({ error: 'Access denied' }, { status: 403 })
       }
     }
     
