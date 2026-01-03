@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { db, guilds } from '@/lib/db'
+import { eq } from 'drizzle-orm'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,7 +17,7 @@ interface DiscordGuild {
   permissions: string
 }
 
-// GET - Fetch Discord servers where user is owner or has administrator permission
+// GET - Fetch Discord servers where user is owner, has administrator permission, or has guild-specific bot admin role
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -42,26 +44,76 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch Discord servers' }, { status: response.status })
     }
 
-    const guilds: DiscordGuild[] = await response.json()
+    const allDiscordGuilds: DiscordGuild[] = await response.json()
+    
+    // Get user's roles from session (aggregated across all servers)
+    const userRoles = session.user.roles || []
+    const serverRolesMap = (session.user as any).serverRolesMap || {}
 
-    // Filter to only guilds where user is owner or has administrator permission
-    const adminGuilds = guilds.filter(guild => {
+    // Check each Discord server for access
+    const accessibleGuilds: (DiscordGuild & { hasGuildAdminAccess?: boolean })[] = []
+    
+    for (const guild of allDiscordGuilds) {
       // Owner always has full access
-      if (guild.owner) return true
+      if (guild.owner) {
+        accessibleGuilds.push(guild)
+        continue
+      }
       
-      // Check if user has ADMINISTRATOR permission
+      // Check if user has ADMINISTRATOR permission on Discord server
       const permissions = BigInt(guild.permissions)
       const hasAdmin = (permissions & BigInt(ADMINISTRATOR_PERMISSION)) === BigInt(ADMINISTRATOR_PERMISSION)
       
-      return hasAdmin
-    })
+      if (hasAdmin) {
+        accessibleGuilds.push(guild)
+        continue
+      }
+      
+      // Check if user has guild-specific bot admin access for any in-game guild on this Discord server
+      // Get roles for THIS specific Discord server
+      const userRolesForServer = serverRolesMap[guild.id] || []
+      
+      if (userRolesForServer.length > 0) {
+        // Check if any in-game guild on this Discord server has this user as admin
+        const inGameGuildsOnServer = await db
+          .select()
+          .from(guilds)
+          .where(eq(guilds.discordGuildId, guild.id))
+        
+        for (const inGameGuild of inGameGuildsOnServer) {
+          // Check adminRoleId (bot admin roles)
+          if (inGameGuild.adminRoleId) {
+            let adminRoles: string[] = []
+            try {
+              adminRoles = JSON.parse(inGameGuild.adminRoleId)
+            } catch {
+              adminRoles = [inGameGuild.adminRoleId]
+            }
+            
+            if (adminRoles.some(roleId => userRolesForServer.includes(roleId))) {
+              console.log(`[USER-SERVERS] User has bot admin access via guild "${inGameGuild.title}"`)
+              accessibleGuilds.push({ ...guild, hasGuildAdminAccess: true })
+              break // Found access, no need to check more guilds
+            }
+          }
+          
+          // Also check if user is the guild leader
+          if (inGameGuild.leaderId === session.user.id) {
+            console.log(`[USER-SERVERS] User is leader of guild "${inGameGuild.title}"`)
+            accessibleGuilds.push({ ...guild, hasGuildAdminAccess: true })
+            break
+          }
+        }
+      }
+    }
 
     return NextResponse.json({
-      servers: adminGuilds.map(guild => ({
+      servers: accessibleGuilds.map(guild => ({
         id: guild.id,
         name: guild.name,
         icon: guild.icon,
-        isOwner: guild.owner
+        isOwner: guild.owner,
+        hasGuildAdminAccess: (guild as any).hasGuildAdminAccess || false
       }))
     }, {
       headers: {
