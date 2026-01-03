@@ -110,14 +110,18 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  console.log(`[API PUT /api/resources/${params.id}] Starting update request`)
   const session = await getServerSession(authOptions)
   
   if (!session) {
+    console.log(`[API PUT /api/resources/${params.id}] Unauthorized - no session`)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    const { quantity, updateType = 'absolute', value, reason } = await request.json()
+    const body = await request.json()
+    const { quantity, updateType = 'absolute', value, reason } = body
+    console.log(`[API PUT /api/resources/${params.id}] Request body:`, { quantity, updateType, value, reason })
     const userId = getUserIdentifier(session)
     
     // Get current resource for history logging and points calculation
@@ -158,6 +162,7 @@ export async function PUT(
 
     const previousQuantity = resource.quantity
     const changeAmount = updateType === 'relative' ? value : quantity - previousQuantity
+    console.log(`[API PUT /api/resources/${params.id}] Updating: prev=${previousQuantity}, new=${quantity}, change=${changeAmount}`)
 
     // Update the resource
     await db.update(resources)
@@ -167,6 +172,8 @@ export async function PUT(
         updatedAt: new Date(),
       })
       .where(eq(resources.id, params.id))
+    
+    console.log(`[API PUT /api/resources/${params.id}] Database update completed`)
 
     // Log the change in history
     await db.insert(resourceHistory).values({
@@ -222,6 +229,7 @@ export async function PUT(
 
     // Get the updated resource
     const updatedResource = await db.select().from(resources).where(eq(resources.id, params.id))
+    console.log(`[API PUT /api/resources/${params.id}] Returning updated resource: qty=${updatedResource[0]?.quantity}`)
     
     return NextResponse.json({
       resource: updatedResource[0],
