@@ -46,7 +46,9 @@ export function DiscordServerSections({
         })
         
         if (guildsResponse.ok) {
-          const guilds: Guild[] = await guildsResponse.json()
+          const responseData = await guildsResponse.json()
+          // Handle both { guilds: [...] } and raw array formats
+          const guilds: Guild[] = responseData.guilds || responseData
           console.log('[DiscordServerSections] Fetched guilds:', guilds)
           
           // Group guilds by Discord server ID

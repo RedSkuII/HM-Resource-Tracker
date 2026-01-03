@@ -266,7 +266,9 @@ export default function BotDashboardPage() {
           throw new Error('Failed to fetch in-game guilds')
         }
         
-        const data = await response.json()
+        const responseData = await response.json()
+        // Handle both { guilds: [...] } and raw array formats
+        const data = responseData.guilds || responseData
         setInGameGuilds(data)
         
         // Fetch role requirements for each guild

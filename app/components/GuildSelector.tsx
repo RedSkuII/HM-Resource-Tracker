@@ -54,7 +54,9 @@ export default function GuildSelector({ selectedGuildId, onGuildChange, hasLoade
         }
       })
       if (response.ok) {
-        const data = await response.json()
+        const responseData = await response.json()
+        // Handle both { guilds: [...] } and raw array formats
+        const data = responseData.guilds || responseData
         console.log('Guilds fetched:', data)
         
         // Only update guilds if we got data, otherwise keep existing guilds
