@@ -109,8 +109,12 @@ export const authOptions: NextAuthOptions = {
           })
           
           let ownedServerIds: string[] = []
+          let adminServerIds: string[] = []  // Servers where user has ADMINISTRATOR permission
           let allServerIds: string[] = []
           let serverRolesMap: Record<string, string[]> = {}
+          
+          // Discord ADMINISTRATOR permission bit
+          const ADMINISTRATOR_PERMISSION = BigInt(0x0000000000000008)
           
           if (guildsResponse.ok) {
             const guilds = await guildsResponse.json()
@@ -122,6 +126,17 @@ export const authOptions: NextAuthOptions = {
             ownedServerIds = guilds
               .filter((guild: any) => guild.owner === true)
               .map((guild: any) => guild.id)
+            
+            // Filter servers where user has ADMINISTRATOR permission
+            adminServerIds = guilds
+              .filter((guild: any) => {
+                if (guild.owner) return true  // Owners are always admins
+                const permissions = BigInt(guild.permissions || '0')
+                return (permissions & ADMINISTRATOR_PERMISSION) === ADMINISTRATOR_PERMISSION
+              })
+              .map((guild: any) => guild.id)
+            
+            console.log(`[AUTH] User is admin in ${adminServerIds.length} servers: ${adminServerIds.join(', ')}`)
             
             // Store server names from the guild list
             const serverNames: Record<string, string> = {}
@@ -200,6 +215,8 @@ export const authOptions: NextAuthOptions = {
             // Instead of storing all 49 servers, only store ones with guilds + owned ones
             const relevantServerIds = [...new Set([...relevantServers, ...ownedServerIds.filter((id: string) => serverIdsWithGuilds.includes(id) || relevantServers.length === 0)])]
             const relevantOwnedServerIds = ownedServerIds.filter((id: string) => relevantServerIds.includes(id))
+            // Filter admin server IDs to only relevant ones
+            const relevantAdminServerIds = adminServerIds.filter((id: string) => relevantServerIds.includes(id))
             
             // Only store server names for relevant servers
             const relevantServerNames: Record<string, string> = {}
@@ -210,6 +227,7 @@ export const authOptions: NextAuthOptions = {
             }
             
             token.ownedServerIds = relevantOwnedServerIds
+            token.adminServerIds = relevantAdminServerIds  // Store admin server IDs
             token.allServerIds = relevantServerIds
             token.serverNames = relevantServerNames
             
@@ -304,6 +322,7 @@ export const authOptions: NextAuthOptions = {
           token.isInGuild = false
           token.discordNickname = null
           token.ownedServerIds = []
+          token.adminServerIds = []
           token.allServerIds = []
           token.serverRolesMap = {}
           token.serverNames = {}
@@ -320,6 +339,10 @@ export const authOptions: NextAuthOptions = {
         // This gives server owners elevated access even if their server doesn't have guilds yet
         const isServerOwner = Boolean(token.isAnyServerOwner)
         
+        // Check if user is Discord ADMINISTRATOR in any relevant server
+        const adminServerIds = (token.adminServerIds || []) as string[]
+        const isDiscordAdmin = adminServerIds.length > 0
+        
         // Check if user is in ANY relevant server (has guilds configured)
         // This is used as a fallback for basic access when role IDs don't match
         const isInRelevantServer = Boolean(token.isInGuild)
@@ -332,14 +355,17 @@ export const authOptions: NextAuthOptions = {
           // Grant basic resource access if user is in a relevant server (even if roles don't match config)
           // This allows cross-server users to access the dashboard
           hasResourceAccess: isSuperAdmin || hasResourceAccess(userRoles, isServerOwner) || isInRelevantServer,
-          hasResourceAdminAccess: isSuperAdmin || hasResourceAdminAccess(userRoles, isServerOwner),
-          hasTargetEditAccess: isSuperAdmin || hasTargetEditAccess(userRoles, isServerOwner),
+          // Grant admin access to: super admins, Discord ADMINISTRATORS, server owners, or users with configured admin roles
+          hasResourceAdminAccess: isSuperAdmin || isDiscordAdmin || hasResourceAdminAccess(userRoles, isServerOwner),
+          hasTargetEditAccess: isSuperAdmin || isDiscordAdmin || hasTargetEditAccess(userRoles, isServerOwner),
           // 🆕 Add new permission computations:
           hasReportAccess: isSuperAdmin || hasReportAccess(userRoles),
           hasUserManagementAccess: isSuperAdmin || hasUserManagementAccess(userRoles),
           hasDataExportAccess: isSuperAdmin || hasDataExportAccess(userRoles)
         }
         token.permissions = permissions
+        
+        console.log(`[AUTH] Computed permissions: isDiscordAdmin=${isDiscordAdmin}, adminServers=${adminServerIds.length}`)
         
         // Debug logging for permission troubleshooting
         console.log(`[AUTH] Computed permissions for user ${token.sub}: resourceAccess=${permissions.hasResourceAccess}, isInGuild=${isInRelevantServer}, isServerOwner=${isServerOwner}, roleCount=${userRoles.length}`)

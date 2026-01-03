@@ -30,6 +30,7 @@ export default async function Dashboard() {
     ownedServerIds: session.user.ownedServerIds,
     serverRolesMapKeys: Object.keys(session.user.serverRolesMap || {}),
     serverRolesMap: session.user.serverRolesMap,
+    hasResourceAdminAccess: session.user.permissions?.hasResourceAdminAccess,
   })
 
   return (
@@ -185,7 +186,7 @@ export default async function Dashboard() {
                   </div>
                 </Link>
 
-                {/* Bot Dashboard - Only show to admins */}
+                {/* Bot Dashboard - Only show to Discord admins and users with admin roles */}
                 {session.user.permissions?.hasResourceAdminAccess && (
                   <Link
                     href="/dashboard/bot"
