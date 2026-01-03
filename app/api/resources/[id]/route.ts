@@ -84,9 +84,15 @@ export async function GET(
           const { isDiscordServerOwner } = await import('@/lib/discord-roles')
           const discordServerId = guild[0].discordGuildId
           const isOwner = isDiscordServerOwner(session, discordServerId)
+          const hasGlobalAccess = hasResourceAccess(session.user.roles, isOwner)
           
-          if (!hasResourceAccess(session.user.roles, isOwner)) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+          // Check guild-specific permissions (any guild member can view resources)
+          const { canAccessGuild } = await import('@/lib/guild-access')
+          const canAccess = await canAccessGuild(resource.guildId!, session.user.roles, hasGlobalAccess)
+          
+          if (!canAccess) {
+            console.log(`[API GET /api/resources/${params.id}] User ${session.user.name} denied - not a member of guild ${resource.guildId}`)
+            return NextResponse.json({ error: 'You must be a guild member to view this resource' }, { status: 401 })
           }
         }
       }

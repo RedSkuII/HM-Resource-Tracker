@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { db, resourceHistory, users } from '@/lib/db'
+import { db, resourceHistory, resources, users, guilds } from '@/lib/db'
 import { eq, gte, desc, and, sql } from 'drizzle-orm'
-import { hasResourceAccess } from '@/lib/discord-roles'
+import { hasResourceAccess, isDiscordServerOwner } from '@/lib/discord-roles'
+import { canAccessGuild } from '@/lib/guild-access'
 import { cache, CACHE_KEYS } from '@/lib/cache'
 
 // GET /api/resources/[id]/history?days=7 - Get resource history
@@ -13,11 +14,7 @@ export async function GET(
 ) {
   const session = await getServerSession(authOptions)
   
-  // Check if user is a server owner
-  const { isDiscordServerOwner } = await import('@/lib/discord-roles')
-  const isOwner = isDiscordServerOwner(session)
-  
-  if (!session || !hasResourceAccess(session.user.roles, isOwner)) {
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -26,12 +23,32 @@ export async function GET(
     const days = parseInt(searchParams.get('days') || '7')
     const resourceId = params.id
 
-    // Remove cache check to prevent stale data on Vercel
-    // const cacheKey = CACHE_KEYS.RESOURCE_HISTORY(resourceId, days)
-    // const cachedHistory = cache.get(cacheKey)
-    // if (cachedHistory) {
-    //   return NextResponse.json(cachedHistory)
-    // }
+    // Get the resource to check guild permissions
+    const resourceData = await db.select().from(resources).where(eq(resources.id, resourceId)).limit(1)
+    if (resourceData.length === 0) {
+      return NextResponse.json({ error: 'Resource not found' }, { status: 404 })
+    }
+    
+    const resource = resourceData[0]
+    
+    // Check guild-specific access
+    if (resource.guildId) {
+      const guild = await db.select().from(guilds).where(eq(guilds.id, resource.guildId)).limit(1)
+      
+      if (guild.length > 0 && guild[0].discordGuildId) {
+        const discordServerId = guild[0].discordGuildId
+        const isOwner = isDiscordServerOwner(session, discordServerId)
+        const hasGlobalAccess = hasResourceAccess(session.user.roles, isOwner)
+        
+        // Check guild-specific permissions (any guild member can view history)
+        const canAccess = await canAccessGuild(resource.guildId, session.user.roles, hasGlobalAccess)
+        
+        if (!canAccess) {
+          console.log(`[API GET /api/resources/${params.id}/history] User ${session.user.name} denied - not a member of guild ${resource.guildId}`)
+          return NextResponse.json({ error: 'You must be a guild member to view this resource history' }, { status: 401 })
+        }
+      }
+    }
 
     // Calculate date threshold
     const daysAgo = new Date()
