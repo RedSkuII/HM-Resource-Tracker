@@ -2248,8 +2248,8 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                         </td>
                       )}
 
-                                              <td className="px-3 py-3 whitespace-nowrap text-sm" onClick={(e) => e.stopPropagation()}>
-                        <div className="space-y-2">
+                                              <td className={`px-3 py-3 text-sm ${editingResource === resource.id ? '' : 'whitespace-nowrap'}`} onClick={(e) => e.stopPropagation()}>
+                        <div className={editingResource === resource.id ? "space-y-2 min-w-[200px]" : "space-y-2"}>
                           {/* Input field and buttons */}
                           {activeInput.resourceId === resource.id ? (
                             <div className="space-y-2">
@@ -2289,7 +2289,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                             </div>
                           ) : editingResource === resource.id ? (
                             // Admin edit form for table view
-                            <div className="space-y-2 min-w-[200px]">
+                            <div className="space-y-2">
                               <input
                                 type="text"
                                 value={editResourceForm.name}
