@@ -56,6 +56,7 @@ export async function GET(request: NextRequest) {
     for (const guild of allDiscordGuilds) {
       // Owner always has full access
       if (guild.owner) {
+        console.log(`[USER-SERVERS] ${guild.name}: User is owner`)
         accessibleGuilds.push(guild)
         continue
       }
@@ -64,7 +65,10 @@ export async function GET(request: NextRequest) {
       const permissions = BigInt(guild.permissions)
       const hasAdmin = (permissions & BigInt(ADMINISTRATOR_PERMISSION)) === BigInt(ADMINISTRATOR_PERMISSION)
       
+      console.log(`[USER-SERVERS] ${guild.name}: permissions=${guild.permissions}, hasAdmin=${hasAdmin}`)
+      
       if (hasAdmin) {
+        console.log(`[USER-SERVERS] ${guild.name}: User has ADMINISTRATOR permission`)
         accessibleGuilds.push(guild)
         continue
       }
@@ -95,13 +99,6 @@ export async function GET(request: NextRequest) {
               accessibleGuilds.push({ ...guild, hasGuildAdminAccess: true })
               break // Found access, no need to check more guilds
             }
-          }
-          
-          // Also check if user is the guild leader
-          if (inGameGuild.leaderId === session.user.id) {
-            console.log(`[USER-SERVERS] User is leader of guild "${inGameGuild.title}"`)
-            accessibleGuilds.push({ ...guild, hasGuildAdminAccess: true })
-            break
           }
         }
       }
