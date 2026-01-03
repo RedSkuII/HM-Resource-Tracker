@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { hasBotAdminAccess } from '@/lib/discord-roles'
 import { getGuildsWithBotAdminAccess } from '@/lib/guild-access'
 
 export const dynamic = 'force-dynamic'
@@ -32,47 +31,19 @@ export async function GET(
     if (isSuperAdmin) {
       console.log('[DISCORD-GUILD] Super admin access granted:', session.user.id)
     } else {
-      // Non-super admins can ONLY access servers they own or administrate
-      let isServerOwnerOrAdmin = false
+      // Check if user is owner OR has Discord ADMINISTRATOR permission for this server
+      // Use session data to avoid rate limits
+      const isServerOwner = session.user.ownedServerIds?.includes(guildId) || false
+      const isDiscordAdmin = session.user.adminServerIds?.includes(guildId) || false
+      const isServerOwnerOrAdmin = isServerOwner || isDiscordAdmin
       
-      if ((session as any).accessToken) {
-        try {
-          const guildsResponse = await fetch('https://discord.com/api/v10/users/@me/guilds', {
-            headers: {
-              'Authorization': `Bearer ${(session as any).accessToken}`,
-            },
-          })
-          
-          if (guildsResponse.ok) {
-            const userGuilds = await guildsResponse.json()
-            console.log('[DISCORD-GUILD] User has access to', userGuilds.length, 'Discord servers')
-            
-            const targetGuild = userGuilds.find((g: any) => g.id === guildId)
-            console.log('[DISCORD-GUILD] Looking for server:', guildId, 'Found:', !!targetGuild)
-            
-            // Check if user is owner OR has administrator permission
-            if (targetGuild) {
-              const ADMINISTRATOR = 0x0000000000000008
-              const hasAdminPerms = (BigInt(targetGuild.permissions) & BigInt(ADMINISTRATOR)) === BigInt(ADMINISTRATOR)
-              isServerOwnerOrAdmin = targetGuild.owner || hasAdminPerms
-              
-              console.log('[DISCORD-GUILD] Server permissions:', {
-                guildId,
-                owner: targetGuild.owner,
-                permissions: targetGuild.permissions,
-                hasAdminPerms,
-                isServerOwnerOrAdmin
-              })
-            }
-          } else {
-            console.error('[DISCORD-GUILD] Failed to fetch user guilds:', guildsResponse.status, await guildsResponse.text())
-          }
-        } catch (err) {
-          console.error('[DISCORD-GUILD] Error checking server ownership:', err)
-        }
-      } else {
-        console.error('[DISCORD-GUILD] No access token available in session')
-      }
+      console.log('[DISCORD-GUILD] Session-based permission check:', {
+        guildId,
+        userId: session.user.id,
+        isServerOwner,
+        isDiscordAdmin,
+        isServerOwnerOrAdmin
+      })
       
       // Non-super admins MUST be owner/admin of THIS specific server OR have guild admin role
       if (!isServerOwnerOrAdmin) {
