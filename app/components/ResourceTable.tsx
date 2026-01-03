@@ -558,11 +558,85 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
     const numValue = parseInt(value)
     if (isNaN(numValue)) return
 
+    const resource = resources.find(r => r.id === resourceId)
+    if (!resource) return
+
+    // Calculate the new quantity
+    let newQuantity: number
+    if (type === 'absolute') {
+      newQuantity = Math.max(0, numValue)
+    } else {
+      newQuantity = Math.max(0, resource.quantity + numValue)
+    }
+
+    // Update local state
     handleQuantityChange(resourceId, numValue, type)
     setActiveInput({ resourceId: null, type: null, value: '' })
     
-    // Save immediately for grid view
-    setTimeout(() => saveResource(resourceId), 100)
+    // Save immediately with the calculated values (don't rely on state)
+    setSaving(true)
+    try {
+      const response = await fetch(`/api/resources/${resourceId}`, {
+        method: 'PUT',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+        },
+        body: JSON.stringify({
+          quantity: newQuantity,
+          updateType: type,
+          value: numValue,
+        }),
+      })
+
+      if (response.ok) {
+        const responseData = await response.json()
+        setResources(prev =>
+          prev.map(r =>
+            r.id === resourceId
+              ? {
+                  ...responseData.resource,
+                  updatedAt: new Date(responseData.resource.updatedAt).toISOString(),
+                }
+              : r
+          )
+        )
+        
+        // Show congratulations popup if points were earned
+        if (responseData.pointsEarned > 0) {
+          const currentUserId = session ? getUserIdentifier(session) : userId
+          setCongratulationsState({
+            isVisible: true,
+            pointsEarned: responseData.pointsEarned,
+            pointsCalculation: responseData.pointsCalculation,
+            resourceName: resource.name,
+            actionType: type === 'absolute' ? 'SET' : (numValue > 0 ? 'ADD' : 'REMOVE'),
+            quantityChanged: Math.abs(numValue)
+          })
+        }
+        
+        // Clear the edited resource entry
+        setEditedResources(prev => {
+          const newMap = new Map(prev)
+          newMap.delete(resourceId)
+          return newMap
+        })
+        
+        // Clear status change indicator
+        setStatusChanges(prev => {
+          const newMap = new Map(prev)
+          newMap.delete(resourceId)
+          return newMap
+        })
+      } else {
+        console.error('Failed to save resource:', await response.text())
+      }
+    } catch (error) {
+      console.error('Error saving resource:', error)
+    } finally {
+      setSaving(false)
+    }
   }
 
   // Activate inline input
@@ -764,7 +838,12 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
     try {
       const resource = resources.find(r => r.id === resourceId)
       const updateInfo = editedResources.get(resourceId)
-      if (!resource || !updateInfo) return
+      if (!resource || !updateInfo) {
+        console.log(`[saveResource] Skipping - resource: ${!!resource}, updateInfo: ${!!updateInfo}`)
+        return
+      }
+      
+      console.log(`[saveResource] Saving ${resource.name}: qty=${resource.quantity}, updateType=${updateInfo.updateType}, value=${updateInfo.value}`)
 
       const response = await fetch(`/api/resources/${resourceId}`, {
         method: 'PUT',
