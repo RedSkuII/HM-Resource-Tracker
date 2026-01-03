@@ -221,10 +221,11 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
-  const [itemsPerPage] = useState(25)
+  const [itemsPerPage, setItemsPerPage] = useState(25)
   const [updateModes, setUpdateModes] = useState<Map<string, 'absolute' | 'relative'>>(new Map())
   const [relativeValues, setRelativeValues] = useState<Map<string, number>>(new Map())
   const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid')
   const [currentTime, setCurrentTime] = useState(new Date())
   const [recentActivity, setRecentActivity] = useState<any[]>([])
@@ -456,6 +457,15 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
     }
   }
 
+  // Debounce search term to avoid too many API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+      setCurrentPage(1) // Reset to first page on search
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
   // Fetch resources from API
   const fetchResources = async () => {
     try {
@@ -463,7 +473,8 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       setError(null)
       const timestamp = Date.now()
       const guildParam = guildId ? `&guildId=${guildId}` : ''
-      const url = `/api/resources?t=${timestamp}${guildParam}&page=${currentPage}&limit=${itemsPerPage}`
+      const searchParam = debouncedSearchTerm ? `&search=${encodeURIComponent(debouncedSearchTerm)}` : ''
+      const url = `/api/resources?t=${timestamp}${guildParam}${searchParam}&page=${currentPage}&limit=${itemsPerPage}`
       
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 second timeout
@@ -1003,7 +1014,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
     }
   }
 
-  // Fetch resources on component mount and when guildId or page changes
+  // Fetch resources on component mount and when guildId, page, itemsPerPage, or search changes
   useEffect(() => {
     if (guildId) {
       fetchResources()
@@ -1011,7 +1022,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       fetchLeaderboard()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [guildId, currentPage])
+  }, [guildId, currentPage, itemsPerPage, debouncedSearchTerm])
 
   // Fetch leaderboard when time filter changes
   useEffect(() => {
@@ -1021,34 +1032,8 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leaderboardTimeFilter])
 
-  // Filter resources based on search term and filters
+  // Filter resources based on status and needsUpdate filters (search is now server-side)
   const filteredResources = resources.filter(resource => {
-    const searchLower = searchTerm.toLowerCase()
-    const resourceNameLower = resource.name.toLowerCase()
-    
-    // Text search filter
-    let matchesSearch = true
-    if (searchTerm) {
-      // Exact name match (highest priority)
-      if (resourceNameLower === searchLower) {
-        matchesSearch = true
-      }
-      // Partial name match (high priority)
-      else if (resourceNameLower.includes(searchLower)) {
-        matchesSearch = true
-      }
-      // Extended search: only for longer search terms (6+ characters) to avoid broad matches
-      else if (searchLower.length >= 6) {
-        matchesSearch = (
-          (resource.description?.toLowerCase().includes(searchLower) ?? false) ||
-          (resource.category?.toLowerCase().includes(searchLower) ?? false)
-        )
-      }
-      else {
-        matchesSearch = false
-      }
-    }
-
     // Status filter
     let matchesStatus = true
     if (statusFilter !== 'all') {
@@ -1062,11 +1047,11 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       matchesNeedsUpdate = needsUpdating(resource.updatedAt)
     }
 
-    return matchesSearch && matchesStatus && matchesNeedsUpdate
+    return matchesStatus && matchesNeedsUpdate
   }).sort((a, b) => {
     // If there's a search term, sort by search relevance
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase()
+    if (debouncedSearchTerm) {
+      const searchLower = debouncedSearchTerm.toLowerCase()
       const aNameLower = a.name.toLowerCase()
       const bNameLower = b.name.toLowerCase()
       
@@ -2527,12 +2512,26 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
             </button>
           </div>
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-            <div>
+            <div className="flex items-center gap-4">
               <p className="text-sm text-gray-700 dark:text-gray-300">
                 Showing <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> to{' '}
                 <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalCount)}</span> of{' '}
                 <span className="font-medium">{totalCount}</span> resources
               </p>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value))
+                  setCurrentPage(1)
+                }}
+                className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+                title="Items per page"
+              >
+                <option value={25}>25 per page</option>
+                <option value={50}>50 per page</option>
+                <option value={100}>100 per page</option>
+                <option value={500}>Show All</option>
+              </select>
             </div>
             <div>
               <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">

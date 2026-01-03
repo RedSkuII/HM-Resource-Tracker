@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
     const guildId = searchParams.get('guildId')
     const page = parseInt(searchParams.get('page') || '1', 10)
     const limit = parseInt(searchParams.get('limit') || '25', 10)
+    const search = searchParams.get('search') || ''
     
     // Verify user has access to the requested guild
     if (guildId) {
@@ -96,11 +97,21 @@ export async function GET(request: NextRequest) {
     
     // Validate pagination params
     const validatedPage = Math.max(1, page)
-    const validatedLimit = Math.min(Math.max(1, limit), 100) // Max 100 per page
+    const validatedLimit = Math.min(Math.max(1, limit), 500) // Max 500 per page (allows "show all" for most guilds)
     const offset = (validatedPage - 1) * validatedLimit
     
-    // Build base query with guild filter if provided
-    const whereClause = guildId ? eq(resources.guildId, guildId) : undefined
+    // Build where clause with guild filter and search
+    const { and, like } = await import('drizzle-orm')
+    let whereClause
+    if (guildId && search) {
+      whereClause = and(eq(resources.guildId, guildId), like(resources.name, `%${search}%`))
+    } else if (guildId) {
+      whereClause = eq(resources.guildId, guildId)
+    } else if (search) {
+      whereClause = like(resources.name, `%${search}%`)
+    } else {
+      whereClause = undefined
+    }
     
     // Get total count using SQL COUNT - much faster than fetching all rows
     const countResult = await db
