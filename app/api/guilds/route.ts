@@ -17,6 +17,29 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Check for super admin - they get ALL guilds
+    const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
+    const isSuperAdmin = session.user.id === superAdminUserId
+    
+    if (isSuperAdmin) {
+      console.log('[GUILDS API] Super admin access - returning ALL guilds')
+      const allGuilds = await db.select().from(guilds).all()
+      return NextResponse.json(
+        { guilds: allGuilds.map(g => ({
+          id: g.id,
+          title: g.title,
+          maxMembers: g.maxMembers,
+          leaderId: g.leaderId,
+          discordGuildId: g.discordGuildId
+        })) },
+        {
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+          }
+        }
+      )
+    }
+
     // Use Discord servers from session (already fetched during login) to avoid rate limits
     const userDiscordServers = session.user.allServerIds || []
     console.log('[GUILDS API] User Discord servers from session:', userDiscordServers.length, userDiscordServers)
@@ -65,7 +88,7 @@ export async function GET(request: NextRequest) {
       
       if (accessibleGuildIds.length === 0) {
         console.log('[GUILDS API] User has no accessible guilds in Discord server:', discordServerId)
-        return NextResponse.json([], {
+        return NextResponse.json({ guilds: [] }, {
           headers: {
             'Cache-Control': 'no-cache, no-store, must-revalidate',
           }
@@ -78,7 +101,7 @@ export async function GET(request: NextRequest) {
       // Return only guilds linked to Discord servers the user is a member of
       if (userDiscordServers.length === 0) {
         console.warn('[GUILDS API] No Discord servers found for user, returning empty array')
-        return NextResponse.json([], {
+        return NextResponse.json({ guilds: [] }, {
           headers: {
             'Cache-Control': 'no-cache, no-store, must-revalidate',
           }
@@ -129,13 +152,13 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(
-      allGuilds.map(g => ({
+      { guilds: allGuilds.map(g => ({
         id: g.id,
         title: g.title,
         maxMembers: g.maxMembers,
         leaderId: g.leaderId,
         discordGuildId: g.discordGuildId
-      })),
+      })) },
       {
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
