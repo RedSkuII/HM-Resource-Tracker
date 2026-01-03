@@ -64,28 +64,17 @@ export async function GET(request: NextRequest) {
         }
         
         // Verify the guild belongs to a Discord server the user is in
-        const discordToken = (session as any).accessToken
-        if (discordToken) {
+        // Use session data instead of Discord API to avoid rate limits
+        const userDiscordServers = session.user.allServerIds || []
+        if (userDiscordServers.length > 0) {
           try {
-            // Fetch user's Discord servers
-            const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
-              headers: {
-                'Authorization': `Bearer ${discordToken}`,
-              },
-            })
+            // Check if the requested guild belongs to any of user's Discord servers
+            const { guilds } = await import('@/lib/db')
+            const { eq } = await import('drizzle-orm')
+            const guild = await db.select().from(guilds).where(eq(guilds.id, guildId)).limit(1)
             
-            if (discordResponse.ok) {
-              const servers = await discordResponse.json()
-              const userDiscordServers = servers.map((server: any) => server.id)
-              
-              // Check if the requested guild belongs to any of user's Discord servers
-              const { guilds } = await import('@/lib/db')
-              const { eq } = await import('drizzle-orm')
-              const guild = await db.select().from(guilds).where(eq(guilds.id, guildId)).limit(1)
-              
-              if (guild.length === 0 || !guild[0].discordGuildId || !userDiscordServers.includes(guild[0].discordGuildId)) {
-                return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
-              }
+            if (guild.length === 0 || !guild[0].discordGuildId || !userDiscordServers.includes(guild[0].discordGuildId)) {
+              return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
             }
           } catch (error) {
             console.error('[API /api/resources] Error verifying guild access:', error)
