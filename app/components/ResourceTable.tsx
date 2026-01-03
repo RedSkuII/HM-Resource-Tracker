@@ -224,8 +224,8 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
   const [itemsPerPage, setItemsPerPage] = useState(25)
   const [updateModes, setUpdateModes] = useState<Map<string, 'absolute' | 'relative'>>(new Map())
   const [relativeValues, setRelativeValues] = useState<Map<string, number>>(new Map())
-  const [searchTerm, setSearchTerm] = useState('')
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')  // What user types
+  const [activeSearchTerm, setActiveSearchTerm] = useState('')  // What's actually searched
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid')
   const [currentTime, setCurrentTime] = useState(new Date())
   const [recentActivity, setRecentActivity] = useState<any[]>([])
@@ -457,14 +457,18 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
     }
   }
 
-  // Debounce search term to avoid too many API calls
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm)
-      setCurrentPage(1) // Reset to first page on search
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [searchTerm])
+  // Handle search submission (Enter key or Search button)
+  const handleSearch = () => {
+    setActiveSearchTerm(searchTerm)
+    setCurrentPage(1) // Reset to first page on search
+  }
+
+  // Clear search
+  const handleClearSearch = () => {
+    setSearchTerm('')
+    setActiveSearchTerm('')
+    setCurrentPage(1)
+  }
 
   // Fetch resources from API
   const fetchResources = async () => {
@@ -473,7 +477,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       setError(null)
       const timestamp = Date.now()
       const guildParam = guildId ? `&guildId=${guildId}` : ''
-      const searchParam = debouncedSearchTerm ? `&search=${encodeURIComponent(debouncedSearchTerm)}` : ''
+      const searchParam = activeSearchTerm ? `&search=${encodeURIComponent(activeSearchTerm)}` : ''
       const url = `/api/resources?t=${timestamp}${guildParam}${searchParam}&page=${currentPage}&limit=${itemsPerPage}`
       
       const controller = new AbortController()
@@ -1022,7 +1026,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       fetchLeaderboard()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [guildId, currentPage, itemsPerPage, debouncedSearchTerm])
+  }, [guildId, currentPage, itemsPerPage, activeSearchTerm])
 
   // Fetch leaderboard when time filter changes
   useEffect(() => {
@@ -1050,8 +1054,8 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
     return matchesStatus && matchesNeedsUpdate
   }).sort((a, b) => {
     // If there's a search term, sort by search relevance
-    if (debouncedSearchTerm) {
-      const searchLower = debouncedSearchTerm.toLowerCase()
+    if (activeSearchTerm) {
+      const searchLower = activeSearchTerm.toLowerCase()
       const aNameLower = a.name.toLowerCase()
       const bNameLower = b.name.toLowerCase()
       
@@ -1439,17 +1443,39 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
           {/* Search and Filters Row */}
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             {/* Search Bar */}
-            <div className="relative flex-1 max-w-md">
-              <svg className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search resources..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
+            <div className="relative flex-1 max-w-md flex gap-2">
+              <div className="relative flex-1">
+                <svg className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search resources... (press Enter)"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSearch()
+                    }
+                  }}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+              <button
+                onClick={handleSearch}
+                className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
+              >
+                Search
+              </button>
+              {activeSearchTerm && (
+                <button
+                  onClick={handleClearSearch}
+                  className="px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
+                  title="Clear search"
+                >
+                  ✕
+                </button>
+              )}
             </div>
 
             {/* View Toggle Buttons */}
