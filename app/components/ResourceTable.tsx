@@ -2111,7 +2111,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
 
       {/* Table View */}
       {viewMode === 'table' && (
-        <div className="bg-white dark:bg-stone-900 shadow-lg border border-guildgamesh-300 dark:border-primary-700/40 rounded-lg overflow-hidden border border-guildgamesh-300 dark:border-primary-700/30">
+        <div className="bg-white dark:bg-stone-900 shadow-lg border border-guildgamesh-300 dark:border-primary-700/40 rounded-lg border border-guildgamesh-300 dark:border-primary-700/30">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-sand-200 dark:divide-primary-700/30">
               <thead className="bg-gray-50 dark:bg-gray-900">
@@ -2289,7 +2289,7 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                             </div>
                           ) : editingResource === resource.id ? (
                             // Admin edit form for table view
-                            <div className="space-y-2 w-48">
+                            <div className="space-y-2 min-w-[200px]">
                               <input
                                 type="text"
                                 value={editResourceForm.name}
