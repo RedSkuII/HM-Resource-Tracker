@@ -58,15 +58,18 @@ export async function DELETE(
     const { servers: discordServers } = await discordServersResponse.json()
     const discordServer = discordServers.find((s: any) => s.id === discordGuildId)
 
-    // Check if user is super admin
+    // Check if user is super admin - super admin bypasses ALL permission checks
     const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
     const isSuperAdmin = superAdminUserId && session.user.id === superAdminUserId
 
-    // Allow: Discord server owner, Discord admin (ADMINISTRATOR permission), or super admin
-    if (!discordServer || (!discordServer.isOwner && !discordServer.isAdmin && !isSuperAdmin)) {
-      return NextResponse.json({ 
-        error: 'Only Discord server owners/admins can delete guilds' 
-      }, { status: 403 })
+    // Super admin can delete any guild
+    if (!isSuperAdmin) {
+      // For non-super-admins, require Discord server owner/admin
+      if (!discordServer || (!discordServer.isOwner && !discordServer.isAdmin)) {
+        return NextResponse.json({ 
+          error: 'Only Discord server owners/admins can delete guilds' 
+        }, { status: 403 })
+      }
     }
 
     // Delete guild and all related data
