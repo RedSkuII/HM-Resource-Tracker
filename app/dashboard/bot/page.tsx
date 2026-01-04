@@ -11,6 +11,7 @@ interface DiscordServer {
   name: string
   icon: string | null
   isOwner: boolean
+  isAdmin?: boolean // Discord ADMINISTRATOR permission or owner
   hasBotInstalled?: boolean
 }
 
@@ -1032,8 +1033,11 @@ export default function BotDashboardPage() {
 
 
 
-              {/* Delete All Resources (Discord Server Owners Only) */}
-              {selectedInGameGuildId && discordServers.find(s => s.id === selectedDiscordServerId)?.isOwner && (
+              {/* Delete All Resources (Discord Server Owners/Admins Only) */}
+              {selectedInGameGuildId && (
+                discordServers.find(s => s.id === selectedDiscordServerId)?.isOwner ||
+                discordServers.find(s => s.id === selectedDiscordServerId)?.isAdmin
+              ) && (
                 <div className="pt-4 border-t border-guildgamesh-300 dark:border-primary-700/30">
                   <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">
                     ⚠️ Danger Zone
@@ -1071,8 +1075,8 @@ export default function BotDashboardPage() {
 
                   <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                     <p className="text-xs text-red-800 dark:text-red-200">
-                      <strong>⚠️ Discord Server Owner Only:</strong> This button is only visible to Discord server owners. 
-                      It will delete all resources for the selected in-game guild. Other guilds on this Discord server will not be affected.
+                      <strong>⚠️ Admin Access Required:</strong> These buttons are only visible to Discord server owners, administrators, and super admins. 
+                      Actions will affect only the selected in-game guild. Other guilds on this Discord server will not be affected.
                     </p>
                   </div>
                 </div>

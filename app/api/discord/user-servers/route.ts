@@ -105,13 +105,20 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      servers: accessibleGuilds.map(guild => ({
-        id: guild.id,
-        name: guild.name,
-        icon: guild.icon,
-        isOwner: guild.owner,
-        hasGuildAdminAccess: (guild as any).hasGuildAdminAccess || false
-      }))
+      servers: accessibleGuilds.map(guild => {
+        // Check if user has ADMINISTRATOR permission
+        const permissions = BigInt(guild.permissions)
+        const hasAdminPermission = (permissions & BigInt(ADMINISTRATOR_PERMISSION)) === BigInt(ADMINISTRATOR_PERMISSION)
+        
+        return {
+          id: guild.id,
+          name: guild.name,
+          icon: guild.icon,
+          isOwner: guild.owner,
+          isAdmin: hasAdminPermission || guild.owner, // Admin if has ADMINISTRATOR permission or is owner
+          hasGuildAdminAccess: (guild as any).hasGuildAdminAccess || false
+        }
+      })
     }, {
       headers: {
         'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',

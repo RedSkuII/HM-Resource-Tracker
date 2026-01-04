@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db, resources, resourceHistory, leaderboard, discordOrders, resourceDiscordMapping, websiteChanges, botActivityLogs } from '@/lib/db'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { db, resources, resourceHistory, leaderboard, discordOrders, resourceDiscordMapping, websiteChanges, botActivityLogs, guilds } from '@/lib/db'
 import { eq, inArray, isNotNull } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
@@ -108,6 +110,12 @@ const STANDARD_RESOURCES = [
  */
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
     const { guildId, guildTitle, reset = false } = body
 
@@ -116,6 +124,49 @@ export async function POST(request: NextRequest) {
         { error: 'Guild ID is required' },
         { status: 400 }
       )
+    }
+
+    // For reset operations, verify permissions (owner, admin, or super admin)
+    if (reset) {
+      // Get the guild to find the Discord server ID
+      const [guild] = await db.select().from(guilds).where(eq(guilds.id, guildId)).limit(1)
+      
+      if (!guild) {
+        return NextResponse.json({ error: 'Guild not found' }, { status: 404 })
+      }
+      
+      const discordGuildId = guild.discordGuildId
+      
+      if (!discordGuildId) {
+        return NextResponse.json({ error: 'Guild has no associated Discord server' }, { status: 400 })
+      }
+      
+      // Check if user is super admin
+      const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
+      const isSuperAdmin = superAdminUserId && session.user.id === superAdminUserId
+      
+      if (!isSuperAdmin) {
+        // Fetch Discord servers to check ownership/admin status
+        const discordServersResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/discord/user-servers`, {
+          headers: {
+            cookie: request.headers.get('cookie') || '',
+          },
+        })
+
+        if (!discordServersResponse.ok) {
+          return NextResponse.json({ error: 'Failed to verify Discord ownership' }, { status: 500 })
+        }
+
+        const { servers: discordServers } = await discordServersResponse.json()
+        const discordServer = discordServers.find((s: any) => s.id === discordGuildId)
+
+        // Allow: Discord server owner, Discord admin (ADMINISTRATOR permission), or super admin
+        if (!discordServer || (!discordServer.isOwner && !discordServer.isAdmin)) {
+          return NextResponse.json({ 
+            error: 'Only Discord server owners/admins can reset resources' 
+          }, { status: 403 })
+        }
+      }
     }
 
     // If reset=true, delete all existing data for this guild first
