@@ -160,12 +160,12 @@ export async function PUT(
           const isOwner = isDiscordServerOwner(session, discordServerId)
           const hasGlobalAccess = hasResourceAccess(session.user.roles, isOwner)
           
-          // Check guild-specific permissions (leader/officer can update quantities)
-          const { canManageGuildResources } = await import('@/lib/guild-access')
-          const canManage = await canManageGuildResources(resource.guildId!, session.user.roles, hasGlobalAccess)
+          // Check guild-specific permissions (any guild member can update quantities)
+          const { canUpdateGuildResources } = await import('@/lib/guild-access')
+          const canUpdate = await canUpdateGuildResources(resource.guildId!, session.user.roles, hasGlobalAccess)
           
-          if (!canManage) {
-            console.log(`[API PUT /api/resources/${params.id}] User ${session.user.name} denied - not leader/officer of guild ${resource.guildId}`)
+          if (!canUpdate) {
+            console.log(`[API PUT /api/resources/${params.id}] User ${session.user.name} denied - not a member of guild ${resource.guildId}`)
             return NextResponse.json({ error: 'You must be a guild member to update resources' }, { status: 401 })
           }
         }

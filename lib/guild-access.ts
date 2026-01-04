@@ -308,8 +308,41 @@ export async function getGuildMembershipRole(
 }
 
 /**
- * Check if user can manage resources for a specific guild (create/edit/delete)
- * Leaders and officers can manage resources for their guild
+ * Check if user can UPDATE resource quantities for a specific guild (any guild member)
+ * This is different from canManageGuildResources which is for metadata changes (leader/officer only)
+ * @param guildId - The in-game guild ID
+ * @param userRoles - Array of user's Discord role IDs
+ * @param hasGlobalAdminAccess - Whether user has global admin access
+ * @returns Promise<boolean> - True if user can update resource quantities
+ */
+export async function canUpdateGuildResources(
+  guildId: string,
+  userRoles: string[],
+  hasGlobalAdminAccess: boolean = false
+): Promise<boolean> {
+  console.log(`[GUILD-ACCESS] canUpdateGuildResources called for guild ${guildId}`)
+  
+  // Global admins can update all guilds
+  if (hasGlobalAdminAccess) {
+    console.log(`[GUILD-ACCESS] ✓ User has global admin access`)
+    return true
+  }
+
+  // Check guild-specific role - ANY role (member, officer, leader) can update quantities
+  const { isLeader, isOfficer, isMember } = await getGuildMembershipRole(guildId, userRoles)
+  
+  console.log(`[GUILD-ACCESS] Guild role check: isLeader=${isLeader}, isOfficer=${isOfficer}, isMember=${isMember}`)
+  
+  // Any guild member can update quantities
+  const canUpdate = isLeader || isOfficer || isMember
+  console.log(`[GUILD-ACCESS] canUpdateGuildResources result: ${canUpdate}`)
+  
+  return canUpdate
+}
+
+/**
+ * Check if user can MANAGE resources for a specific guild (create/edit metadata/delete)
+ * Leaders and officers can manage resources for their guild - regular members cannot
  * @param guildId - The in-game guild ID
  * @param userRoles - Array of user's Discord role IDs
  * @param hasGlobalAdminAccess - Whether user has global admin access
