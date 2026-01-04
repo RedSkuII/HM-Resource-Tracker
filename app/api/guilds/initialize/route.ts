@@ -163,9 +163,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Guild has no associated Discord server' }, { status: 400 })
       }
       
-      // Check if user is super admin
+      // Check if user is super admin (session is guaranteed to exist for reset operations)
       const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
-      const isSuperAdmin = superAdminUserId && session.user.id === superAdminUserId
+      const isSuperAdmin = superAdminUserId && session?.user?.id === superAdminUserId
       
       if (!isSuperAdmin) {
         // Fetch Discord servers to check ownership/admin status
