@@ -107,17 +107,39 @@ const STANDARD_RESOURCES = [
 /**
  * POST /api/guilds/initialize
  * Creates the 95 standard resources for a newly created guild
+ * 
+ * Can be called by:
+ * 1. Authenticated website users (session-based)
+ * 2. Bot using BOT_API_SECRET header (for guild creation)
  */
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
+    // Check for bot authentication via API secret
+    const botApiSecret = request.headers.get('x-bot-api-secret')
+    const expectedSecret = process.env.BOT_API_SECRET
+    const isBotRequest = botApiSecret && expectedSecret && botApiSecret === expectedSecret
+    
+    // Allow either session auth OR bot auth (bot auth only for non-reset operations)
     const body = await request.json()
     const { guildId, guildTitle, reset = false } = body
+    
+    // For reset operations, always require session auth (more dangerous operation)
+    if (reset) {
+      if (!session || !session.user) {
+        return NextResponse.json({ error: 'Unauthorized - Reset requires login' }, { status: 401 })
+      }
+    } else {
+      // For initial creation, allow bot OR session auth
+      if (!isBotRequest && (!session || !session.user)) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+    }
+    
+    if (isBotRequest && !reset) {
+      console.log(`[INIT] Bot-initiated resource creation for guild: ${guildTitle || guildId}`)
+    }
 
     if (!guildId) {
       return NextResponse.json(
