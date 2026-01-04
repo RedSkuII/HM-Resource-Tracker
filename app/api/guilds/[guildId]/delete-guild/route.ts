@@ -1,22 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { 
-  db, 
-  guilds,
-  resources, 
-  resourceHistory, 
-  leaderboard,
-  discordOrders,
-  resourceDiscordMapping,
-  discordEmbeds,
-  websiteChanges,
-  botActivityLogs
-} from '@/lib/db'
+import { db, guilds } from '@/lib/db'
 import { eq } from 'drizzle-orm'
 
 export const dynamic = 'force-dynamic'
 
+/**
+ * DELETE /api/guilds/[guildId]/delete-guild
+ * 
+ * Marks a guild for deletion. The Discord bot will pick this up during polling
+ * and handle the full deletion (Discord channels/roles + database cleanup).
+ * 
+ * This ensures Discord resources are properly cleaned up, which the website
+ * cannot do directly without bot access.
+ */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { guildId: string } }
@@ -35,6 +33,14 @@ export async function DELETE(
     
     if (!guild) {
       return NextResponse.json({ error: 'Guild not found' }, { status: 404 })
+    }
+
+    // Check if already pending deletion
+    if (guild.pendingDeletion) {
+      return NextResponse.json({ 
+        error: 'Guild is already pending deletion. The bot will process it shortly.',
+        pendingDeletion: true 
+      }, { status: 400 })
     }
 
     // Check if user is Discord server owner (isOwner flag from session)
@@ -72,62 +78,21 @@ export async function DELETE(
       }
     }
 
-    // Delete guild and all related data
-    
-    // First, get all resource IDs for this guild
-    const guildResources = await db
-      .select({ id: resources.id })
-      .from(resources)
-      .where(eq(resources.guildId, guildId))
-    
-    const resourceIds = guildResources.map(r => r.id)
-    
-    console.log(`[DELETE-GUILD] Deleting guild ${guildId} (${guild.title}) with ${resourceIds.length} resources`)
+    // Mark guild for deletion - bot will handle full cleanup
+    console.log(`[DELETE-GUILD] Marking guild ${guildId} (${guild.title}) for deletion by ${session.user.name}`)
 
-    // Delete in order of foreign key dependencies
-    
-    if (resourceIds.length > 0) {
-      // 1. Delete resource history entries (references resources.id)
-      for (const resourceId of resourceIds) {
-        await db.delete(resourceHistory).where(eq(resourceHistory.resourceId, resourceId))
-      }
-      
-      // 2. Delete leaderboard entries (references resources.id)
-      for (const resourceId of resourceIds) {
-        await db.delete(leaderboard).where(eq(leaderboard.resourceId, resourceId))
-      }
-      
-      // 3. Delete discord orders (references resources.id)
-      for (const resourceId of resourceIds) {
-        await db.delete(discordOrders).where(eq(discordOrders.resourceId, resourceId))
-      }
-      
-      // 4. Delete resource discord mappings (references resources.id)
-      for (const resourceId of resourceIds) {
-        await db.delete(resourceDiscordMapping).where(eq(resourceDiscordMapping.resourceId, resourceId))
-      }
-      
-      // 5. Delete website changes (references resources.id)
-      for (const resourceId of resourceIds) {
-        await db.delete(websiteChanges).where(eq(websiteChanges.resourceId, resourceId))
-      }
-    }
-    
-    // 6. Delete discord embeds (by discord guild ID)
-    await db.delete(discordEmbeds).where(eq(discordEmbeds.guildId, discordGuildId))
-    
-    // 7. Delete bot activity logs (by discord guild ID)
-    await db.delete(botActivityLogs).where(eq(botActivityLogs.guildId, discordGuildId))
-    
-    // 8. Delete resources
-    await db.delete(resources).where(eq(resources.guildId, guildId))
-    
-    // 9. Finally, delete the guild itself
-    await db.delete(guilds).where(eq(guilds.id, guildId))
+    await db.update(guilds)
+      .set({
+        pendingDeletion: true,
+        deletionRequestedBy: session.user.id,
+        deletionRequestedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(guilds.id, guildId))
 
-    console.log(`[DELETE-GUILD] Successfully deleted guild ${guildId} (${guild.title})`)
+    console.log(`[DELETE-GUILD] Guild ${guildId} (${guild.title}) marked for deletion`)
 
-    // Notify Discord bot about guild deletion
+    // Notify Discord bot about pending deletion (optional webhook notification)
     try {
       const webhookUrl = process.env.DISCORD_WEBHOOK_URL
       if (webhookUrl) {
@@ -135,29 +100,29 @@ export async function DELETE(
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            content: `🗑️ **Guild Deleted**\n\nGuild **${guild.title}** (ID: \`${guildId}\`) has been permanently deleted by ${session.user.name} from the website.\n\nAll associated resources, history, and data have been removed.`
+            content: `🗑️ **Guild Pending Deletion**\n\nGuild **${guild.title}** has been marked for deletion by ${session.user.name}.\n\nThe bot will process the full deletion (Discord channels, roles, and database) shortly.`
           })
         })
       }
     } catch (webhookError) {
       console.error('[DELETE-GUILD] Failed to notify Discord:', webhookError)
-      // Don't fail the deletion if webhook fails
+      // Don't fail if webhook fails
     }
 
     return NextResponse.json({
       success: true,
-      message: `Guild "${guild.title}" and all its data have been permanently deleted`,
+      message: `Guild "${guild.title}" has been marked for deletion. The Discord bot will clean up channels, roles, and all data shortly.`,
       guildId,
       guildTitle: guild.title,
-      deletedResourceCount: resourceIds.length
+      pendingDeletion: true
     })
 
   } catch (error) {
-    console.error('Error deleting guild:', error)
+    console.error('Error marking guild for deletion:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
       { 
-        error: 'Failed to delete guild',
+        error: 'Failed to mark guild for deletion',
         details: errorMessage,
         stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
       },

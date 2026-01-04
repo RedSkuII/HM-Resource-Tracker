@@ -51,6 +51,9 @@ export const guilds = sqliteTable('guilds', {
   orderFulfillmentBonus: integer('order_fulfillment_bonus').notNull().default(0), // Bonus % for Discord order fills (0% = no bonus by default)
   websiteBonusPercentage: integer('website_bonus_percentage').notNull().default(0), // Bonus % for website additions (0% = no bonus)
   allowPublicOrders: integer('allow_public_orders', { mode: 'boolean' }).notNull().default(true),
+  pendingDeletion: integer('pending_deletion', { mode: 'boolean' }).notNull().default(false), // Set by website, bot picks up and deletes Discord + DB
+  deletionRequestedBy: text('deletion_requested_by'), // Discord user ID who requested deletion
+  deletionRequestedAt: integer('deletion_requested_at', { mode: 'timestamp' }), // When deletion was requested
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 })
