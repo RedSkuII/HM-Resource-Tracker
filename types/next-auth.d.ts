@@ -8,6 +8,7 @@ interface UserPermissions {
   hasReportAccess: boolean
   hasUserManagementAccess: boolean
   hasDataExportAccess: boolean
+  isTrueAdmin: boolean  // Super admin or role-based admin only (NOT Discord ADMINISTRATOR)
 }
 
 declare module "next-auth" {

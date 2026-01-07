@@ -10,6 +10,7 @@ interface UserPermissions {
   hasReportAccess: boolean
   hasUserManagementAccess: boolean
   hasDataExportAccess: boolean
+  isTrueAdmin: boolean  // Super admin or role-based admin only (NOT Discord ADMINISTRATOR)
 }
 
 // Discord API scopes needed for role checking and server access
@@ -361,7 +362,11 @@ export const authOptions: NextAuthOptions = {
           // 🆕 Add new permission computations:
           hasReportAccess: isSuperAdmin || hasReportAccess(userRoles),
           hasUserManagementAccess: isSuperAdmin || hasUserManagementAccess(userRoles),
-          hasDataExportAccess: isSuperAdmin || hasDataExportAccess(userRoles)
+          hasDataExportAccess: isSuperAdmin || hasDataExportAccess(userRoles),
+          // True admin = super admin OR role-based admin from DISCORD_ROLES_CONFIG
+          // NOT Discord ADMINISTRATOR, NOT server owner, NOT guild leader/officer
+          // Used to restrict Bot Dashboard and Admin Panel to actual app admins
+          isTrueAdmin: isSuperAdmin || hasResourceAdminAccess(userRoles, false)  // false = don't grant for server owner
         }
         token.permissions = permissions
         
@@ -394,7 +399,8 @@ export const authOptions: NextAuthOptions = {
           hasTargetEditAccess: false,
           hasReportAccess: false,
           hasUserManagementAccess: false,
-          hasDataExportAccess: false
+          hasDataExportAccess: false,
+          isTrueAdmin: false
         }
       }
       

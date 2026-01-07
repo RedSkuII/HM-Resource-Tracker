@@ -139,6 +139,8 @@ interface Resource {
   multiplier?: number // Points multiplier for this resource
   lastUpdatedBy: string
   updatedAt: string
+  guildId?: string // For showing guild context in "All Guilds" view
+  guildName?: string // Guild name for display
 }
 
 interface ResourceUpdate {
@@ -151,6 +153,7 @@ interface ResourceUpdate {
 interface ResourceTableProps {
   userId: string
   guildId?: string | null
+  showGuildColumn?: boolean
 }
 
 interface PointsCalculation {
@@ -183,7 +186,8 @@ const CATEGORY_OPTIONS = ['Raw', 'Refined', 'Components', 'Other']
 
 // Guild permissions interface
 interface GuildPermissions {
-  canManageResources: boolean
+  canUpdateResources: boolean  // Any guild member can update quantities
+  canManageResources: boolean  // Leaders/officers can edit metadata
   canEditTargets: boolean
   isLeader: boolean
   isOfficer: boolean
@@ -192,20 +196,39 @@ interface GuildPermissions {
   isServerOwner?: boolean
 }
 
-export function ResourceTable({ userId, guildId }: ResourceTableProps) {
+export function ResourceTable({ userId, guildId, showGuildColumn = false }: ResourceTableProps) {
   const { data: session } = useSession()
   const router = useRouter()
   
   // Use pre-computed permissions from session (computed server-side)
   const canEdit = session?.user?.permissions?.hasResourceAccess ?? false
-  const isTargetAdmin = session?.user?.permissions?.hasTargetEditAccess ?? false
+  const globalTargetAdmin = session?.user?.permissions?.hasTargetEditAccess ?? false
   const globalResourceAdmin = session?.user?.permissions?.hasResourceAdminAccess ?? false
+  // True admin = super admin or role-based admin (NOT Discord ADMINISTRATOR or guild leader/officer)
+  const isTrueAdmin = session?.user?.permissions?.isTrueAdmin ?? false
   
   // Guild-specific permissions (fetched from API)
   const [guildPermissions, setGuildPermissions] = useState<GuildPermissions | null>(null)
+  const [permissionsLoading, setPermissionsLoading] = useState(true)
   
-  // Effective permission: global admin OR guild-specific leader/officer
-  const isResourceAdmin = globalResourceAdmin || guildPermissions?.canManageResources || false
+  // Effective permissions:
+  // - canUpdateQuantities: Any guild member can update quantities (global admin OR guild member)
+  // - isResourceAdmin: Only leader/officer can edit metadata - use GUILD-SPECIFIC permission when available
+  // - isTargetAdmin: Same as isResourceAdmin - only leaders/officers can edit targets
+  //   This ensures regular members don't see Edit/Delete/Target just because they're Discord admin on another server
+  const canUpdateQuantities = globalResourceAdmin || guildPermissions?.canUpdateResources || false
+  // For resource admin and target admin, prefer guild-specific permission when available, otherwise fall back to global
+  // While permissions are loading, hide admin UI to prevent flicker
+  const isResourceAdmin = permissionsLoading 
+    ? false 
+    : (guildPermissions !== null 
+        ? guildPermissions.canManageResources 
+        : globalResourceAdmin)
+  const isTargetAdmin = permissionsLoading 
+    ? false 
+    : (guildPermissions !== null 
+        ? guildPermissions.canManageResources 
+        : globalTargetAdmin)
   
 
   
@@ -307,9 +330,11 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
     const fetchGuildPermissions = async () => {
       if (!guildId || !session) {
         setGuildPermissions(null)
+        setPermissionsLoading(false)
         return
       }
       
+      setPermissionsLoading(true)
       try {
         const response = await fetch(`/api/guilds/${guildId}/permissions`)
         if (response.ok) {
@@ -323,6 +348,8 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
       } catch (error) {
         console.error('[ResourceTable] Error fetching guild permissions:', error)
         setGuildPermissions(null)
+      } finally {
+        setPermissionsLoading(false)
       }
     }
     
@@ -426,9 +453,38 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
     localStorage.setItem('resourceTableViewMode', newViewMode)
   }
 
-  // Navigate to resource detail page
-  const handleResourceClick = (resourceId: string) => {
+  // Navigate to resource detail page with guild context
+  // Uses onMouseDown to track where click started, preventing accidental navigation
+  // when user drags while selecting text in input fields
+  const [clickStartedOnRow, setClickStartedOnRow] = useState<string | null>(null)
+  
+  const handleResourceClick = (resourceId: string, resourceGuildId?: string) => {
+    // If we have a specific guild context, store it for the detail page
+    const targetGuildId = resourceGuildId || guildId
+    if (targetGuildId) {
+      localStorage.setItem('resourceDetailGuildId', targetGuildId)
+    }
     router.push(`/resources/${resourceId}`)
+  }
+  
+  // Handle row mouse down - track that click started on this row
+  const handleRowMouseDown = (resourceId: string, e: React.MouseEvent) => {
+    // Don't track if click started on an interactive element
+    const target = e.target as HTMLElement
+    if (target.tagName === 'INPUT' || target.tagName === 'BUTTON' || target.tagName === 'SELECT' || 
+        target.closest('input') || target.closest('button') || target.closest('select')) {
+      setClickStartedOnRow(null)
+      return
+    }
+    setClickStartedOnRow(resourceId)
+  }
+  
+  // Handle row click - only navigate if mousedown started on this same row
+  const handleRowClick = (resourceId: string, resourceGuildId?: string) => {
+    if (clickStartedOnRow === resourceId) {
+      handleResourceClick(resourceId, resourceGuildId)
+    }
+    setClickStartedOnRow(null)
   }
 
   // Update resource status immediately and track changes
@@ -1158,7 +1214,8 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
             <div className="space-y-3">
               {recentActivity.slice(0, 5).map((activity) => (
                 <div key={activity.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
-                     onClick={() => handleResourceClick(activity.resourceId)}>
+                     onMouseDown={(e) => handleRowMouseDown(activity.resourceId, e)}
+                     onClick={() => handleRowClick(activity.resourceId, activity.guildId)}>
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full ${
                       activity.changeAmount > 0 ? 'bg-green-500' : 
@@ -1273,8 +1330,8 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
         </div>
       </div>
 
-      {/* Admin Panel */}
-      {isResourceAdmin && (
+      {/* Admin Panel - Only for true admins (super admin or role-based), NOT guild leaders/officers */}
+      {isTrueAdmin && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -1799,7 +1856,8 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                           ? 'border-amber-300 dark:border-amber-600 ring-1 ring-amber-200 dark:ring-amber-800 bg-amber-50/50 dark:bg-amber-900/10' 
                           : 'border-guildgamesh-300 dark:border-primary-700/30'
                       }`}
-                      onClick={() => handleResourceClick(resource.id)}
+                      onMouseDown={(e) => handleRowMouseDown(resource.id, e)}
+                      onClick={() => handleRowClick(resource.id, resource.guildId)}
                       title={isStale ? "⚠️ Not updated in 48+ hours - Click to view details" : "Click to view detailed resource information"}
                     >
                       {/* Resource Image */}
@@ -2168,7 +2226,8 @@ export function ResourceTable({ userId, guildId }: ResourceTableProps) {
                           ? 'bg-amber-50/50 dark:bg-amber-900/10 hover:bg-amber-100/50 dark:hover:bg-amber-900/20 border-l-4 border-l-amber-400 dark:border-l-amber-500' 
                           : 'hover:bg-gray-50 dark:hover:bg-gray-700'
                       }`}
-                      onClick={() => handleResourceClick(resource.id)}
+                      onMouseDown={(e) => handleRowMouseDown(resource.id, e)}
+                      onClick={() => handleRowClick(resource.id, resource.guildId)}
                       title={isStale ? "⚠️ Not updated in 48+ hours - Click to view details" : "Click to view detailed resource information"}
                     >
                       <td className="px-3 py-3 whitespace-nowrap">

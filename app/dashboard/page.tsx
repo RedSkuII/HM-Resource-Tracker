@@ -186,8 +186,8 @@ export default async function Dashboard() {
                   </div>
                 </Link>
 
-                {/* Bot Dashboard - Only show to Discord admins and users with admin roles */}
-                {session.user.permissions?.hasResourceAdminAccess && (
+                {/* Bot Dashboard - Only show to true admins (super admin or role-based admin, NOT Discord ADMINISTRATOR) */}
+                {session.user.permissions?.isTrueAdmin && (
                   <Link
                     href="/dashboard/bot"
                     className="p-4 border border-guildgamesh-300 dark:border-primary-700/30 rounded-lg bg-guildgamesh-100 dark:bg-stone-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"

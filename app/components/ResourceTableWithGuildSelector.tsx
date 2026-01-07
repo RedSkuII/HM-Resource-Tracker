@@ -25,17 +25,25 @@ export function ResourceTableWithGuildSelector({ userId }: ResourceTableWithGuil
     setHasLoadedFromStorage(true)
   }, [])
 
-  // Save selected guild to localStorage whenever it changes
+  // Save selected guild to localStorage whenever it changes (but not 'all')
   useEffect(() => {
-    if (selectedGuildId) {
+    if (selectedGuildId && selectedGuildId !== 'all') {
       console.log('[ResourceTableWithGuildSelector] Saving to localStorage:', selectedGuildId)
       localStorage.setItem('lastSelectedGuildId', selectedGuildId)
-      if (!isInitialized) {
-        console.log('[ResourceTableWithGuildSelector] Guild initialized:', selectedGuildId)
-        setIsInitialized(true)
-      }
+    }
+    if (selectedGuildId && !isInitialized) {
+      console.log('[ResourceTableWithGuildSelector] Guild initialized:', selectedGuildId)
+      setIsInitialized(true)
     }
   }, [selectedGuildId, isInitialized])
+
+  // Get display text based on selection
+  const getDisplayText = () => {
+    if (selectedGuildId === 'all') {
+      return 'Viewing resources from all your guilds'
+    }
+    return 'Viewing resources for selected guild'
+  }
 
   return (
     <div className="space-y-6">
@@ -45,17 +53,19 @@ export function ResourceTableWithGuildSelector({ userId }: ResourceTableWithGuil
           selectedGuildId={selectedGuildId} 
           onGuildChange={setSelectedGuildId}
           hasLoadedFromStorage={hasLoadedFromStorage}
+          showAllOption={true}
+          allOptionLabel="All Guilds"
         />
         {selectedGuildId && (
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            Viewing resources for selected guild
+            {getDisplayText()}
           </div>
         )}
       </div>
 
       {/* Resource Table */}
       {selectedGuildId ? (
-        <ResourceTable userId={userId} guildId={selectedGuildId} />
+        <ResourceTable userId={userId} guildId={selectedGuildId === 'all' ? null : selectedGuildId} showGuildColumn={selectedGuildId === 'all'} />
       ) : (
         <div className="rounded-lg border border-sand-200 dark:border-primary-700/40 bg-guildgamesh-100 dark:bg-stone-800 p-8 text-center">
           <div className="flex flex-col items-center gap-3">
