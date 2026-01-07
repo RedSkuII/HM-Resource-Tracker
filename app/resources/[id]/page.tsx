@@ -61,6 +61,7 @@ const getRelativeTime = (date: string | Date, now = new Date()): string => {
 
 interface Resource {
   id: string
+  guildId?: string // In-game guild ID for filtering
   name: string
   quantity: number
   description?: string
@@ -140,11 +141,13 @@ export default function ResourceDetailPage() {
     }
   }
 
-  // Fetch leaderboard data
-  const fetchLeaderboard = async () => {
+  // Fetch leaderboard data - filtered by the resource's guild
+  const fetchLeaderboard = async (guildId?: string) => {
     setLeaderboardLoading(true)
     try {
-      const response = await fetch('/api/leaderboard?timeFilter=7d&limit=10', {
+      // Filter by guildId if the resource belongs to a guild
+      const guildParam = guildId ? `&guildId=${guildId}` : ''
+      const response = await fetch(`/api/leaderboard?timeFilter=7d&limit=10${guildParam}`, {
         headers: {
           'Cache-Control': 'no-cache',
         },
@@ -250,7 +253,7 @@ export default function ResourceDetailPage() {
         setNewQuantityInput('')
         // Refresh history and leaderboard to show the new change
         fetchHistory(timeFilter)
-        fetchLeaderboard()
+        fetchLeaderboard(resource?.guildId)
       } else {
         const errorData = await response.text()
         console.error('Failed to update resource:', errorData)
@@ -319,7 +322,7 @@ export default function ResourceDetailPage() {
         // Refresh history
         fetchHistory(timeFilter)
         // Refresh leaderboard after history deletion
-        fetchLeaderboard()
+        fetchLeaderboard(resource?.guildId)
       } else {
         console.error('Failed to delete history entry')
         alert('Failed to delete history entry. Please try again.')
@@ -398,9 +401,15 @@ export default function ResourceDetailPage() {
   useEffect(() => {
     if (resourceId && sessionStatus === 'authenticated') {
       fetchHistory(timeFilter)
-      fetchLeaderboard()
     }
   }, [resourceId, timeFilter, sessionStatus])
+
+  // Fetch leaderboard when resource loads (to get the guildId)
+  useEffect(() => {
+    if (resource && sessionStatus === 'authenticated') {
+      fetchLeaderboard(resource.guildId)
+    }
+  }, [resource, sessionStatus])
 
   // Scroll selected entry into view
   useEffect(() => {
