@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions, getUserIdentifier } from '@/lib/auth'
-import { db, resources } from '@/lib/db'
+import { db, resources, guilds } from '@/lib/db'
 import { eq } from 'drizzle-orm'
-import { hasResourceAccess, hasTargetEditAccess } from '@/lib/discord-roles'
+import { hasResourceAccess, hasTargetEditAccess, isDiscordServerOwner } from '@/lib/discord-roles'
 
-// PUT /api/resources/[id]/target - Update target quantity (admin only)
+// PUT /api/resources/[id]/target - Update target quantity (leaders/officers/admins)
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -19,6 +19,7 @@ export async function PUT(
   try {
     const { targetQuantity } = await request.json()
     const userId = getUserIdentifier(session)
+    const userRoles = session.user.roles || []
     
     // Validate target quantity
     if (targetQuantity < 0) {
@@ -38,35 +39,39 @@ export async function PUT(
     const superAdminUserId = process.env.SUPER_ADMIN_USER_ID
     const isSuperAdmin = superAdminUserId && session.user.id === superAdminUserId
     
-    if (!isSuperAdmin && resource.guildId) {
-      const discordToken = (session as any).accessToken
-      if (discordToken) {
-        const discordResponse = await fetch('https://discord.com/api/users/@me/guilds', {
-          headers: { 'Authorization': `Bearer ${discordToken}` },
-        })
-        if (discordResponse.ok) {
-          const servers = await discordResponse.json()
-          const userDiscordServers = servers.map((server: any) => server.id)
-          const { guilds } = await import('@/lib/db')
-          const guild = await db.select().from(guilds).where(eq(guilds.id, resource.guildId!)).limit(1)
-          
-          if (guild.length === 0 || !guild[0].discordGuildId || !userDiscordServers.includes(guild[0].discordGuildId)) {
-            return NextResponse.json({ error: 'Access denied to this guild' }, { status: 403 })
-          }
-          
-          // Check permissions for THIS specific Discord server
-          const { isDiscordServerOwner } = await import('@/lib/discord-roles')
-          const discordServerId = guild[0].discordGuildId
-          const isOwner = isDiscordServerOwner(session, discordServerId)
-          
-          if (!hasResourceAccess(session.user.roles, isOwner)) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-          }
-          
-          if (!hasTargetEditAccess(session.user.roles, isOwner)) {
-            return NextResponse.json({ error: 'Insufficient permissions - admin access required' }, { status: 403 })
-          }
-        }
+    if (isSuperAdmin) {
+      // Super admin - allow
+    } else if (resource.guildId) {
+      // Get guild info
+      const guild = await db.select().from(guilds).where(eq(guilds.id, resource.guildId!)).limit(1)
+      
+      if (guild.length === 0) {
+        return NextResponse.json({ error: 'Guild not found' }, { status: 404 })
+      }
+      
+      const guildData = guild[0]
+      const discordServerId = guildData.discordGuildId
+      
+      // Check if user owns this Discord server
+      const isOwner = isDiscordServerOwner(session, discordServerId)
+      
+      // Check global permissions
+      const hasGlobalAccess = hasResourceAccess(userRoles, isOwner)
+      const hasGlobalTargetEdit = hasTargetEditAccess(userRoles, isOwner)
+      
+      // Check guild-specific permissions (leader/officer can edit targets)
+      const isLeader = guildData.discordLeaderRoleId ? userRoles.includes(guildData.discordLeaderRoleId) : false
+      const isOfficer = guildData.discordOfficerRoleId ? userRoles.includes(guildData.discordOfficerRoleId) : false
+      
+      // Allow if: global admin, global target edit permission, or guild leader/officer
+      const canEditTargets = hasGlobalTargetEdit || isLeader || isOfficer
+      
+      console.log(`[TARGET API] User ${session.user.name} for resource ${params.id}:`)
+      console.log(`  - isLeader: ${isLeader}, isOfficer: ${isOfficer}, isOwner: ${isOwner}`)
+      console.log(`  - hasGlobalTargetEdit: ${hasGlobalTargetEdit}, canEditTargets: ${canEditTargets}`)
+      
+      if (!canEditTargets) {
+        return NextResponse.json({ error: 'Insufficient permissions - leader/officer access required' }, { status: 403 })
       }
     }
 

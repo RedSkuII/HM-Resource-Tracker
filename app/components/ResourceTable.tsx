@@ -1076,23 +1076,25 @@ export function ResourceTable({ userId, guildId, showGuildColumn = false }: Reso
     }
   }
 
+  // Track if component is ready to fetch (either has a specific guildId or is in "all guilds" mode)
+  const isReadyToFetch = guildId !== undefined // guildId can be null (all guilds) or a string (specific guild)
+
   // Fetch resources on component mount and when guildId, page, itemsPerPage, or search changes
   useEffect(() => {
-    if (guildId) {
+    if (isReadyToFetch) {
       fetchResources()
       fetchRecentActivity()
-      fetchLeaderboard()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [guildId, currentPage, itemsPerPage, activeSearchTerm])
+  }, [guildId, currentPage, itemsPerPage, activeSearchTerm, isReadyToFetch])
 
-  // Fetch leaderboard when time filter changes
+  // Fetch leaderboard when time filter changes or when ready
   useEffect(() => {
-    if (guildId) {
+    if (isReadyToFetch) {
       fetchLeaderboard()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leaderboardTimeFilter])
+  }, [leaderboardTimeFilter, isReadyToFetch])
 
   // Filter resources based on status and needsUpdate filters (search is now server-side)
   const filteredResources = resources.filter(resource => {
@@ -1217,7 +1219,7 @@ export function ResourceTable({ userId, guildId, showGuildColumn = false }: Reso
               {recentActivity.slice(0, 5).map((activity) => (
                 <div key={activity.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
                      onMouseDown={(e) => handleRowMouseDown(activity.resourceId, e)}
-                     onClick={() => handleRowClick(activity.resourceId, activity.guildId)}>
+                     onClick={() => handleRowClick(activity.resourceId, activity.resourceGuildId)}>
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full ${
                       activity.changeAmount > 0 ? 'bg-green-500' : 

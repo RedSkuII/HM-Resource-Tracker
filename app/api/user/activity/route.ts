@@ -66,6 +66,7 @@ export async function GET(request: NextRequest) {
         resourceId: resourceHistory.resourceId,
         resourceName: resources.name,
         resourceCategory: resources.category,
+        resourceGuildId: resources.guildId, // Include guild ID for navigation context
         previousQuantity: resourceHistory.previousQuantity,
         newQuantity: resourceHistory.newQuantity,
         changeAmount: resourceHistory.changeAmount,
