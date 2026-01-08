@@ -358,7 +358,10 @@ export const authOptions: NextAuthOptions = {
           hasResourceAccess: isSuperAdmin || hasResourceAccess(userRoles, isServerOwner) || isInRelevantServer,
           // Grant admin access to: super admins, Discord ADMINISTRATORS, server owners, or users with configured admin roles
           hasResourceAdminAccess: isSuperAdmin || isDiscordAdmin || hasResourceAdminAccess(userRoles, isServerOwner),
-          hasTargetEditAccess: isSuperAdmin || isDiscordAdmin || hasTargetEditAccess(userRoles, isServerOwner),
+          // Target edit access: super admins, server owners, or users with configured target edit roles
+          // NOTE: Discord ADMINISTRATOR is NOT included here - it's checked per-guild in the permissions API
+          // This prevents Discord admins in one server from editing targets in other servers' guilds
+          hasTargetEditAccess: isSuperAdmin || hasTargetEditAccess(userRoles, isServerOwner),
           // 🆕 Add new permission computations:
           hasReportAccess: isSuperAdmin || hasReportAccess(userRoles),
           hasUserManagementAccess: isSuperAdmin || hasUserManagementAccess(userRoles),

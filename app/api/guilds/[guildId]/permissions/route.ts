@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { canManageGuildResources, getGuildMembershipRole } from '@/lib/guild-access'
+import { canManageGuildResources, canUpdateGuildResources, getGuildMembershipRole } from '@/lib/guild-access'
 import { hasResourceAdminAccess, isDiscordServerOwner } from '@/lib/discord-roles'
 import { db, guilds } from '@/lib/db'
 import { eq } from 'drizzle-orm'
@@ -9,6 +9,11 @@ import { eq } from 'drizzle-orm'
 /**
  * GET /api/guilds/[guildId]/permissions
  * Returns the current user's permissions for a specific guild
+ * 
+ * Permission levels:
+ * - canUpdateResources: Any guild member (member, officer, leader) can update quantities
+ * - canManageResources: Leaders and officers can create/edit metadata/delete resources
+ * - canEditTargets: True admins, server owner, Discord admin for THIS server, or guild leader/officer
  */
 export async function GET(
   request: NextRequest,
@@ -30,6 +35,7 @@ export async function GET(
     
     if (isSuperAdmin) {
       return NextResponse.json({
+        canUpdateResources: true,
         canManageResources: true,
         canEditTargets: true,
         isLeader: true,
@@ -52,31 +58,41 @@ export async function GET(
     // Check if user owns this Discord server
     const isOwner = isDiscordServerOwner(session, discordServerId)
     
+    // Check if user is Discord ADMINISTRATOR specifically for THIS guild's Discord server
+    // This ensures Discord admins only get elevated access for their own server's guilds
+    const adminServerIds = (session.user.adminServerIds || []) as string[]
+    const isDiscordAdminForThisServer = discordServerId ? adminServerIds.includes(discordServerId) : false
+    
     // Check global admin access
     const hasGlobalAdmin = hasResourceAdminAccess(userRoles, isOwner)
     
     // Check guild-specific membership
     const { isLeader, isOfficer, isMember } = await getGuildMembershipRole(guildId, userRoles)
     
-    // Determine if user can manage resources
-    const canManageResources = hasGlobalAdmin || isLeader || isOfficer
+    // Check guild-specific permissions
+    const canUpdate = await canUpdateGuildResources(guildId, userRoles, hasGlobalAdmin)
+    const canManage = await canManageGuildResources(guildId, userRoles, hasGlobalAdmin)
     
-    // Target editing requires global admin or target edit permission
-    const canEditTargets = hasGlobalAdmin || session.user.permissions?.hasTargetEditAccess
+    // Target editing: Only guild-specific checks - NO global hasTargetEditAccess
+    // This prevents users with target edit roles in one server from editing targets in other servers
+    // Allowed: true admins, server owner for THIS server, Discord admin for THIS server, or guild leader/officer
+    const canEditTargets = hasGlobalAdmin || isOwner || isDiscordAdminForThisServer || isLeader || isOfficer
     
     console.log(`[PERMISSIONS API] User ${session.user.id} for guild ${guild.title}:`)
     console.log(`  - isLeader: ${isLeader}, isOfficer: ${isOfficer}, isMember: ${isMember}`)
-    console.log(`  - hasGlobalAdmin: ${hasGlobalAdmin}, isOwner: ${isOwner}`)
-    console.log(`  - canManageResources: ${canManageResources}`)
+    console.log(`  - hasGlobalAdmin: ${hasGlobalAdmin}, isOwner: ${isOwner}, isDiscordAdminForThisServer: ${isDiscordAdminForThisServer}`)
+    console.log(`  - canUpdateResources: ${canUpdate}, canManageResources: ${canManage}, canEditTargets: ${canEditTargets}`)
     
     return NextResponse.json({
-      canManageResources,
+      canUpdateResources: canUpdate,
+      canManageResources: canManage,
       canEditTargets,
       isLeader,
       isOfficer,
       isMember,
       hasGlobalAdmin,
-      isServerOwner: isOwner
+      isServerOwner: isOwner,
+      isDiscordAdmin: isDiscordAdminForThisServer
     })
   } catch (error) {
     console.error('[PERMISSIONS API] Error:', error)

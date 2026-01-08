@@ -217,18 +217,20 @@ export function ResourceTable({ userId, guildId, showGuildColumn = false }: Reso
   // - isTargetAdmin: Same as isResourceAdmin - only leaders/officers can edit targets
   //   This ensures regular members don't see Edit/Delete/Target just because they're Discord admin on another server
   const canUpdateQuantities = globalResourceAdmin || guildPermissions?.canUpdateResources || false
-  // For resource admin and target admin, prefer guild-specific permission when available, otherwise fall back to global
+  // For resource admin and target admin, prefer guild-specific permission when available
   // While permissions are loading, hide admin UI to prevent flicker
+  // IMPORTANT: When viewing "All guilds" (no guildId), only show admin UI for true admins
+  // This prevents leaders of one guild from seeing edit options for all guilds
   const isResourceAdmin = permissionsLoading 
     ? false 
     : (guildPermissions !== null 
         ? guildPermissions.canManageResources 
-        : globalResourceAdmin)
+        : (guildId ? globalResourceAdmin : isTrueAdmin))
   const isTargetAdmin = permissionsLoading 
     ? false 
     : (guildPermissions !== null 
-        ? guildPermissions.canManageResources 
-        : globalTargetAdmin)
+        ? guildPermissions.canEditTargets 
+        : (guildId ? globalTargetAdmin : isTrueAdmin))
   
 
   
