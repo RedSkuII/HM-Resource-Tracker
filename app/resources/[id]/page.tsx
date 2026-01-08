@@ -98,6 +98,14 @@ export default function ResourceDetailPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [currentTime, setCurrentTime] = useState(new Date())
   
+  // Guild-specific permissions
+  const [guildPermissions, setGuildPermissions] = useState<{
+    canManageResources: boolean
+    canEditTargets: boolean
+    isLeader: boolean
+    isOfficer: boolean
+  } | null>(null)
+  
   // Congratulations popup state
   const [congratulationsState, setCongratulationsState] = useState({
     isVisible: false,
@@ -117,8 +125,9 @@ export default function ResourceDetailPage() {
   const userRoles = session?.user?.roles || []
   const canEdit = hasResourceAccess(userRoles)
   
-  // Check if user can delete history entries
-  const canDeleteHistory = hasResourceAdminAccess(userRoles)
+  // Check if user can delete history entries (global admin OR guild leader/officer)
+  const globalAdminCanDelete = hasResourceAdminAccess(userRoles)
+  const canDeleteHistory = globalAdminCanDelete || guildPermissions?.isLeader || guildPermissions?.isOfficer || false
 
   // Fetch history data
   const fetchHistory = async (days: number) => {
@@ -409,6 +418,25 @@ export default function ResourceDetailPage() {
     if (resource && sessionStatus === 'authenticated') {
       fetchLeaderboard(resource.guildId)
     }
+  }, [resource, sessionStatus])
+
+  // Fetch guild permissions when resource loads (to check leader/officer)
+  useEffect(() => {
+    const fetchGuildPermissions = async () => {
+      if (!resource?.guildId || sessionStatus !== 'authenticated') return
+      
+      try {
+        const response = await fetch(`/api/guilds/${resource.guildId}/permissions`)
+        if (response.ok) {
+          const permissions = await response.json()
+          setGuildPermissions(permissions)
+        }
+      } catch (error) {
+        console.error('Error fetching guild permissions:', error)
+      }
+    }
+    
+    fetchGuildPermissions()
   }, [resource, sessionStatus])
 
   // Scroll selected entry into view
