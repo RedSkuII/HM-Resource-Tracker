@@ -146,6 +146,7 @@ export const websiteChanges = sqliteTable('website_changes', {
   previousValue: text('previous_value'),
   newValue: text('new_value'),
   changedBy: text('changed_by').notNull(),
+  changedByDiscordId: text('changed_by_discord_id'), // Discord user ID for bot to link orders to users
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   processedByBot: integer('processed_by_bot', { mode: 'boolean' }).notNull().default(false),
 })
