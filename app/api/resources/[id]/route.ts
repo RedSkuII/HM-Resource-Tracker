@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions, getUserIdentifier } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { resources, resourceHistory, leaderboard, websiteChanges, users, guilds } from '@/lib/db'
+import { resources, resourceHistory, leaderboard, websiteChanges, discordOrders, resourceDiscordMapping, users, guilds } from '@/lib/db'
 import { eq, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { hasResourceAccess, hasResourceAdminAccess, isDiscordServerOwner } from '@/lib/discord-roles'
@@ -296,13 +296,22 @@ export async function DELETE(
     }
 
     // Delete all related records first (due to foreign key constraints)
-    // 1. Delete leaderboard entries for this resource
+    // 1. Delete website_changes entries for this resource
+    await db.delete(websiteChanges).where(eq(websiteChanges.resourceId, params.id))
+    
+    // 2. Delete discord_orders entries for this resource
+    await db.delete(discordOrders).where(eq(discordOrders.resourceId, params.id))
+    
+    // 3. Delete resource_discord_mapping entries for this resource
+    await db.delete(resourceDiscordMapping).where(eq(resourceDiscordMapping.resourceId, params.id))
+    
+    // 4. Delete leaderboard entries for this resource
     await db.delete(leaderboard).where(eq(leaderboard.resourceId, params.id))
     
-    // 2. Delete all history entries for this resource
+    // 5. Delete all history entries for this resource
     await db.delete(resourceHistory).where(eq(resourceHistory.resourceId, params.id))
     
-    // 3. Finally delete the resource itself
+    // 6. Finally delete the resource itself
     await db.delete(resources).where(eq(resources.id, params.id))
 
     return NextResponse.json({ message: 'Resource and all related data deleted successfully' }, {
